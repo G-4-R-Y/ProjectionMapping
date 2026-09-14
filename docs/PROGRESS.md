@@ -4,6 +4,43 @@ This file records concrete implementation progress against `ROADMAP.md`. Hardwar
 
 ## 2026-09-14
 
+### Operator console / control plane
+
+Implemented:
+- clickable + keyboard Textual console (`projection-ui`)
+- registry-driven feature catalog (`configs/features.toml`)
+- typed per-feature controls: text, int, float, bool, choice
+- safe argv generation without a shell (`src/projection_mapping/feature_registry.py`)
+- one-active-feature child-process lifecycle (`src/projection_mapping/launcher.py`)
+- fullscreen launch -> `Esc` -> console interaction model
+- terminal-focus `Esc` can terminate the active child
+- stdout/stderr capture under `.projection_mapping/`
+- UI status polling and last-run log view
+- feature-registry unit tests
+- operator/extension documentation (`docs/CONSOLE_UI.md`)
+- architecture updated to explicitly separate control plane from render/data plane
+
+Current feature categories exposed:
+- Visual Madness
+- Projector Setup
+- Calibration
+- Diagnostics
+
+Current UI-visible features include Room Skin, live StreamDiffusion / Neural Mirror, baseline neural mirror, alignment grid, structured-light capture, radiometry capture, Spout diagnostics, and the RTX 4080 benchmark.
+
+Next operator-surface work:
+- persistent named presets per feature
+- inherited global projector/camera profiles
+- global MADNESS macro
+- live parameter updates through local IPC / OSC without restarting renderer
+- preview thumbnails
+- MIDI / gamepad / phone bindings
+- audio input controls/meters
+- calibration profile picker
+- semantic-room object/effect routing UI
+- playlists / timed transitions / generative preset mutation
+- emergency blackout control
+
 ### M3 — neural mirror / realtime generation
 
 Implemented:
@@ -81,11 +118,15 @@ Next integration:
 
 ## Current bring-up order
 
-1. run `experiments/05_benchmark_streamdiffusion.py` on the 4080;
-2. run `experiments/06_spout_diagnostics.py` into TouchDesigner;
-3. collect `experiments/07_capture_calibration_bundle.py` from the real room;
-4. collect `experiments/08_capture_radiometry_dataset.py` without moving the rig;
-5. run `experiments/09_room_skin.py` and inspect edge locking;
-6. merge async StreamDiffusion output into room-skin temporal/advection path;
-7. train/apply physical appearance compensation;
-8. turn the renderer toward the visual targets in `docs/VISUAL_MADNESS.md`.
+The preferred operator path is now through `projection-ui`; the equivalent scripts remain available for debugging/reproducibility.
+
+1. launch `projection-ui` and verify Alignment Grid on the intended display;
+2. run the RTX 4080 benchmark feature;
+3. run Spout Diagnostics into TouchDesigner;
+4. collect Structured-Light Capture from the real room;
+5. collect Radiometry Dataset Capture without moving the rig;
+6. run Room Skin and inspect edge locking;
+7. run Neural Mirror / StreamDiffusion with tuned 4080 settings;
+8. merge async StreamDiffusion output into room-skin temporal/advection path;
+9. train/apply physical appearance compensation;
+10. turn the renderer toward the visual targets in `docs/VISUAL_MADNESS.md`.
