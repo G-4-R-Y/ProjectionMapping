@@ -1,21 +1,36 @@
 [display]
 transport = "spout"
 projector_display = 1
+target_fps = 60
 
 [capture]
+device = 0
 width = 1280
 height = 720
 lock_exposure_for_calibration = true
 
 [generation]
-# Conservative interactive starting points; benchmark on your exact model/projector.
+# Conservative interactive starting points; benchmark on the exact local stack.
+backend = "daydream-streamdiffusion"
+model_id_or_path = "stabilityai/sd-turbo"
 internal_width = 768
 internal_height = 432
-denoising_steps = 1
-fp16 = true
+acceleration = "xformers"
+t_index_list = [32, 45]
+frame_buffer_size = 1
+warmup = 10
+guidance_scale = 1.0
+cfg_type = "none"
+seed = 2
 prefer_tensorrt = true
 
 [runtime]
-# Render procedural layers at display refresh; let diffusion update asynchronously.
+# Procedural/display layers run independently from diffusion updates.
 target_display_fps = 60
 latest_frame_wins = true
+max_pending_inference_frames = 1
+telemetry_interval_seconds = 2.0
+
+[benchmark]
+resolutions = [[512, 512], [768, 432], [960, 540]]
+report_percentiles = [50, 95, 99]
