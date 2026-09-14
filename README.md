@@ -16,6 +16,36 @@ The projector is treated as a spatial output device, the camera as feedback, and
 - Optional StreamDiffusion / TensorRT
 - Optional Spout2 GPU texture sharing
 
+## Operator workflow
+
+The preferred way to use the project is the interactive console:
+
+```powershell
+py -3.10 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -e ".[ui,vision,dev]"
+projection-ui
+```
+
+The loop is:
+
+```text
+console UI
+  -> choose an effect / experiment
+  -> change its parameters
+  -> LAUNCH FULLSCREEN
+  -> projector shows it
+  -> ESC
+  -> back to the console
+  -> mutate settings / switch mapping / launch again
+```
+
+The console stays alive while each visual runs as a child process. If the projector window has focus, `Esc` exits that visual normally. If the terminal has focus, `Esc` terminates the active visual from the control deck. Run logs are captured under `.projection_mapping/`.
+
+The UI is **registry-driven** by [`configs/features.toml`](configs/features.toml): new effects declare their command and typed parameters there, and the console renders their controls automatically. This is the mechanism for growing toward effectively unlimited visual modes without hard-coding the UI.
+
+See [`docs/CONSOLE_UI.md`](docs/CONSOLE_UI.md) for the full operator and extension guide.
+
 ## Architecture
 
 ```text
@@ -50,9 +80,9 @@ The intended runtime is hybrid: the projector/display loop stays responsive at d
 - **M0 — photons:** ✅ core path implemented
 - **M1 — camera/projector calibration:** 🟡 structured-light and radiometric foundations implemented; real hardware capture/validation pending
 - **M2 — realtime GPU transport:** 🟡 Spout/runtime scaffolding implemented; zero-copy Windows/TouchDesigner validation pending
-- **M3 — neural mirror:** 🟡 perception + integration scaffolding present; concrete RTX 4080 StreamDiffusion async runtime is current priority
-- **M4 — spatially locked generation:** ⬜ planned
-- **M5 — closed-loop compensation:** 🟡 inverse/optimization scaffolding implemented; real projector-camera dataset pending
+- **M3 — neural mirror:** 🟡 perception + concrete async StreamDiffusion path implemented; RTX 4080 hardware benchmark pending
+- **M4 — spatially locked generation:** 🟡 first Room Skin prototype implemented; calibrated/AI-driven version pending
+- **M5 — closed-loop compensation:** 🟡 inverse/optimization scaffolding and dataset capture implemented; real projector-camera dataset pending
 - **M6 — semantic room:** ⬜ planned
 
 See [`ROADMAP.md`](ROADMAP.md) for detailed deliverables, exit criteria, extension milestones M7–M10, and the current priority queue.
@@ -60,28 +90,35 @@ See [`ROADMAP.md`](ROADMAP.md) for detailed deliverables, exit criteria, extensi
 ## Implemented foundations
 
 - fullscreen projector test-pattern player
+- clickable/keyboard Textual operator console (`projection-ui`)
+- typed, extensible feature registry (`configs/features.toml`)
+- child-process lifecycle management with ESC-to-return workflow
+- per-run log capture under `.projection_mapping/`
 - grids, checkerboards, color ramps, Gray-code and phase-shift structured-light patterns
 - camera capture helpers
 - homography estimation and image warping
 - Gray-code decoding for dense projector coordinates
+- calibration bundle capture
+- radiometry dataset acquisition
 - per-channel radiometric LUT estimation
 - PyTorch appearance-compensation MLP
 - Farneback optical flow and foreground masks
-- optional StreamDiffusion adapter with lazy imports
+- concrete asynchronous StreamDiffusion integration path
+- latest-frame-wins worker and runtime telemetry
+- StreamDiffusion benchmark harness
+- first spatially locked Room Skin prototype
 - modular realtime runtime loop
 - OpenCV fullscreen sink
-- Spout adapter interface / optional SPOUT2ForPython backend
+- Spout adapter interface + diagnostics
 - reaction-diffusion GLSL shader starter
 - perceptual closed-loop objective scaffolding
-- tests for patterns, Gray-code, geometry, LUTs, and runtime plumbing
+- tests for patterns, Gray-code, geometry, LUTs, runtime plumbing, async runtime, and feature registry
 
-## Quick start
+## CLI quick start
+
+The lower-level CLI remains useful for scripting and debugging:
 
 ```powershell
-py -3.10 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -e ".[dev,vision]"
-
 # Show a projector alignment grid on display 1
 projection-map patterns --kind grid --display 1
 
@@ -106,6 +143,10 @@ On one Windows machine, use **Spout** for local GPU texture sharing into TouchDe
 ## Docs
 
 - [`ROADMAP.md`](ROADMAP.md) — canonical milestones, progress, priorities, and extension goals
+- [`docs/CONSOLE_UI.md`](docs/CONSOLE_UI.md) — operator console, ESC/fullscreen lifecycle, feature registry, and extension format
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — system design principles and layers
 - [`docs/EXPERIMENTS.md`](docs/EXPERIMENTS.md) — experiment index mapped back to roadmap milestones
+- [`docs/HARDWARE_BRINGUP.md`](docs/HARDWARE_BRINGUP.md) — physical setup and bring-up order
 - [`docs/RTX4080.md`](docs/RTX4080.md) — hardware-specific starting points and tuning notes
+- [`docs/VISUAL_MADNESS.md`](docs/VISUAL_MADNESS.md) — artistic direction and high-intensity visual concepts
+- [`docs/PROGRESS.md`](docs/PROGRESS.md) — implemented vs hardware-validated status
