@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "projection-mapping-lab"
+version = "0.1.0"
+description = "Research toolkit for projector-camera calibration, generative projection mapping, and spatial AR"
+readme = "README.md"
+requires-python = ">=3.10,<3.14"
+dependencies = ["numpy>=1.26"]
+
+[project.optional-dependencies]
+vision = ["opencv-python>=4.9"]
+ml = ["torch>=2.2", "torchvision>=0.17"]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+projection-map = "projection_mapping.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
