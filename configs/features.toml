@@ -7,6 +7,108 @@
 # Optional `platforms` values: windows, linux, macos. Omit for portable features.
 
 [[feature]]
+id = "audio_reactive"
+name = "Audio Reactive Pulse Field"
+category = "Visual Madness"
+description = "Ultra-low-latency music-reactive fullscreen field. Mic input works cross-platform; system/loopback audio is native on Windows/Linux and can use a virtual input on macOS."
+command = ["python", "experiments/10_audio_reactive.py"]
+fullscreen = true
+
+[[feature.param]]
+key = "source"
+flag = "--source"
+label = "Audio source"
+type = "choice"
+default = "mic"
+choices = ["mic", "system"]
+
+[[feature.param]]
+key = "device"
+flag = "--device"
+label = "Audio device name/id (optional)"
+type = "text"
+default = ""
+
+[[feature.param]]
+key = "display"
+flag = "--display"
+label = "Projector display"
+type = "int"
+default = 1
+min = 0
+max = 8
+
+[[feature.param]]
+key = "projector_width"
+flag = "--projector-width"
+label = "Projector width"
+type = "int"
+default = 1920
+min = 320
+max = 7680
+
+[[feature.param]]
+key = "projector_height"
+flag = "--projector-height"
+label = "Projector height"
+type = "int"
+default = 1080
+min = 240
+max = 4320
+
+[[feature.param]]
+key = "blocksize"
+flag = "--blocksize"
+label = "Audio block size (samples)"
+type = "int"
+default = 256
+min = 64
+max = 2048
+
+[[feature.param]]
+key = "attack_ms"
+flag = "--attack-ms"
+label = "Attack (ms)"
+type = "float"
+default = 6.0
+min = 0.5
+max = 100.0
+
+[[feature.param]]
+key = "release_ms"
+flag = "--release-ms"
+label = "Release (ms)"
+type = "float"
+default = 85.0
+min = 5.0
+max = 1000.0
+
+[[feature.param]]
+key = "sensitivity"
+flag = "--sensitivity"
+label = "Sensitivity"
+type = "float"
+default = 1.7
+min = 0.1
+max = 8.0
+
+[[feature.param]]
+key = "madness"
+flag = "--madness"
+label = "Madness"
+type = "float"
+default = 0.72
+min = 0.0
+max = 1.0
+
+[[feature.param]]
+key = "exclusive_mode"
+flag = "--exclusive-mode"
+label = "Exclusive audio mode (Windows, experimental)"
+type = "bool"
+default = false
+
+[[feature]]
 id = "room_skin"
 name = "Room Skin"
 category = "Visual Madness"
