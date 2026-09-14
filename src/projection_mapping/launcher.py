@@ -7,6 +7,7 @@ import os
 import subprocess
 from typing import Any, IO
 
+from .app_runtime import bundle_root, is_frozen, runtime_root
 from .feature_registry import Feature
 
 
@@ -26,20 +27,17 @@ class LaunchState:
 
 
 class FeatureLauncher:
-    """Own one visual/experiment subprocess at a time.
-
-    The TUI stays alive while the child owns projector output. Fullscreen OpenCV
-    experiments already treat ESC as quit; if terminal focus is active instead,
-    the TUI can terminate this subprocess through ``stop``.
-
-    On Windows the child is isolated in a new process group. On Linux/macOS a new
-    session is created. Commands are direct argv lists and never require a shell.
-    """
+    """Own one visual/experiment subprocess at a time."""
 
     def __init__(self, project_root: str | Path | None = None):
-        self.project_root = Path(project_root or Path.cwd()).resolve()
-        self.runtime_dir = self.project_root / ".projection_mapping"
-        self.runtime_dir.mkdir(parents=True, exist_ok=True)
+        if project_root is not None:
+            root = Path(project_root)
+        elif is_frozen():
+            root = bundle_root()
+        else:
+            root = Path.cwd()
+        self.project_root = root.resolve()
+        self.runtime_dir = runtime_root()
         self.process: subprocess.Popen[str] | None = None
         self._log_handle: IO[str] | None = None
         self.state = LaunchState()
