@@ -84,3 +84,38 @@ def test_build_argv_rejects_unsupported_current_platform():
     )
     with pytest.raises(RuntimeError, match="not supported"):
         feature.build_argv()
+
+
+def test_external_command_requirement(monkeypatch):
+    feature = Feature(
+        "external",
+        "External",
+        "Test",
+        "",
+        ("imaginary-tool",),
+        requires_commands=("imaginary-tool",),
+    )
+    monkeypatch.setattr("projection_mapping.feature_registry.shutil.which", lambda _name: None)
+    assert feature.missing_commands() == ("imaginary-tool",)
+    assert not feature.available()
+    assert "missing external command" in feature.availability_hint()
+    with pytest.raises(RuntimeError, match="not found on PATH"):
+        feature.build_argv()
+
+
+def test_external_command_requirement_satisfied(monkeypatch):
+    feature = Feature(
+        "external",
+        "External",
+        "Test",
+        "",
+        ("imaginary-tool",),
+        requires_commands=("imaginary-tool",),
+    )
+    monkeypatch.setattr(
+        "projection_mapping.feature_registry.shutil.which",
+        lambda name: f"/usr/bin/{name}",
+    )
+    assert feature.missing_commands() == ()
+    assert feature.available()
+    assert feature.build_argv() == ["imaginary-tool"]
