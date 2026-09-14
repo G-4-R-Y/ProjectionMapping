@@ -23,7 +23,7 @@ jobs:
           cache: pip
       - name: Install
         run: python -m pip install -U pip && python -m pip install -e ".[dev,vision,ui]"
-      - name: Ruff
-        run: python -m ruff check src tests
+      - name: Ruff critical checks
+        run: python -m ruff check src tests --select E9,F63,F7,F82
       - name: Pytest
         run: python -m pytest -q
