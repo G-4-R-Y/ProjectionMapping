@@ -1,0 +1,21 @@
+[display]
+transport = "spout"
+projector_display = 1
+
+[capture]
+width = 1280
+height = 720
+lock_exposure_for_calibration = true
+
+[generation]
+# Conservative interactive starting points; benchmark on your exact model/projector.
+internal_width = 768
+internal_height = 432
+denoising_steps = 1
+fp16 = true
+prefer_tensorrt = true
+
+[runtime]
+# Render procedural layers at display refresh; let diffusion update asynchronously.
+target_display_fps = 60
+latest_frame_wins = true
