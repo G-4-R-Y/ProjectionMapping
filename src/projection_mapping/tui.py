@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from .feature_registry import Feature, FeatureParam, load_registry
+from .feature_registry import Feature, FeatureParam, current_platform, load_registry
 from .launcher import FeatureLauncher
 
 
@@ -16,7 +16,7 @@ def _import_textual():
         from textual.widgets import Button, Checkbox, Footer, Header, Input, Label, ListItem, ListView, Select, Static
     except ImportError as exc:
         raise RuntimeError(
-            'Console UI requires Textual. Install with: pip install -e ".[ui,vision]"'
+            'Console UI requires Textual. Install with: python -m pip install -e ".[ui,vision]"'
         ) from exc
     return {
         "App": App,
@@ -76,6 +76,7 @@ Screen { background: #090a0f; color: #e7e7ee; }
 #stop { margin-top: 1; width: 1fr; }
 #log { height: 10; border: round #333344; padding: 1; overflow-y: auto; }
 .hint { color: #8e91a7; margin-top: 1; }
+.unsupported { color: #777785; }
 """
 
 
@@ -98,6 +99,11 @@ class ConfigScreen(Screen):
         with VerticalScroll(id="detail"):
             yield Static(self.feature.name, classes="feature-title")
             yield Static(self.feature.description, classes="feature-description")
+            if not self.feature.supported_on():
+                yield Static(
+                    f"Unavailable on {current_platform()}. Supported: {self.feature.platform_hint()}",
+                    classes="unsupported",
+                )
             for param in self.feature.params:
                 with Horizontal(classes="param-row"):
                     yield Label(param.label, classes="param-label")
@@ -108,7 +114,12 @@ class ConfigScreen(Screen):
                         yield Select(options, value=str(param.default), id=_control_id(param), classes="param-control")
                     else:
                         yield Input(value=str(param.default), id=_control_id(param), classes="param-control")
-            yield Button("LAUNCH FULLSCREEN", id="launch", variant="success")
+            yield Button(
+                "LAUNCH FULLSCREEN" if self.feature.supported_on() else "UNAVAILABLE ON THIS OS",
+                id="launch",
+                variant="success",
+                disabled=not self.feature.supported_on(),
+            )
             yield Static(
                 "ESC in the projector window exits the visual and reveals this console again. "
                 "If the terminal has focus, ESC stops the active child from the main screen.",
@@ -141,7 +152,6 @@ class ConfigScreen(Screen):
     def _launch(self) -> None:
         try:
             values = self._values()
-            # Validate before switching screens so bad fields are visible immediately.
             self.feature.build_argv(values)
             self.app.launch_feature(self.feature, values)
             self.app.pop_screen()
@@ -170,7 +180,7 @@ class ProjectionMappingApp(App):
         yield Header(show_clock=True)
         with Horizontal(id="body"):
             with VerticalScroll(id="sidebar"):
-                yield Static("FEATURES", classes="feature-title")
+                yield Static(f"FEATURES // {current_platform().upper()}", classes="feature-title")
                 for category in self.registry.categories:
                     yield Static(category, classes="category")
                     items = []
@@ -179,7 +189,8 @@ class ProjectionMappingApp(App):
                             continue
                         item_id = f"feature-{feature.id.replace('_', '-')}"
                         self.feature_by_item_id[item_id] = feature
-                        items.append(ListItem(Label(feature.name), id=item_id))
+                        suffix = "" if feature.supported_on() else "  [unsupported]"
+                        items.append(ListItem(Label(feature.name + suffix), id=item_id))
                     yield ListView(*items)
             with Vertical(id="detail"):
                 yield Static("VISUAL MADNESS CONTROL DECK", classes="feature-title")
