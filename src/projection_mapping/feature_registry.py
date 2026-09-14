@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+import shutil
 import sys
 from typing import Any
 
@@ -64,6 +65,7 @@ class Feature:
     fullscreen: bool = False
     params: tuple[FeatureParam, ...] = field(default_factory=tuple)
     platforms: tuple[str, ...] = ()
+    requires_commands: tuple[str, ...] = ()
 
     def defaults(self) -> dict[str, Any]:
         return {p.key: p.default for p in self.params}
@@ -75,11 +77,32 @@ class Feature:
     def platform_hint(self) -> str:
         return "all supported OSs" if not self.platforms else ", ".join(self.platforms)
 
+    def missing_commands(self) -> tuple[str, ...]:
+        """Return optional external executables that are not currently on PATH."""
+        return tuple(command for command in self.requires_commands if shutil.which(command) is None)
+
+    def available(self, platform: str | None = None) -> bool:
+        return self.supported_on(platform) and not self.missing_commands()
+
+    def availability_hint(self, platform: str | None = None) -> str:
+        platform = platform or current_platform()
+        if not self.supported_on(platform):
+            return f"unsupported on {platform}; supported: {self.platform_hint()}"
+        missing = self.missing_commands()
+        if missing:
+            return f"missing external command(s): {', '.join(missing)}"
+        return "available"
+
     def build_argv(self, values: dict[str, Any] | None = None) -> list[str]:
         if not self.supported_on():
             raise RuntimeError(
                 f"{self.name} is not supported on {current_platform()}; "
                 f"supported: {self.platform_hint()}"
+            )
+        missing = self.missing_commands()
+        if missing:
+            raise RuntimeError(
+                f"{self.name} requires external command(s) not found on PATH: {', '.join(missing)}"
             )
         values = values or {}
         # Registry entries use the portable token `python`; always execute the exact
@@ -161,6 +184,7 @@ def load_registry(path: str | Path | None = None) -> FeatureRegistry:
                 fullscreen=bool(raw.get("fullscreen", False)),
                 params=params,
                 platforms=tuple(raw.get("platforms", [])),
+                requires_commands=tuple(raw.get("requires_commands", [])),
             )
         )
     return FeatureRegistry(tuple(features))
