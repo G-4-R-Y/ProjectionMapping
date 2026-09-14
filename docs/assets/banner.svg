@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="480" viewBox="0 0 1600 480" role="img" aria-label="ProjectionMapping banner">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#050816"/>
+      <stop offset="0.45" stop-color="#081b36"/>
+      <stop offset="1" stop-color="#15051f"/>
+    </linearGradient>
+    <linearGradient id="neon" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#29dfff"/>
+      <stop offset="0.5" stop-color="#4a7cff"/>
+      <stop offset="1" stop-color="#cc4dff"/>
+    </linearGradient>
+    <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#49e7ff" stop-opacity="0.72"/>
+      <stop offset="1" stop-color="#7d3cff" stop-opacity="0.04"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="480" fill="url(#bg)"/>
+  <circle cx="160" cy="95" r="180" fill="#0d4b82" opacity="0.18"/>
+  <circle cx="1430" cy="410" r="260" fill="#8d19ba" opacity="0.16"/>
+
+  <!-- room perspective -->
+  <path d="M75 390 L420 165 L1180 165 L1525 390" fill="none" stroke="#3da7d5" stroke-opacity="0.28" stroke-width="3"/>
+  <path d="M420 165 L420 408 M1180 165 L1180 408 M75 390 L75 92 L420 165 M1525 390 L1525 92 L1180 165" fill="none" stroke="#4e80b2" stroke-opacity="0.18" stroke-width="2"/>
+
+  <!-- projection beams -->
+  <path d="M800 58 L395 400 L1205 400 Z" fill="url(#beam)" opacity="0.16"/>
+  <path d="M800 58 L560 400" stroke="#41dcff" stroke-opacity="0.25" stroke-width="3"/>
+  <path d="M800 58 L1040 400" stroke="#aa58ff" stroke-opacity="0.25" stroke-width="3"/>
+
+  <!-- abstract mapped surface lines -->
+  <path d="M105 305 C250 228 315 368 430 270 S650 220 720 310" fill="none" stroke="#19ddff" stroke-opacity="0.52" stroke-width="5" filter="url(#glow)"/>
+  <path d="M880 315 C1010 210 1110 350 1245 245 S1430 250 1500 180" fill="none" stroke="#d452ff" stroke-opacity="0.46" stroke-width="5" filter="url(#glow)"/>
+  <path d="M100 345 C220 270 330 425 480 330" fill="none" stroke="#ff8a32" stroke-opacity="0.45" stroke-width="3"/>
+  <path d="M1110 360 C1230 300 1360 430 1500 335" fill="none" stroke="#55f4cf" stroke-opacity="0.42" stroke-width="3"/>
+
+  <!-- projector/room icon -->
+  <g transform="translate(741 42)" stroke="url(#neon)" stroke-width="4" fill="none" filter="url(#glow)">
+    <path d="M0 48 L59 6 L118 48 L118 105 L59 137 L0 105 Z"/>
+    <path d="M59 6 V137 M0 48 L59 80 L118 48"/>
+  </g>
+
+  <text x="800" y="240" text-anchor="middle" fill="#f7fbff" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="86" font-weight="700" letter-spacing="-2">Projection<tspan fill="url(#neon)">Mapping</tspan></text>
+  <text x="800" y="292" text-anchor="middle" fill="#9fc7e9" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="24" letter-spacing="7">AI × VISION × REALTIME GRAPHICS × YOUR SPACE</text>
+  <text x="800" y="352" text-anchor="middle" fill="#e6f8ff" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="28" letter-spacing="4">TURN ANY ROOM INTO A LIVING CANVAS</text>
+  <text x="800" y="415" text-anchor="middle" fill="#78a2c5" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="18" letter-spacing="3">CAPTURE  →  GENERATE  →  MAP  →  CONTROL  →  EXPLORE</text>
+</svg>
