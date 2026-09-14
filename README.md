@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/banner.svg" alt="ProjectionMapping — turn any room into a living canvas" width="100%" />
+</p>
+
 # ProjectionMapping
 
 A research playground for **projection mapping, spatial augmented reality, projector-camera calibration, learned appearance compensation, realtime generative vision, and interactive AI art**.
@@ -16,9 +20,17 @@ The portable core targets **Windows, Linux, and macOS**. Capability-specific bac
 
 See [`docs/PLATFORMS.md`](docs/PLATFORMS.md) for the compatibility matrix and shell-specific setup instructions. The console marks unsupported features instead of attempting to launch them.
 
+## Python version
+
+**Python 3.12 is the recommended runtime for the main application.** The repository includes `.python-version` set to `3.12` for tools such as pyenv and compatible environment managers.
+
+The package remains compatible with Python **3.10–3.13**. Python 3.10 uses the conditional `tomli` compatibility dependency because standard-library `tomllib` starts at Python 3.11.
+
+For CUDA/StreamDiffusion/TensorRT, prefer Python 3.12 when the selected upstream stack supports it. If a specific ML dependency requires another version, isolate that inference backend in its own environment/process rather than downgrading the control/calibration application.
+
 ## Target setup
 
-- Python 3.10+
+- **Python 3.12 recommended**
 - USB webcam / capture camera
 - Home projector connected as another display
 - Optional NVIDIA RTX-class GPU for CUDA generative paths
@@ -33,8 +45,19 @@ The preferred way to use the project is the interactive console.
 ### Windows PowerShell
 
 ```powershell
-python -m venv .venv
+py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -e ".[ui,vision,dev]"
+python -m projection_mapping.tui
+```
+
+### Windows cmd.exe
+
+```bat
+py -3.12 -m venv .venv
+.venv\Scripts\activate.bat
+python -m pip install --upgrade pip
 python -m pip install -e ".[ui,vision,dev]"
 python -m projection_mapping.tui
 ```
@@ -42,11 +65,14 @@ python -m projection_mapping.tui
 ### Linux / macOS
 
 ```bash
-python3 -m venv .venv
+python3.12 -m venv .venv
 source .venv/bin/activate
+python -m pip install --upgrade pip
 python -m pip install -e '.[ui,vision,dev]'
 python -m projection_mapping.tui
 ```
+
+If your distro does not expose `python3.12` directly, use pyenv/uv/conda to create a 3.12 environment, then use `python` inside it.
 
 After installation, the shorter entry point also works:
 
@@ -146,13 +172,8 @@ See [`ROADMAP.md`](ROADMAP.md) for detailed deliverables, exit criteria, extensi
 The lower-level CLI remains useful for scripting and debugging. These commands are portable after installation:
 
 ```text
-# Show a projector alignment grid on display 1
 python -m projection_mapping.cli patterns --kind grid --display 1
-
-# Play a Gray-code calibration sequence
 python -m projection_mapping.cli patterns --kind graycode --display 1 --hold-ms 250
-
-# Preview camera
 python -m projection_mapping.cli camera --device 0
 ```
 
