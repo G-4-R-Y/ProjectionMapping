@@ -1,0 +1,370 @@
+# ProjectionMapping interactive feature registry.
+#
+# Every [[feature]] becomes an item in the console UI. Parameters are rendered
+# automatically. Prefer adding new experiences here instead of hard-coding UI.
+# Commands are argv arrays: they are launched without a shell.
+
+[[feature]]
+id = "room_skin"
+name = "Room Skin"
+category = "Visual Madness"
+description = "Geometry-conscious temporal material hallucination. Optical-flow advection + edge locking; designed to receive AI semantic keyframes as the stack evolves."
+command = ["python", "experiments/09_room_skin.py"]
+fullscreen = true
+
+[[feature.param]]
+key = "camera"
+flag = "--camera"
+label = "Camera"
+type = "int"
+default = 0
+min = 0
+max = 16
+
+[[feature.param]]
+key = "display"
+flag = "--display"
+label = "Projector display"
+type = "int"
+default = 1
+min = 0
+max = 8
+
+[[feature.param]]
+key = "projector_width"
+flag = "--projector-width"
+label = "Projector width"
+type = "int"
+default = 1920
+min = 320
+max = 7680
+
+[[feature.param]]
+key = "projector_height"
+flag = "--projector-height"
+label = "Projector height"
+type = "int"
+default = 1080
+min = 240
+max = 4320
+
+[[feature]]
+id = "streamdiffusion_live"
+name = "Neural Mirror / StreamDiffusion"
+category = "Visual Madness"
+description = "Live camera -> asynchronous StreamDiffusion -> projector or Spout. Latest-frame-wins so latency does not accumulate."
+command = ["python", "experiments/04_streamdiffusion_live.py"]
+fullscreen = true
+
+[[feature.param]]
+key = "camera"
+flag = "--camera"
+label = "Camera"
+type = "int"
+default = 0
+min = 0
+max = 16
+
+[[feature.param]]
+key = "display"
+flag = "--display"
+label = "Projector display"
+type = "int"
+default = 1
+min = 0
+max = 8
+
+[[feature.param]]
+key = "width"
+flag = "--width"
+label = "Inference width"
+type = "int"
+default = 768
+min = 256
+max = 1920
+
+[[feature.param]]
+key = "height"
+flag = "--height"
+label = "Inference height"
+type = "int"
+default = 432
+min = 256
+max = 1080
+
+[[feature.param]]
+key = "acceleration"
+flag = "--acceleration"
+label = "Acceleration"
+type = "choice"
+default = "xformers"
+choices = ["none", "xformers", "tensorrt"]
+
+[[feature.param]]
+key = "spout"
+flag = "--spout"
+label = "Send via Spout"
+type = "bool"
+default = false
+
+[[feature.param]]
+key = "sender"
+flag = "--sender"
+label = "Spout sender"
+type = "text"
+default = "ProjectionMapping"
+
+[[feature]]
+id = "neural_mirror_baseline"
+name = "Neural Mirror Baseline"
+category = "Visual Madness"
+description = "Lightweight camera/mask/flow projection baseline. Useful before loading diffusion."
+command = ["python", "experiments/02_neural_mirror.py"]
+fullscreen = true
+
+[[feature.param]]
+key = "camera"
+flag = "--camera"
+label = "Camera"
+type = "int"
+default = 0
+min = 0
+max = 16
+
+[[feature.param]]
+key = "display"
+flag = "--display"
+label = "Projector display"
+type = "int"
+default = 1
+min = 0
+max = 8
+
+[[feature]]
+id = "grid"
+name = "Alignment Grid"
+category = "Projector Setup"
+description = "Fullscreen deterministic grid for placement, focus, keystone and overscan checks."
+command = ["projection-map", "patterns", "--kind", "grid"]
+fullscreen = true
+
+[[feature.param]]
+key = "width"
+flag = "--width"
+label = "Width"
+type = "int"
+default = 1920
+min = 320
+max = 7680
+
+[[feature.param]]
+key = "height"
+flag = "--height"
+label = "Height"
+type = "int"
+default = 1080
+min = 240
+max = 4320
+
+[[feature.param]]
+key = "display"
+flag = "--display"
+label = "Projector display"
+type = "int"
+default = 1
+min = 0
+max = 8
+
+[[feature.param]]
+key = "hold_ms"
+flag = "--hold-ms"
+label = "Frame hold (ms)"
+type = "int"
+default = 1000
+min = 1
+max = 60000
+
+[[feature]]
+id = "graycode_capture"
+name = "Structured-Light Capture"
+category = "Calibration"
+description = "Project and capture Gray-code/phase patterns into a reusable calibration bundle. Do not move camera/projector during the run."
+command = ["python", "experiments/07_capture_calibration_bundle.py"]
+fullscreen = true
+
+[[feature.param]]
+key = "camera"
+flag = "--camera"
+label = "Camera"
+type = "int"
+default = 0
+min = 0
+max = 16
+
+[[feature.param]]
+key = "display"
+flag = "--display"
+label = "Projector display"
+type = "int"
+default = 1
+min = 0
+max = 8
+
+[[feature.param]]
+key = "projector_width"
+flag = "--projector-width"
+label = "Projector width"
+type = "int"
+default = 1920
+min = 320
+max = 7680
+
+[[feature.param]]
+key = "projector_height"
+flag = "--projector-height"
+label = "Projector height"
+type = "int"
+default = 1080
+min = 240
+max = 4320
+
+[[feature.param]]
+key = "output"
+flag = "--output"
+label = "Output directory"
+type = "text"
+default = "calibration_data/room_v1"
+
+[[feature]]
+id = "radiometry_capture"
+name = "Radiometry Dataset Capture"
+category = "Calibration"
+description = "Capture emitted/observed RGB sweeps and patches for LUT + learned inverse-display models."
+command = ["python", "experiments/08_capture_radiometry_dataset.py"]
+fullscreen = true
+
+[[feature.param]]
+key = "camera"
+flag = "--camera"
+label = "Camera"
+type = "int"
+default = 0
+min = 0
+max = 16
+
+[[feature.param]]
+key = "display"
+flag = "--display"
+label = "Projector display"
+type = "int"
+default = 1
+min = 0
+max = 8
+
+[[feature.param]]
+key = "projector_width"
+flag = "--projector-width"
+label = "Projector width"
+type = "int"
+default = 1920
+min = 320
+max = 7680
+
+[[feature.param]]
+key = "projector_height"
+flag = "--projector-height"
+label = "Projector height"
+type = "int"
+default = 1080
+min = 240
+max = 4320
+
+[[feature.param]]
+key = "output"
+flag = "--output"
+label = "Output directory"
+type = "text"
+default = "calibration_data/radiometry_v1"
+
+[[feature]]
+id = "spout_diagnostics"
+name = "Spout Diagnostics"
+category = "Diagnostics"
+description = "Deterministic animated GPU/display transport probe for TouchDesigner receiver validation."
+command = ["python", "experiments/06_spout_diagnostics.py"]
+fullscreen = false
+
+[[feature.param]]
+key = "width"
+flag = "--width"
+label = "Width"
+type = "int"
+default = 1920
+min = 320
+max = 7680
+
+[[feature.param]]
+key = "height"
+flag = "--height"
+label = "Height"
+type = "int"
+default = 1080
+min = 240
+max = 4320
+
+[[feature.param]]
+key = "fps"
+flag = "--fps"
+label = "Target FPS"
+type = "float"
+default = 60.0
+min = 1.0
+max = 240.0
+
+[[feature]]
+id = "benchmark_streamdiffusion"
+name = "RTX 4080 StreamDiffusion Benchmark"
+category = "Diagnostics"
+description = "Benchmark preprocessing/inference throughput and latency. Produces a JSON report for tuning the live system."
+command = ["python", "experiments/05_benchmark_streamdiffusion.py"]
+fullscreen = false
+
+[[feature.param]]
+key = "model"
+flag = "--model"
+label = "Model"
+type = "text"
+default = "stabilityai/sd-turbo"
+
+[[feature.param]]
+key = "width"
+flag = "--width"
+label = "Width"
+type = "int"
+default = 768
+min = 256
+max = 1920
+
+[[feature.param]]
+key = "height"
+flag = "--height"
+label = "Height"
+type = "int"
+default = 432
+min = 256
+max = 1080
+
+[[feature.param]]
+key = "acceleration"
+flag = "--acceleration"
+label = "Acceleration"
+type = "choice"
+default = "xformers"
+choices = ["none", "xformers", "tensorrt"]
+
+[[feature.param]]
+key = "output"
+flag = "--output"
+label = "Report path"
+type = "text"
+default = "bench_768x432.json"
