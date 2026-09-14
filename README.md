@@ -6,24 +6,51 @@ The projector is treated as a spatial output device, the camera as feedback, and
 
 > **Project tracking:** [`ROADMAP.md`](ROADMAP.md) is the canonical roadmap and progress tracker. It preserves the core M0–M6 plan and tracks all extension goals (audio-latent control, dynamic mapping, multi-projector work, advanced neural spatial methods, performance/evaluation, etc.).
 
+## Supported platforms
+
+The portable core targets **Windows, Linux, and macOS**. Capability-specific backends remain explicit:
+
+- Windows: portable core + NVIDIA CUDA/TensorRT + Spout
+- Linux: portable core + NVIDIA CUDA/TensorRT; direct fullscreen today, additional transport backends planned
+- macOS: portable core + fullscreen/calibration/Room Skin; CUDA/TensorRT unavailable, Syphon is the planned native shared-texture direction
+
+See [`docs/PLATFORMS.md`](docs/PLATFORMS.md) for the compatibility matrix and shell-specific setup instructions. The console marks unsupported features instead of attempting to launch them.
+
 ## Target setup
 
-- Windows 11 + NVIDIA RTX 4080
 - Python 3.10+
 - USB webcam / capture camera
-- Home projector connected as a second display
+- Home projector connected as another display
+- Optional NVIDIA RTX-class GPU for CUDA generative paths
 - Optional TouchDesigner / MadMapper
-- Optional StreamDiffusion / TensorRT
-- Optional Spout2 GPU texture sharing
+- Optional StreamDiffusion / TensorRT on Windows/Linux NVIDIA systems
+- Optional Spout2 GPU texture sharing on Windows
 
 ## Operator workflow
 
-The preferred way to use the project is the interactive console:
+The preferred way to use the project is the interactive console.
+
+### Windows PowerShell
 
 ```powershell
-py -3.10 -m venv .venv
+python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -e ".[ui,vision,dev]"
+python -m pip install -e ".[ui,vision,dev]"
+python -m projection_mapping.tui
+```
+
+### Linux / macOS
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e '.[ui,vision,dev]'
+python -m projection_mapping.tui
+```
+
+After installation, the shorter entry point also works:
+
+```text
 projection-ui
 ```
 
@@ -42,7 +69,7 @@ console UI
 
 The console stays alive while each visual runs as a child process. If the projector window has focus, `Esc` exits that visual normally. If the terminal has focus, `Esc` terminates the active visual from the control deck. Run logs are captured under `.projection_mapping/`.
 
-The UI is **registry-driven** by [`configs/features.toml`](configs/features.toml): new effects declare their command and typed parameters there, and the console renders their controls automatically. This is the mechanism for growing toward effectively unlimited visual modes without hard-coding the UI.
+The UI is **registry-driven** by [`configs/features.toml`](configs/features.toml): new effects declare their command, supported OSs, and typed parameters there, and the console renders their controls automatically. Registry commands use a portable `python` token that is replaced with the exact active interpreter, avoiding virtualenv/conda/path mismatches across OSs.
 
 See [`docs/CONSOLE_UI.md`](docs/CONSOLE_UI.md) for the full operator and extension guide.
 
@@ -67,7 +94,7 @@ camera / audio / controls
  compensation + spatial warp
         |
         v
- fullscreen / Spout -> TouchDesigner -> MadMapper -> projector
+ fullscreen / platform transport -> compositor -> projector
         |
         v
  physical room -> camera feedback
@@ -79,7 +106,7 @@ The intended runtime is hybrid: the projector/display loop stays responsive at d
 
 - **M0 — photons:** ✅ core path implemented
 - **M1 — camera/projector calibration:** 🟡 structured-light and radiometric foundations implemented; real hardware capture/validation pending
-- **M2 — realtime GPU transport:** 🟡 Spout/runtime scaffolding implemented; zero-copy Windows/TouchDesigner validation pending
+- **M2 — realtime GPU transport:** 🟡 Spout/runtime scaffolding implemented; Windows zero-copy validation pending; Linux/macOS transport backends remain roadmap items
 - **M3 — neural mirror:** 🟡 perception + concrete async StreamDiffusion path implemented; RTX 4080 hardware benchmark pending
 - **M4 — spatially locked generation:** 🟡 first Room Skin prototype implemented; calibrated/AI-driven version pending
 - **M5 — closed-loop compensation:** 🟡 inverse/optimization scaffolding and dataset capture implemented; real projector-camera dataset pending
@@ -91,8 +118,8 @@ See [`ROADMAP.md`](ROADMAP.md) for detailed deliverables, exit criteria, extensi
 
 - fullscreen projector test-pattern player
 - clickable/keyboard Textual operator console (`projection-ui`)
-- typed, extensible feature registry (`configs/features.toml`)
-- child-process lifecycle management with ESC-to-return workflow
+- typed, extensible, platform-aware feature registry (`configs/features.toml`)
+- cross-platform child-process lifecycle management with ESC-to-return workflow
 - per-run log capture under `.projection_mapping/`
 - grids, checkerboards, color ramps, Gray-code and phase-shift structured-light patterns
 - camera capture helpers
@@ -109,41 +136,49 @@ See [`ROADMAP.md`](ROADMAP.md) for detailed deliverables, exit criteria, extensi
 - first spatially locked Room Skin prototype
 - modular realtime runtime loop
 - OpenCV fullscreen sink
-- Spout adapter interface + diagnostics
+- Spout adapter interface + diagnostics on Windows
 - reaction-diffusion GLSL shader starter
 - perceptual closed-loop objective scaffolding
 - tests for patterns, Gray-code, geometry, LUTs, runtime plumbing, async runtime, and feature registry
 
 ## CLI quick start
 
-The lower-level CLI remains useful for scripting and debugging:
+The lower-level CLI remains useful for scripting and debugging. These commands are portable after installation:
 
-```powershell
+```text
 # Show a projector alignment grid on display 1
-projection-map patterns --kind grid --display 1
+python -m projection_mapping.cli patterns --kind grid --display 1
 
 # Play a Gray-code calibration sequence
-projection-map patterns --kind graycode --display 1 --hold-ms 250
+python -m projection_mapping.cli patterns --kind graycode --display 1 --hold-ms 250
 
 # Preview camera
-projection-map camera --device 0
+python -m projection_mapping.cli camera --device 0
 ```
 
 ## Optional realtime diffusion
 
-Keep StreamDiffusion outside the core dependency set because its CUDA/TensorRT pins move quickly:
+Keep StreamDiffusion outside the core dependency set because its CUDA/TensorRT pins move quickly. On supported Windows/Linux NVIDIA systems:
 
-```powershell
-pip install "git+https://github.com/daydreamlive/StreamDiffusion.git@main#egg=streamdiffusion[tensorrt,controlnet,ipadapter]"
+```text
+python -m pip install "git+https://github.com/daydreamlive/StreamDiffusion.git@main#egg=streamdiffusion[tensorrt,controlnet,ipadapter]"
 python -m streamdiffusion.tools.install-tensorrt
 ```
 
-On one Windows machine, use **Spout** for local GPU texture sharing into TouchDesigner. Use NDI when inference and display are on different machines.
+On Windows, Spout is the preferred same-machine GPU-sharing path into TouchDesigner/MadMapper. Linux currently uses direct fullscreen for the portable path while additional transport options are explored. macOS keeps the portable renderer/calibration path and will gain a native Syphon backend separately.
+
+## Ongoing research watch
+
+A monthly research sweep tracks new projection-mapping, spatial-AR, realtime-generative, projector-camera, neural-rendering, and interactive-media projects. Mature, compatible open-source work may be prototyped automatically; risky/unclear/large integrations are added to the roadmap as research candidates instead.
+
+See [`docs/RESEARCH_WATCH.md`](docs/RESEARCH_WATCH.md) for the curation and auto-integration policy.
 
 ## Docs
 
 - [`ROADMAP.md`](ROADMAP.md) — canonical milestones, progress, priorities, and extension goals
 - [`docs/CONSOLE_UI.md`](docs/CONSOLE_UI.md) — operator console, ESC/fullscreen lifecycle, feature registry, and extension format
+- [`docs/PLATFORMS.md`](docs/PLATFORMS.md) — Windows/Linux/macOS support matrix and setup commands
+- [`docs/RESEARCH_WATCH.md`](docs/RESEARCH_WATCH.md) — monthly research-sweep and auto-integration policy
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — system design principles and layers
 - [`docs/EXPERIMENTS.md`](docs/EXPERIMENTS.md) — experiment index mapped back to roadmap milestones
 - [`docs/HARDWARE_BRINGUP.md`](docs/HARDWARE_BRINGUP.md) — physical setup and bring-up order
