@@ -48,6 +48,26 @@ default = 1080
 min = 240
 max = 4320
 
+[[feature.param]]
+key = "edge_strength"
+flag = "--edge-strength"
+label = "Physical edge lock"
+type = "float"
+default = 0.82
+min = 0.0
+max = 1.0
+help = "Higher values preserve real room edges more strongly."
+
+[[feature.param]]
+key = "temporal_alpha"
+flag = "--temporal-alpha"
+label = "New-frame injection"
+type = "float"
+default = 0.24
+min = 0.0
+max = 1.0
+help = "Lower = dreamier temporal memory; higher = faster visual mutation."
+
 [[feature]]
 id = "streamdiffusion_live"
 name = "Neural Mirror / StreamDiffusion"
@@ -93,12 +113,42 @@ min = 256
 max = 1080
 
 [[feature.param]]
+key = "model"
+flag = "--model"
+label = "Model"
+type = "text"
+default = "stabilityai/sd-turbo"
+
+[[feature.param]]
+key = "prompt"
+flag = "--prompt"
+label = "Prompt"
+type = "text"
+default = "bioluminescent living architecture, immersive projection art"
+
+[[feature.param]]
+key = "negative_prompt"
+flag = "--negative-prompt"
+label = "Negative prompt"
+type = "text"
+default = "blurry, low quality, low resolution, text, watermark"
+
+[[feature.param]]
 key = "acceleration"
 flag = "--acceleration"
 label = "Acceleration"
 type = "choice"
 default = "xformers"
 choices = ["none", "xformers", "tensorrt"]
+
+[[feature.param]]
+key = "submit_fps"
+flag = "--submit-fps"
+label = "AI submit FPS (0 = every frame)"
+type = "float"
+default = 0.0
+min = 0.0
+max = 240.0
 
 [[feature.param]]
 key = "spout"
@@ -113,6 +163,13 @@ flag = "--sender"
 label = "Spout sender"
 type = "text"
 default = "ProjectionMapping"
+
+[[feature.param]]
+key = "show_input"
+flag = "--show-input"
+label = "Show camera inset"
+type = "bool"
+default = false
 
 [[feature]]
 id = "neural_mirror_baseline"
@@ -361,6 +418,38 @@ label = "Acceleration"
 type = "choice"
 default = "xformers"
 choices = ["none", "xformers", "tensorrt"]
+
+[[feature.param]]
+key = "prompt"
+flag = "--prompt"
+label = "Prompt"
+type = "text"
+default = "bioluminescent alien cathedral, liquid light, impossible organic architecture"
+
+[[feature.param]]
+key = "t_index"
+flag = "--t-index"
+label = "Denoising indices"
+type = "text"
+default = "22,32,45"
+
+[[feature.param]]
+key = "guidance"
+flag = "--guidance"
+label = "Guidance"
+type = "float"
+default = 1.0
+min = 0.0
+max = 20.0
+
+[[feature.param]]
+key = "frames"
+flag = "--frames"
+label = "Benchmark frames"
+type = "int"
+default = 120
+min = 1
+max = 10000
 
 [[feature.param]]
 key = "output"
