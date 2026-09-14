@@ -60,7 +60,7 @@ camera / audio / controls
 ```powershell
 py -3.10 -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -e "[dev,vision]"
+pip install -e ".[dev,vision]"
 
 # Show a projector alignment grid on display 1
 projection-map patterns --kind grid --display 1
