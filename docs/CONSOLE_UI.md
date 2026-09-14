@@ -18,19 +18,48 @@ The goal is to make experimentation feel like playing an instrument instead of r
 
 ## Install
 
-From the repository root:
+The UI runs on Windows, Linux, and macOS. Use the same Python environment for the UI and its child features so the registry can always launch the active interpreter.
+
+### Windows PowerShell
 
 ```powershell
-py -3.10 -m venv .venv
+python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -e ".[ui,vision,dev]"
+python -m pip install --upgrade pip
+python -m pip install -e ".[ui,vision,dev]"
 ```
 
-For StreamDiffusion features, install the ML stack separately as documented in `README.md` and `docs/RTX4080.md`.
+### Windows cmd.exe
+
+```bat
+python -m venv .venv
+.venv\Scripts\activate.bat
+python -m pip install --upgrade pip
+python -m pip install -e ".[ui,vision,dev]"
+```
+
+### Linux / macOS
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e '.[ui,vision,dev]'
+```
+
+For StreamDiffusion/CUDA features, install the ML stack separately as documented in `README.md`, `docs/RTX4080.md`, and `docs/PLATFORMS.md`.
 
 ## Start the console
 
-```powershell
+Portable module form:
+
+```text
+python -m projection_mapping.tui
+```
+
+Installed entry point:
+
+```text
 projection-ui
 ```
 
@@ -47,7 +76,7 @@ The UI supports keyboard and mouse. Selecting a feature opens its configuration 
 
 Only one visual/experiment is owned by the console at a time. Launching another feature stops the previous child first. This is intentional: projector ownership should be deterministic.
 
-## Feature registry
+## Platform-aware feature registry
 
 The UI is data-driven by:
 
@@ -55,7 +84,22 @@ The UI is data-driven by:
 
 Every `[[feature]]` becomes a selectable experience. Every `[[feature.param]]` becomes an automatically rendered control. This means the console can grow to hundreds of visual modes without turning `tui.py` into a giant switch statement.
 
-Example:
+Features may optionally declare OS support:
+
+```toml
+[[feature]]
+id = "spout_probe"
+name = "Spout Probe"
+category = "Diagnostics"
+command = ["python", "experiments/spout_probe.py"]
+platforms = ["windows"]
+```
+
+Accepted platform names are `windows`, `linux`, and `macos`. If `platforms` is omitted, the feature is treated as portable. Unsupported entries remain visible in the console but are labeled and blocked from launch so platform limitations are explicit rather than discovered via crashes.
+
+The special command token `python` is replaced with `sys.executable`, the exact interpreter running the console. This avoids differences among `python`, `python3`, the Windows `py` launcher, virtualenv shims, and conda environments.
+
+Example portable visual:
 
 ```toml
 [[feature]]
@@ -127,8 +171,10 @@ projection-ui
     |
     +-- active child: experiments/XX_*.py
             |
-            +-- projector fullscreen / Spout / TouchDesigner
+            +-- projector fullscreen / platform transport / compositor
 ```
+
+On Windows the launcher uses a new process group. On Linux/macOS it starts a new session. The launcher itself remains shell-free and uses the exact active Python interpreter for registry commands.
 
 Later the child boundary can become a stronger service boundary (local socket/IPC, separate ML worker, hot-reloadable render graph) without replacing the console UX.
 
@@ -144,10 +190,26 @@ This gives us the intended loop:
 LAUNCH -> projector owns attention -> ESC -> control deck -> mutate -> LAUNCH
 ```
 
+## Platform behavior
+
+### Windows
+
+Core fullscreen/calibration features are supported. NVIDIA CUDA/TensorRT features are supported on compatible GPUs. Spout is the preferred same-machine shared-texture transport.
+
+### Linux
+
+Core fullscreen/calibration features and NVIDIA CUDA/TensorRT generative features are supported. Spout entries are blocked. Direct fullscreen is the current portable output path while Linux transport options remain under development.
+
+### macOS
+
+Core fullscreen/calibration/Room Skin features are supported. CUDA/TensorRT and Spout entries are blocked. Syphon is the intended future native shared-texture backend.
+
+See `docs/PLATFORMS.md` for the full matrix.
+
 ## Categories currently exposed
 
 ### Visual Madness
-Long-running visual experiences meant to occupy the projector: Room Skin, Neural Mirror / StreamDiffusion, and the lightweight neural-mirror baseline.
+Long-running visual experiences meant to occupy the projector: Room Skin, Neural Mirror / StreamDiffusion on supported CUDA systems, and the lightweight neural-mirror baseline.
 
 ### Projector Setup
 Deterministic patterns for placement, focus, overscan, display selection, and basic projector verification.
@@ -156,16 +218,17 @@ Deterministic patterns for placement, focus, overscan, display selection, and ba
 Structured-light capture and radiometric dataset acquisition. These are experiments rather than entertainment modes, but keeping them in the same operator surface reduces setup friction.
 
 ### Diagnostics
-Spout transport diagnostics and RTX 4080 StreamDiffusion benchmarks.
+Platform-specific transport diagnostics and GPU/generative benchmarks.
 
 ## Adding infinite features without chaos
 
-New features should follow four rules:
+New features should follow five rules:
 
 1. **One executable experiment, one registry entry.** Keep rendering logic out of the TUI.
 2. **Expose artistic controls explicitly.** A visual should have parameters such as `madness`, `flow`, `edge_lock`, `semantic_strength`, `feedback`, `palette`, `material`, `audio_gain`, etc. instead of burying magic numbers in code.
 3. **Keep hardware controls separate from art controls.** Display index, camera index, resolution and transport belong to setup; material/style/intensity belong to the experience.
 4. **Document the visual contract.** Each feature should say what inputs it needs, whether it is safe without calibration, which milestone it belongs to, and what `Esc` does.
+5. **Declare platform limits.** If a feature requires Spout, CUDA, Syphon, a proprietary SDK, or OS-specific hardware, encode that explicitly instead of relying on tribal knowledge.
 
 ## Direction for the next UI iterations
 
