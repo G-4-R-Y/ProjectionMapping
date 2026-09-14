@@ -31,6 +31,9 @@ class FeatureLauncher:
     The TUI stays alive while the child owns projector output. Fullscreen OpenCV
     experiments already treat ESC as quit; if terminal focus is active instead,
     the TUI can terminate this subprocess through ``stop``.
+
+    On Windows the child is isolated in a new process group. On Linux/macOS a new
+    session is created. Commands are direct argv lists and never require a shell.
     """
 
     def __init__(self, project_root: str | Path | None = None):
@@ -51,8 +54,11 @@ class FeatureLauncher:
         self._log_handle = log_path.open("w", encoding="utf-8", buffering=1)
 
         creationflags = 0
+        start_new_session = False
         if os.name == "nt":
             creationflags = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
+        else:
+            start_new_session = True
 
         self.process = subprocess.Popen(
             argv,
@@ -61,6 +67,7 @@ class FeatureLauncher:
             stderr=subprocess.STDOUT,
             text=True,
             creationflags=creationflags,
+            start_new_session=start_new_session,
         )
         self.state = LaunchState(
             feature_id=feature.id,
