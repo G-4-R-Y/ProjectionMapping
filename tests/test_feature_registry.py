@@ -1,7 +1,9 @@
 from pathlib import Path
 import sys
 
-from projection_mapping.feature_registry import Feature, FeatureParam, load_registry
+import pytest
+
+from projection_mapping.feature_registry import Feature, FeatureParam, current_platform, load_registry
 
 
 def test_registry_loads_project_features():
@@ -11,6 +13,7 @@ def test_registry_loads_project_features():
     assert "streamdiffusion_live" in ids
     assert "graycode_capture" in ids
     assert "benchmark_streamdiffusion" in ids
+    assert registry.by_id("spout_diagnostics").platforms == ("windows",)
 
 
 def test_build_argv_coerces_python_and_bool_flags():
@@ -38,9 +41,46 @@ def test_build_argv_rejects_out_of_range_values():
         command=("demo",),
         params=(FeatureParam("madness", "--madness", "Madness", "float", 0.5, min=0.0, max=1.0),),
     )
-    try:
+    with pytest.raises(ValueError, match="must be <= 1.0"):
         feature.build_argv({"madness": 2.0})
-    except ValueError as exc:
-        assert "must be <= 1.0" in str(exc)
-    else:
-        raise AssertionError("expected ValueError")
+
+
+def test_portable_feature_supports_all_named_platforms():
+    feature = Feature("demo", "Demo", "Test", "", ("python", "demo.py"))
+    assert feature.supported_on("windows")
+    assert feature.supported_on("linux")
+    assert feature.supported_on("macos")
+
+
+def test_platform_restricted_feature():
+    feature = Feature(
+        "spout",
+        "Spout",
+        "Test",
+        "",
+        ("python", "demo.py"),
+        platforms=("windows",),
+    )
+    assert feature.supported_on("windows")
+    assert not feature.supported_on("linux")
+    assert not feature.supported_on("macos")
+
+
+def test_build_argv_rejects_unsupported_current_platform():
+    platform = current_platform()
+    unsupported = {
+        "windows": "linux",
+        "linux": "macos",
+        "macos": "windows",
+        "other": "windows",
+    }[platform]
+    feature = Feature(
+        "restricted",
+        "Restricted",
+        "Test",
+        "",
+        ("python", "demo.py"),
+        platforms=(unsupported,),
+    )
+    with pytest.raises(RuntimeError, match="not supported"):
+        feature.build_argv()
