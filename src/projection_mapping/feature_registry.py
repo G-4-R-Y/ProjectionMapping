@@ -7,6 +7,17 @@ import tomllib
 from typing import Any
 
 
+def current_platform() -> str:
+    """Return the stable platform names used by configs/features.toml."""
+    if sys.platform.startswith("win"):
+        return "windows"
+    if sys.platform.startswith("linux"):
+        return "linux"
+    if sys.platform == "darwin":
+        return "macos"
+    return "other"
+
+
 @dataclass(frozen=True)
 class FeatureParam:
     key: str
@@ -48,12 +59,27 @@ class Feature:
     command: tuple[str, ...]
     fullscreen: bool = False
     params: tuple[FeatureParam, ...] = field(default_factory=tuple)
+    platforms: tuple[str, ...] = ()
 
     def defaults(self) -> dict[str, Any]:
         return {p.key: p.default for p in self.params}
 
+    def supported_on(self, platform: str | None = None) -> bool:
+        platform = platform or current_platform()
+        return not self.platforms or platform in self.platforms
+
+    def platform_hint(self) -> str:
+        return "all supported OSs" if not self.platforms else ", ".join(self.platforms)
+
     def build_argv(self, values: dict[str, Any] | None = None) -> list[str]:
+        if not self.supported_on():
+            raise RuntimeError(
+                f"{self.name} is not supported on {current_platform()}; "
+                f"supported: {self.platform_hint()}"
+            )
         values = values or {}
+        # Registry entries use the portable token `python`; always execute the exact
+        # interpreter running the console so virtualenv/conda selection is preserved.
         argv = [sys.executable if token == "python" else token for token in self.command]
         for param in self.params:
             value = param.coerce(values.get(param.key, param.default))
@@ -130,6 +156,7 @@ def load_registry(path: str | Path | None = None) -> FeatureRegistry:
                 command=tuple(raw["command"]),
                 fullscreen=bool(raw.get("fullscreen", False)),
                 params=params,
+                platforms=tuple(raw.get("platforms", [])),
             )
         )
     return FeatureRegistry(tuple(features))
