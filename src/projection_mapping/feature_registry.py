@@ -11,6 +11,8 @@ try:  # Python 3.11+
 except ModuleNotFoundError:  # Python 3.10 compatibility
     import tomli as tomllib
 
+from .app_runtime import bundle_root, is_frozen
+
 
 def current_platform() -> str:
     """Return the stable platform names used by configs/features.toml."""
@@ -104,10 +106,18 @@ class Feature:
             raise RuntimeError(
                 f"{self.name} requires external command(s) not found on PATH: {', '.join(missing)}"
             )
+
         values = values or {}
-        # Registry entries use the portable token `python`; always execute the exact
-        # interpreter running the console so virtualenv/conda selection is preserved.
-        argv = [sys.executable if token == "python" else token for token in self.command]
+        if self.command and self.command[0] == "python":
+            if is_frozen():
+                # A frozen app has no standalone Python executable. Relaunch the
+                # desktop binary in hidden child-runner mode instead.
+                argv = [sys.executable, "--pm-child", *self.command[1:]]
+            else:
+                argv = [sys.executable, *self.command[1:]]
+        else:
+            argv = list(self.command)
+
         for param in self.params:
             value = param.coerce(values.get(param.key, param.default))
             if param.type == "bool":
@@ -136,11 +146,9 @@ class FeatureRegistry:
 
 
 def _default_registry_path() -> Path:
-    # Running editable from repo is the primary workflow. Fall back to cwd so the
-    # UI remains usable when launched through the project script entry point.
     candidates = [
+        bundle_root() / "configs" / "features.toml",
         Path.cwd() / "configs" / "features.toml",
-        Path(__file__).resolve().parents[2] / "configs" / "features.toml",
     ]
     for candidate in candidates:
         if candidate.exists():
