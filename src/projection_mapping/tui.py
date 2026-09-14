@@ -99,11 +99,8 @@ class ConfigScreen(Screen):
         with VerticalScroll(id="detail"):
             yield Static(self.feature.name, classes="feature-title")
             yield Static(self.feature.description, classes="feature-description")
-            if not self.feature.supported_on():
-                yield Static(
-                    f"Unavailable on {current_platform()}. Supported: {self.feature.platform_hint()}",
-                    classes="unsupported",
-                )
+            if not self.feature.available():
+                yield Static(self.feature.availability_hint(), classes="unsupported")
             for param in self.feature.params:
                 with Horizontal(classes="param-row"):
                     yield Label(param.label, classes="param-label")
@@ -115,10 +112,10 @@ class ConfigScreen(Screen):
                     else:
                         yield Input(value=str(param.default), id=_control_id(param), classes="param-control")
             yield Button(
-                "LAUNCH FULLSCREEN" if self.feature.supported_on() else "UNAVAILABLE ON THIS OS",
+                "LAUNCH FULLSCREEN" if self.feature.available() else "UNAVAILABLE",
                 id="launch",
                 variant="success",
-                disabled=not self.feature.supported_on(),
+                disabled=not self.feature.available(),
             )
             yield Static(
                 "ESC in the projector window exits the visual and reveals this console again. "
@@ -189,7 +186,12 @@ class ProjectionMappingApp(App):
                             continue
                         item_id = f"feature-{feature.id.replace('_', '-')}"
                         self.feature_by_item_id[item_id] = feature
-                        suffix = "" if feature.supported_on() else "  [unsupported]"
+                        if not feature.supported_on():
+                            suffix = "  [unsupported]"
+                        elif feature.missing_commands():
+                            suffix = f"  [missing: {', '.join(feature.missing_commands())}]"
+                        else:
+                            suffix = ""
                         items.append(ListItem(Label(feature.name + suffix), id=item_id))
                     yield ListView(*items)
             with Vertical(id="detail"):
