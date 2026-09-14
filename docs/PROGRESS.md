@@ -26,7 +26,7 @@ Current feature categories exposed:
 - Calibration
 - Diagnostics
 
-Current UI-visible features include Room Skin, live StreamDiffusion / Neural Mirror, baseline neural mirror, alignment grid, structured-light capture, radiometry capture, Spout diagnostics, and the RTX 4080 benchmark.
+Current UI-visible features include Audio Reactive Pulse Field, Room Skin, live StreamDiffusion / Neural Mirror, baseline neural mirror, alignment grid, structured-light capture, radiometry capture, Spout diagnostics, and the RTX 4080 benchmark.
 
 Next operator-surface work:
 - persistent named presets per feature
@@ -40,6 +40,29 @@ Next operator-surface work:
 - semantic-room object/effect routing UI
 - playlists / timed transitions / generative preset mutation
 - emergency blackout control
+
+### M7 — audio-latent instrument
+
+Implemented:
+- low-latency native-audio capture path via SoundCard/CFFI (`src/projection_mapping/audio_reactive.py`)
+- microphone / line-input mode
+- system/loopback mode where the platform exposes output-monitor inputs
+- latest-only audio feature stream: no accumulating audio-analysis queue
+- RMS, bass, mid, treble, spectral centroid, spectral flux and onset features
+- configurable attack/release/sensitivity and audio block size
+- first fullscreen music-reactive procedural visual (`experiments/10_audio_reactive.py`)
+- control-deck entry with source/device/latency/art controls
+- audio feature extractor unit tests
+- cross-platform latency/setup guide (`docs/AUDIO_REACTIVE.md`)
+
+Needs wall/audio hardware validation:
+- actual feature age on the target laptop at 256 / 128 / 64 sample blocks
+- microphone vs system-loopback timing comparison
+- Windows WASAPI exclusive-mode comparison
+- Linux PipeWire monitor latency measurement
+- macOS native system-audio backend (ScreenCaptureKit) if virtual routing is insufficient
+- beat-phase / tempo tracker outside the hard realtime capture path
+- route features into Room Skin / shaders / particles / diffusion controls
 
 ### M3 — neural mirror / realtime generation
 
@@ -121,12 +144,14 @@ Next integration:
 The preferred operator path is now through `projection-ui`; the equivalent scripts remain available for debugging/reproducibility.
 
 1. launch `projection-ui` and verify Alignment Grid on the intended display;
-2. run the RTX 4080 benchmark feature;
-3. run Spout Diagnostics into TouchDesigner;
-4. collect Structured-Light Capture from the real room;
-5. collect Radiometry Dataset Capture without moving the rig;
-6. run Room Skin and inspect edge locking;
-7. run Neural Mirror / StreamDiffusion with tuned 4080 settings;
-8. merge async StreamDiffusion output into room-skin temporal/advection path;
-9. train/apply physical appearance compensation;
-10. turn the renderer toward the visual targets in `docs/VISUAL_MADNESS.md`.
+2. run **Audio Reactive Pulse Field** with microphone input and tune block size / attack / sensitivity;
+3. repeat Audio Reactive with system/loopback audio and compare `feature_age`;
+4. run the RTX 4080 benchmark feature;
+5. run Spout Diagnostics into TouchDesigner;
+6. collect Structured-Light Capture from the real room;
+7. collect Radiometry Dataset Capture without moving the rig;
+8. run Room Skin and inspect edge locking;
+9. run Neural Mirror / StreamDiffusion with tuned 4080 settings;
+10. merge audio buses + async StreamDiffusion output into the room-skin temporal/advection path;
+11. train/apply physical appearance compensation;
+12. turn the renderer toward the visual targets in `docs/VISUAL_MADNESS.md`.
