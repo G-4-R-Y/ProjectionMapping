@@ -4,6 +4,8 @@ A research playground for **projection mapping, spatial augmented reality, proje
 
 The projector is treated as a spatial output device, the camera as feedback, and generative models as one layer in a realtime graphics/control system.
 
+> **Project tracking:** [`ROADMAP.md`](ROADMAP.md) is the canonical roadmap and progress tracker. It preserves the core M0–M6 plan and tracks all extension goals (audio-latent control, dynamic mapping, multi-projector work, advanced neural spatial methods, performance/evaluation, etc.).
+
 ## Target setup
 
 - Windows 11 + NVIDIA RTX 4080
@@ -24,8 +26,12 @@ camera / audio / controls
  depth / masks / optical flow
         |
         v
- generative / procedural layer
- diffusion / shaders / feedback
+ async generative inference
+ diffusion / video models
+        |
+        v
+ realtime procedural graphics
+ shaders / particles / feedback
         |
         v
  compensation + spatial warp
@@ -37,7 +43,21 @@ camera / audio / controls
  physical room -> camera feedback
 ```
 
-## Implemented
+The intended runtime is hybrid: the projector/display loop stays responsive at display refresh while expensive generative inference runs asynchronously with **latest-frame-wins** semantics.
+
+## Current milestone status
+
+- **M0 — photons:** ✅ core path implemented
+- **M1 — camera/projector calibration:** 🟡 structured-light and radiometric foundations implemented; real hardware capture/validation pending
+- **M2 — realtime GPU transport:** 🟡 Spout/runtime scaffolding implemented; zero-copy Windows/TouchDesigner validation pending
+- **M3 — neural mirror:** 🟡 perception + integration scaffolding present; concrete RTX 4080 StreamDiffusion async runtime is current priority
+- **M4 — spatially locked generation:** ⬜ planned
+- **M5 — closed-loop compensation:** 🟡 inverse/optimization scaffolding implemented; real projector-camera dataset pending
+- **M6 — semantic room:** ⬜ planned
+
+See [`ROADMAP.md`](ROADMAP.md) for detailed deliverables, exit criteria, extension milestones M7–M10, and the current priority queue.
+
+## Implemented foundations
 
 - fullscreen projector test-pattern player
 - grids, checkerboards, color ramps, Gray-code and phase-shift structured-light patterns
@@ -83,13 +103,9 @@ python -m streamdiffusion.tools.install-tensorrt
 
 On one Windows machine, use **Spout** for local GPU texture sharing into TouchDesigner. Use NDI when inference and display are on different machines.
 
-## Suggested experiments
+## Docs
 
-1. **Neural mirror** — webcam -> mask/depth/flow -> realtime diffusion -> projection.
-2. **Room skin** — preserve scene geometry while changing material semantics.
-3. **Closed-loop compensation** — learn what pixels must be emitted so the camera sees a target appearance.
-4. **Semantic room** — segment wall/furniture/people and assign different effects per region.
-5. **Audio-latent instrument** — drive latent/style/control parameters from beat/onset/spectral features.
-6. **Dynamic mapping** — track moving targets and compensate latency with prediction.
-
-See `docs/ARCHITECTURE.md` and `docs/EXPERIMENTS.md`.
+- [`ROADMAP.md`](ROADMAP.md) — canonical milestones, progress, priorities, and extension goals
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — system design principles and layers
+- [`docs/EXPERIMENTS.md`](docs/EXPERIMENTS.md) — experiment index mapped back to roadmap milestones
+- [`docs/RTX4080.md`](docs/RTX4080.md) — hardware-specific starting points and tuning notes
