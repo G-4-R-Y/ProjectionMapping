@@ -3,6 +3,8 @@
 # Every [[feature]] becomes an item in the console UI. Parameters are rendered
 # automatically. Prefer adding new experiences here instead of hard-coding UI.
 # Commands are argv arrays: they are launched without a shell.
+#
+# Optional `platforms` values: windows, linux, macos. Omit for portable features.
 
 [[feature]]
 id = "room_skin"
@@ -48,33 +50,14 @@ default = 1080
 min = 240
 max = 4320
 
-[[feature.param]]
-key = "edge_strength"
-flag = "--edge-strength"
-label = "Physical edge lock"
-type = "float"
-default = 0.82
-min = 0.0
-max = 1.0
-help = "Higher values preserve real room edges more strongly."
-
-[[feature.param]]
-key = "temporal_alpha"
-flag = "--temporal-alpha"
-label = "New-frame injection"
-type = "float"
-default = 0.24
-min = 0.0
-max = 1.0
-help = "Lower = dreamier temporal memory; higher = faster visual mutation."
-
 [[feature]]
 id = "streamdiffusion_live"
 name = "Neural Mirror / StreamDiffusion"
 category = "Visual Madness"
-description = "Live camera -> asynchronous StreamDiffusion -> projector or Spout. Latest-frame-wins so latency does not accumulate."
+description = "Live camera -> asynchronous StreamDiffusion -> projector or transport. Latest-frame-wins keeps latency bounded. Spout output is Windows-only."
 command = ["python", "experiments/04_streamdiffusion_live.py"]
 fullscreen = true
+platforms = ["windows", "linux"]
 
 [[feature.param]]
 key = "camera"
@@ -113,27 +96,6 @@ min = 256
 max = 1080
 
 [[feature.param]]
-key = "model"
-flag = "--model"
-label = "Model"
-type = "text"
-default = "stabilityai/sd-turbo"
-
-[[feature.param]]
-key = "prompt"
-flag = "--prompt"
-label = "Prompt"
-type = "text"
-default = "bioluminescent living architecture, immersive projection art"
-
-[[feature.param]]
-key = "negative_prompt"
-flag = "--negative-prompt"
-label = "Negative prompt"
-type = "text"
-default = "blurry, low quality, low resolution, text, watermark"
-
-[[feature.param]]
 key = "acceleration"
 flag = "--acceleration"
 label = "Acceleration"
@@ -142,18 +104,9 @@ default = "xformers"
 choices = ["none", "xformers", "tensorrt"]
 
 [[feature.param]]
-key = "submit_fps"
-flag = "--submit-fps"
-label = "AI submit FPS (0 = every frame)"
-type = "float"
-default = 0.0
-min = 0.0
-max = 240.0
-
-[[feature.param]]
 key = "spout"
 flag = "--spout"
-label = "Send via Spout"
+label = "Send via Spout (Windows)"
 type = "bool"
 default = false
 
@@ -163,13 +116,6 @@ flag = "--sender"
 label = "Spout sender"
 type = "text"
 default = "ProjectionMapping"
-
-[[feature.param]]
-key = "show_input"
-flag = "--show-input"
-label = "Show camera inset"
-type = "bool"
-default = false
 
 [[feature]]
 id = "neural_mirror_baseline"
@@ -202,7 +148,7 @@ id = "grid"
 name = "Alignment Grid"
 category = "Projector Setup"
 description = "Fullscreen deterministic grid for placement, focus, keystone and overscan checks."
-command = ["projection-map", "patterns", "--kind", "grid"]
+command = ["python", "-m", "projection_mapping.cli", "patterns", "--kind", "grid"]
 fullscreen = true
 
 [[feature.param]]
@@ -347,9 +293,10 @@ default = "calibration_data/radiometry_v1"
 id = "spout_diagnostics"
 name = "Spout Diagnostics"
 category = "Diagnostics"
-description = "Deterministic animated GPU/display transport probe for TouchDesigner receiver validation."
+description = "Deterministic animated GPU/display transport probe for TouchDesigner receiver validation. Windows only because Spout is a Windows shared-texture transport."
 command = ["python", "experiments/06_spout_diagnostics.py"]
 fullscreen = false
+platforms = ["windows"]
 
 [[feature.param]]
 key = "width"
@@ -380,11 +327,12 @@ max = 240.0
 
 [[feature]]
 id = "benchmark_streamdiffusion"
-name = "RTX 4080 StreamDiffusion Benchmark"
+name = "RTX/CUDA StreamDiffusion Benchmark"
 category = "Diagnostics"
-description = "Benchmark preprocessing/inference throughput and latency. Produces a JSON report for tuning the live system."
+description = "Benchmark preprocessing/inference throughput and latency. Produces a JSON report for tuning the live system. Requires NVIDIA CUDA."
 command = ["python", "experiments/05_benchmark_streamdiffusion.py"]
 fullscreen = false
+platforms = ["windows", "linux"]
 
 [[feature.param]]
 key = "model"
@@ -418,38 +366,6 @@ label = "Acceleration"
 type = "choice"
 default = "xformers"
 choices = ["none", "xformers", "tensorrt"]
-
-[[feature.param]]
-key = "prompt"
-flag = "--prompt"
-label = "Prompt"
-type = "text"
-default = "bioluminescent alien cathedral, liquid light, impossible organic architecture"
-
-[[feature.param]]
-key = "t_index"
-flag = "--t-index"
-label = "Denoising indices"
-type = "text"
-default = "22,32,45"
-
-[[feature.param]]
-key = "guidance"
-flag = "--guidance"
-label = "Guidance"
-type = "float"
-default = 1.0
-min = 0.0
-max = 20.0
-
-[[feature.param]]
-key = "frames"
-flag = "--frames"
-label = "Benchmark frames"
-type = "int"
-default = 120
-min = 1
-max = 10000
 
 [[feature.param]]
 key = "output"
