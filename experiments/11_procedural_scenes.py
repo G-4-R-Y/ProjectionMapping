@@ -53,12 +53,7 @@ def bioluminescent_infestation(nx, ny, t: float, intensity: float) -> np.ndarray
     membranes = 0.5 + 0.5 * np.sin(warp_x * 3.2 + np.sin(warp_y * 4.7 - t * 0.35) * 2.2)
     spores = np.power(np.clip(np.sin(nx * 41.0 + ny * 37.0 + t * 2.3), 0.0, 1.0), 18.0)
     glow = np.clip(veins * (1.2 + intensity) + spores * intensity * 1.5, 0.0, 1.8)
-    rgb = np.dstack([
-        0.12 + glow * 0.95,
-        0.04 + membranes * 0.22 + glow * 0.12,
-        0.18 + (1.0 - membranes) * 0.35 + glow * 0.85,
-    ])
-    return np.clip(rgb, 0.0, 1.0)
+    return np.clip(np.dstack([0.12 + glow * 0.95, 0.04 + membranes * 0.22 + glow * 0.12, 0.18 + (1.0 - membranes) * 0.35 + glow * 0.85]), 0.0, 1.0)
 
 
 def liquid_cathedral(nx, ny, t: float, intensity: float) -> np.ndarray:
@@ -72,12 +67,7 @@ def liquid_cathedral(nx, ny, t: float, intensity: float) -> np.ndarray:
     reflection = np.exp(-np.abs(floor) * 4.0) * (0.5 + 0.5 * np.sin(nx * 10.0 + t))
     structure = np.clip(columns * 0.9 + arches * 1.4, 0.0, 1.0)
     v = caustics * (0.8 + intensity * 1.6) + structure * 1.2 + reflection * 0.8
-    rgb = np.dstack([
-        0.03 + v * 0.16,
-        0.08 + v * 0.55,
-        0.12 + v * 0.95,
-    ])
-    return np.clip(rgb, 0.0, 1.0)
+    return np.clip(np.dstack([0.03 + v * 0.16, 0.08 + v * 0.55, 0.12 + v * 0.95]), 0.0, 1.0)
 
 
 def mechanical_possession(nx, ny, t: float, intensity: float) -> np.ndarray:
@@ -90,12 +80,43 @@ def mechanical_possession(nx, ny, t: float, intensity: float) -> np.ndarray:
     grid = np.power(0.5 + 0.5 * np.sin(nx * 17.0 + t) * np.sin(ny * 13.0 - t * 0.7), 5.0)
     sparks = np.power(np.clip(np.sin(nx * 53.0 + ny * 47.0 + t * 5.0), 0.0, 1.0), 22.0) * intensity
     metal = np.clip(gear * 1.4 + inner + shafts * 0.8 + grid * 0.35, 0.0, 1.4)
-    rgb = np.dstack([
-        0.05 + metal * 0.72 + sparks,
-        0.07 + metal * 0.25 + sparks * 0.22,
-        0.10 + metal * 0.08,
-    ])
-    return np.clip(rgb, 0.0, 1.0)
+    return np.clip(np.dstack([0.05 + metal * 0.72 + sparks, 0.07 + metal * 0.25 + sparks * 0.22, 0.10 + metal * 0.08]), 0.0, 1.0)
+
+
+def ancient_ruin_moss(nx, ny, t: float, intensity: float) -> np.ndarray:
+    cracks = np.minimum(
+        np.abs(np.sin(nx * 8.5 + np.sin(ny * 5.0) * 1.7)),
+        np.abs(np.sin(ny * 10.0 + np.sin(nx * 3.7) * 1.4)),
+    )
+    crack_glow = np.exp(-24.0 * cracks)
+    stone = 0.45 + 0.18 * np.sin(nx * 2.7 + ny * 3.1) + 0.12 * np.sin(nx * 7.0 - ny * 4.0)
+    moss_noise = 0.5 + 0.5 * np.sin(nx * 5.0 + np.sin(ny * 6.0 + t * 0.08) * 2.0)
+    moss = np.clip((moss_noise - 0.42) * 2.4, 0.0, 1.0) * np.clip(0.7 - ny * 0.25, 0.0, 1.0)
+    roots = np.exp(-15.0 * np.abs(np.sin(nx * 4.0 + np.sin(ny * 5.0 + t * 0.12) * 2.5))) * (0.35 + 0.65 * intensity)
+    dust = np.power(np.clip(np.sin(nx * 29.0 + ny * 31.0 + t * 0.18), 0.0, 1.0), 18.0) * 0.18
+    return np.clip(np.dstack([
+        0.12 + stone * 0.32 + crack_glow * 0.16,
+        0.10 + stone * 0.26 + moss * (0.35 + 0.25 * intensity) + roots * 0.22,
+        0.07 + stone * 0.18 + moss * 0.08 + dust,
+    ]), 0.0, 1.0)
+
+
+def ceiling_starfield(nx, ny, t: float, intensity: float) -> np.ndarray:
+    r = np.sqrt(nx * nx + ny * ny) + 1e-4
+    a = np.arctan2(ny, nx)
+    warp = a * 9.0 + np.log(r) * 13.0 - t * (0.25 + intensity * 0.9)
+    dust = 0.5 + 0.5 * np.sin(warp + np.sin(a * 5.0 + t * 0.11) * 2.2)
+    nebula = np.power(np.clip(dust, 0.0, 1.0), 3.5)
+    stars_a = np.power(np.clip(np.sin(nx * 43.0 + ny * 59.0), 0.0, 1.0), 28.0)
+    stars_b = np.power(np.clip(np.sin(nx * 97.0 - ny * 71.0 + 1.7), 0.0, 1.0), 42.0)
+    twinkle = 0.55 + 0.45 * np.sin(t * 2.0 + nx * 12.0 + ny * 8.0)
+    stars = np.clip(stars_a + stars_b * twinkle, 0.0, 1.0)
+    vortex = np.exp(-r * (1.5 + 1.0 * intensity))
+    return np.clip(np.dstack([
+        0.01 + nebula * 0.18 + stars * 0.95,
+        0.015 + nebula * 0.10 + stars * 0.82,
+        0.035 + nebula * 0.42 + stars + vortex * 0.12,
+    ]), 0.0, 1.0)
 
 
 SCENES = {
@@ -103,6 +124,8 @@ SCENES = {
     "infestation": bioluminescent_infestation,
     "cathedral": liquid_cathedral,
     "mechanical": mechanical_possession,
+    "moss_ruin": ancient_ruin_moss,
+    "starfield": ceiling_starfield,
 }
 
 
@@ -130,11 +153,7 @@ def main() -> None:
             t = (now - t0) * args.speed
             rgb = render(nx, ny, t, float(np.clip(args.intensity, 0.0, 2.0)))
             small = (np.clip(rgb, 0.0, 1.0) * 255.0).astype(np.uint8)
-            frame = cv2.resize(
-                small,
-                (args.projector_width, args.projector_height),
-                interpolation=cv2.INTER_LINEAR,
-            )
+            frame = cv2.resize(small, (args.projector_width, args.projector_height), interpolation=cv2.INTER_LINEAR)
             if sink(cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)) is False:
                 break
             frames += 1
