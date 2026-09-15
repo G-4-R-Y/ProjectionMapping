@@ -16,6 +16,14 @@ default = "system"
 choices = ["system", "mic"]
 
 [[feature.param]]
+key = "performance_preset"
+flag = "--performance-preset"
+label = "Performance bank (custom = controls below)"
+type = "choice"
+default = "journey_balanced"
+choices = ["custom", "journey_balanced", "techno_pulse", "ambient_void", "liquid_melodic", "cathedral_installation", "acid_afterhours"]
+
+[[feature.param]]
 key = "scene"
 flag = "--scene"
 label = "Shader scene"
