@@ -19,6 +19,7 @@ Every track should keep the same sections so visual ambition, engineering debt, 
 - [`audio_visual.md`](audio_visual.md) — system-audio capture, musical event extraction, audiovisual scenes, MIDI/OSC/latent control.
 - [`human_reactor.md`](human_reactor.md) — dance/performance silhouette rendering, recording, pose-aware extensions.
 - [`cyber_mage.md`](cyber_mage.md) — performer rig, anchors, gestures, sigils/arcs/trails/portals, neural style skin.
+- [`procedural_scenes.md`](procedural_scenes.md) — projector-native procedural worlds, shaders, particles, feedback and stable high-rate visual layers.
 - [`neural_mirror.md`](neural_mirror.md) — StreamDiffusion, lightweight GPU profiles, temporal consistency, control maps.
 - [`room_skin.md`](room_skin.md) — spatially locked material hallucination and geometry-aware generation.
 - [`calibration_mapping.md`](calibration_mapping.md) — structured light, projector/camera geometry, dynamic/multi-projector mapping.
