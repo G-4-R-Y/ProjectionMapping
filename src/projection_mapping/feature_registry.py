@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+import importlib.util
 import shutil
 import sys
 from typing import Any
@@ -68,6 +69,7 @@ class Feature:
     params: tuple[FeatureParam, ...] = field(default_factory=tuple)
     platforms: tuple[str, ...] = ()
     requires_commands: tuple[str, ...] = ()
+    requires_modules: tuple[str, ...] = ()
 
     def defaults(self) -> dict[str, Any]:
         return {p.key: p.default for p in self.params}
@@ -83,8 +85,20 @@ class Feature:
         """Return optional external executables that are not currently on PATH."""
         return tuple(command for command in self.requires_commands if shutil.which(command) is None)
 
+    def missing_modules(self) -> tuple[str, ...]:
+        """Return Python modules required by the feature but not importable."""
+        missing: list[str] = []
+        for module in self.requires_modules:
+            try:
+                found = importlib.util.find_spec(module) is not None
+            except (ImportError, AttributeError, ValueError):
+                found = False
+            if not found:
+                missing.append(module)
+        return tuple(missing)
+
     def available(self, platform: str | None = None) -> bool:
-        return self.supported_on(platform) and not self.missing_commands()
+        return self.supported_on(platform) and not self.missing_commands() and not self.missing_modules()
 
     def availability_hint(self, platform: str | None = None) -> str:
         platform = platform or current_platform()
@@ -93,6 +107,9 @@ class Feature:
         missing = self.missing_commands()
         if missing:
             return f"missing external command(s): {', '.join(missing)}"
+        missing_modules = self.missing_modules()
+        if missing_modules:
+            return f"missing Python module(s): {', '.join(missing_modules)}"
         return "available"
 
     def build_argv(self, values: dict[str, Any] | None = None) -> list[str]:
@@ -105,6 +122,12 @@ class Feature:
         if missing:
             raise RuntimeError(
                 f"{self.name} requires external command(s) not found on PATH: {', '.join(missing)}"
+            )
+        missing_modules = self.missing_modules()
+        if missing_modules:
+            raise RuntimeError(
+                f"{self.name} requires Python module(s) not installed in this environment: "
+                f"{', '.join(missing_modules)}"
             )
 
         values = values or {}
@@ -193,6 +216,7 @@ def load_registry(path: str | Path | None = None) -> FeatureRegistry:
                 params=params,
                 platforms=tuple(raw.get("platforms", [])),
                 requires_commands=tuple(raw.get("requires_commands", [])),
+                requires_modules=tuple(raw.get("requires_modules", [])),
             )
         )
     return FeatureRegistry(tuple(features))
