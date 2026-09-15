@@ -5,6 +5,7 @@ from datetime import datetime
 from pathlib import Path
 import os
 import platform
+import shutil
 import signal
 import subprocess
 import sys
@@ -72,7 +73,6 @@ class FeatureLauncher:
             start_new_session = True
 
         env = os.environ.copy()
-        # Child output must hit disk immediately so failures are visible in the TUI.
         env["PYTHONUNBUFFERED"] = "1"
         env["PYTHONFAULTHANDLER"] = "1"
         env["PROJECTION_MAPPING_RUN_LOG"] = str(log_path)
@@ -109,6 +109,17 @@ class FeatureLauncher:
         return self.state
 
     def _write_log_header(self, feature: Feature, argv: list[str], values: dict[str, Any]) -> None:
+        interesting_env = {
+            key: os.environ.get(key)
+            for key in (
+                "DISPLAY",
+                "WAYLAND_DISPLAY",
+                "XDG_SESSION_TYPE",
+                "CUDA_VISIBLE_DEVICES",
+                "NVIDIA_VISIBLE_DEVICES",
+            )
+            if os.environ.get(key) is not None
+        }
         lines = [
             "=== ProjectionMapping run ===",
             f"timestamp: {datetime.now().isoformat(timespec='seconds')}",
@@ -121,9 +132,34 @@ class FeatureLauncher:
             f"cwd: {self.project_root}",
             f"argv: {argv!r}",
             f"values: {values!r}",
-            "--- child output ---",
+            f"environment: {interesting_env!r}",
         ]
         self._log("\n".join(lines))
+        self._write_gpu_snapshot("before launch")
+        self._log("--- child output ---")
+
+    def _write_gpu_snapshot(self, label: str) -> None:
+        nvidia_smi = shutil.which("nvidia-smi")
+        if not nvidia_smi:
+            self._log(f"[gpu:{label}] nvidia-smi not found")
+            return
+        try:
+            result = subprocess.run(
+                [
+                    nvidia_smi,
+                    "--query-gpu=index,name,memory.total,memory.used,memory.free,utilization.gpu",
+                    "--format=csv,noheader,nounits",
+                ],
+                capture_output=True,
+                text=True,
+                timeout=3.0,
+                check=False,
+            )
+            output = (result.stdout or result.stderr).strip()
+            self._log(f"[gpu:{label}] index, name, totalMiB, usedMiB, freeMiB, util%")
+            self._log(output or f"nvidia-smi returned {result.returncode} without output")
+        except Exception as exc:
+            self._log(f"[gpu:{label}] snapshot failed: {type(exc).__name__}: {exc}")
 
     def _log(self, text: str) -> None:
         if self._log_handle is not None:
@@ -137,18 +173,12 @@ class FeatureLauncher:
         if rc is not None and self.state.returncode is None:
             self.state.returncode = rc
             self._log(f"[launcher] child exited returncode={rc}")
+            self._write_gpu_snapshot("after exit")
             self._close_log()
         return self.state
 
     def stop(self, graceful_timeout: float = 3.0) -> LaunchState:
-        """Stop the complete child process group, not just its parent.
-
-        POSIX children are started in their own session, so SIGTERM/SIGKILL can
-        target the process group. Windows children use CREATE_NEW_PROCESS_GROUP;
-        we first request a graceful CTRL_BREAK and then use taskkill /T /F as the
-        final tree-wide cleanup. Exiting the process tree releases CUDA contexts
-        even if Python-level cleanup never ran.
-        """
+        """Stop the complete child process group, not just its parent."""
         process = self.process
         if process is None:
             self._close_log()
@@ -163,6 +193,7 @@ class FeatureLauncher:
 
         self.state.returncode = process.poll()
         self._log(f"[launcher] cleanup complete returncode={self.state.returncode}")
+        self._write_gpu_snapshot("after cleanup")
         self._close_log()
         return self.state
 
@@ -200,7 +231,6 @@ class FeatureLauncher:
             except (OSError, subprocess.TimeoutExpired):
                 self._log("[launcher] graceful Windows stop failed/timed out; forcing tree cleanup")
 
-        # taskkill is part of Windows and /T recursively includes descendants.
         subprocess.run(
             ["taskkill", "/PID", str(process.pid), "/T", "/F"],
             stdout=self._log_handle or subprocess.DEVNULL,
