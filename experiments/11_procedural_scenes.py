@@ -34,13 +34,17 @@ def portal_architecture(nx, ny, t: float, intensity: float) -> np.ndarray:
     r = np.sqrt(nx * nx + ny * ny) + 1e-4
     a = np.arctan2(ny, nx)
     z = 1.0 / r
+    # Angular harmonics MUST be integer-valued. The previous non-integer frequency
+    # multiplied by atan2 created a visible branch-cut line at -pi/pi.
+    spoke_count = 8 + int(round(6.0 * np.clip(intensity, 0.0, 2.0)))
     tunnel = np.sin(19.0 * z - t * (4.0 + intensity * 4.0) + np.sin(a * 6.0) * 1.2)
-    ribs = np.cos(a * (8.0 + 6.0 * intensity) + z * 3.0)
+    ribs = np.cos(a * float(spoke_count) + z * 3.0)
+    secondary = np.sin(a * float(max(3, spoke_count // 2)) - z * 1.7 + t * 0.35)
     horizon = np.exp(-np.abs(ny + 0.15) * (7.0 + 5.0 * intensity))
     core = np.exp(-r * (4.0 - intensity * 1.4))
-    v = tunnel * 0.75 + ribs * 0.35 + horizon * 1.5 + core * 2.2
+    v = tunnel * 0.68 + ribs * 0.29 + secondary * 0.16 + horizon * 1.35 + core * 2.0
     rgb = _palette(v, t * 0.18)
-    rgb *= np.clip(0.15 + 0.9 * core[..., None] + 0.65 * horizon[..., None], 0.0, 1.6)
+    rgb *= np.clip(0.12 + 0.92 * core[..., None] + 0.55 * horizon[..., None], 0.0, 1.55)
     return np.clip(rgb, 0.0, 1.0)
 
 
