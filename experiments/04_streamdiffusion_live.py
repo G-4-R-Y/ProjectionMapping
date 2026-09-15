@@ -2,6 +2,9 @@
 
 Profiles keep the RTX 4050 6 GB path conservative while preserving larger modes for stronger GPUs.
 F11 toggles fullscreen on the direct projector path; ESC exits.
+
+Optional display-side temporal stabilization warps the last neural result with camera optical flow
+between sparse diffusion keyframes, then blends fresh neural keyframes against that prediction.
 """
 from __future__ import annotations
 
@@ -13,8 +16,10 @@ import numpy as np
 
 from projection_mapping.async_runtime import LatestFrameWorker
 from projection_mapping.capture import Camera
+from projection_mapping.perception import optical_flow
 from projection_mapping.runtime import FullscreenSink
 from projection_mapping.streamdiffusion_backend import DaydreamStreamConfig, DaydreamStreamDiffusion
+from projection_mapping.temporal import FlowTemporalStabilizer
 from projection_mapping.transport import SpoutSender
 
 
@@ -35,6 +40,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--sender", default="ProjectionMapping")
     p.add_argument("--submit-fps", type=float, default=0.0, help="0 = profile default")
     p.add_argument("--show-input", action="store_true")
+    p.add_argument("--temporal-warp", action="store_true", help="flow-warp last neural frame between diffusion keyframes")
+    p.add_argument("--temporal-blend", type=float, default=0.78, help="fresh neural keyframe weight after flow prediction")
     return p.parse_args()
 
 
@@ -64,7 +71,8 @@ def main() -> None:
     width, height, submit_fps, profile = select_profile(args)
     print(
         f"[neural] profile={profile} inference={width}x{height} output={args.output_width}x{args.output_height} "
-        f"submit_fps={submit_fps or 'camera-rate'}",
+        f"submit_fps={submit_fps or 'camera-rate'} temporal_warp={args.temporal_warp} "
+        f"temporal_blend={args.temporal_blend:.2f}",
         flush=True,
     )
     config = DaydreamStreamConfig(
@@ -91,6 +99,8 @@ def main() -> None:
     last_seq_seen = 0
     submitted_frame_rgb: np.ndarray | None = None
     display_rgb = np.zeros((height, width, 3), dtype=np.uint8)
+    previous_camera_bgr: np.ndarray | None = None
+    temporal = FlowTemporalStabilizer(width, height, keyframe_blend=args.temporal_blend) if args.temporal_warp else None
     display_frames = 0
     report_t0 = time.perf_counter()
 
@@ -103,9 +113,17 @@ def main() -> None:
                 print("[neural] stage=running", flush=True)
                 while True:
                     camera_bgr = cam.read()
+                    camera_bgr = cv2.resize(camera_bgr, (width, height), interpolation=cv2.INTER_AREA)
                     camera_rgb = cv2.cvtColor(camera_bgr, cv2.COLOR_BGR2RGB)
-                    camera_rgb = cv2.resize(camera_rgb, (width, height), interpolation=cv2.INTER_AREA)
                     now = time.perf_counter()
+
+                    if temporal is not None and previous_camera_bgr is not None and temporal.frame is not None:
+                        flow = optical_flow(previous_camera_bgr, camera_bgr)
+                        warped = temporal.warp(flow)
+                        if warped is not None:
+                            display_rgb = warped
+                    previous_camera_bgr = camera_bgr.copy()
+
                     submit_interval = 1.0 / submit_fps if submit_fps > 0 else 0.0
                     if now - last_submit >= submit_interval:
                         submitted_frame_rgb = camera_rgb.copy()
@@ -115,7 +133,11 @@ def main() -> None:
                     latest = worker.latest()
                     if latest is not None and latest[0] != last_seq_seen:
                         last_seq_seen, generated, _completed = latest
-                        display_rgb = np.asarray(generated, dtype=np.uint8)
+                        generated_rgb = np.asarray(generated, dtype=np.uint8)
+                        if temporal is not None:
+                            display_rgb = temporal.ingest_keyframe(generated_rgb)
+                        else:
+                            display_rgb = generated_rgb
 
                     composed = display_rgb.copy()
                     if args.show_input and submitted_frame_rgb is not None:
@@ -136,11 +158,18 @@ def main() -> None:
                     elapsed = now - report_t0
                     if elapsed >= 2.0:
                         s = worker.stats
+                        temporal_text = ""
+                        if temporal is not None:
+                            temporal_text = (
+                                f" warp_residual={temporal.stats.warp_residual:.3f}"
+                                f" keyframe_residual={temporal.stats.blend_residual:.3f}"
+                            )
                         print(
                             f"[neural] profile={profile} acceleration={generator.acceleration} "
                             f"display={display_frames / elapsed:5.1f}fps inference={s.inference_fps:5.1f}fps "
                             f"last={s.last_inference_ms:6.1f}ms ema={s.ema_inference_ms:6.1f}ms "
-                            f"submitted={s.submitted} processed={s.processed} dropped={s.dropped} errors={s.errors}",
+                            f"submitted={s.submitted} processed={s.processed} dropped={s.dropped} errors={s.errors}"
+                            f"{temporal_text}",
                             flush=True,
                         )
                         display_frames = 0
