@@ -1,70 +1,92 @@
-# Track — Cyber Mage
+# Track — Cyber Mage / Point SFX
 
 ## North star
-A stable, performer-owned techno-magic system: tracked hands/body anchors drive sigils, runes, arcs, trails, portals, auras, floor glyphs and gesture-triggered spell states. Deterministic realtime rendering owns spatial consistency; neural video/diffusion is a slower semantic/style skin layered on top.
+A high-end performer / camera-motion SFX instrument built on persistent tracked points, velocity, acceleration and eventually real pose/hand landmarks. Effects must look like contemporary VFX rather than debug geometry: fluid luminous trails, plasma meshes, particles, shockwaves, distortion, volumetric-looking atmosphere and high-quality shader composition. Deterministic realtime rendering owns continuity; neural generation remains an optional slower semantic/style layer.
+
+## Design correction — 2026-09-15
+The first Cyber Mage performer-rig prototype was rejected after hardware testing. Its supposed hand anchors were derived from the left/right extrema of the upper foreground contour, so `hands_together`, charge/release and similar gestures were not trustworthy and frequently did nothing. The OpenCV circle/line aesthetic was also below the visual-quality target.
+
+This failure is retained deliberately: **never build semantic gesture behavior on guessed silhouette extrema and never promote debug primitives as final art direction.**
 
 ## Current state
-- `PerformerRig` classical baseline with persistent semantic anchors: head, chest/core, left/right hands, left/right feet.
-- Gesture baseline: arms spread, hands together, hands raised, motion burst.
-- Persistent `SpellStateMachine`: charge/charged -> release, shield, ascension and motion-cast energies with cooldown/decay.
-- Deterministic renderer: palm/chest sigils, hand/core plasma arcs, trails, aura, charge orb, release shock ring, shield rings, ascension halo, cast pulses and ground glyph.
-- Palettes: arcane, solar, void, jade.
-- TUI feature: `Cyber Mage`, including charge-time control.
+- Active Cyber Mage path is now persistent Shi-Tomasi corner detection + pyramidal Lucas-Kanade tracking.
+- Forward/backward optical-flow validation rejects drifting tracks.
+- Tracks have persistent IDs, age, velocity, speed and quality.
+- Optional foreground mask scopes feature seeding to the performer; full-frame point tracking is also available.
+- Point-driven SFX modes: `plasma_mesh`, `constellation`, `afterburner`, `liquid_wire`.
+- Persistent track trails, proximity mesh, velocity sparks, acceleration-triggered shockwaves, silhouette aura and feedback buffer.
+- Palettes: `cyber`, `ion`, `acid`, `ember`, `ice`.
+- Optional ModernGL post-process path with chromatic separation, multi-tap bloom, lens warp, filmic compression, vignette and procedural atmosphere (`nebula`, `grid`, `liquid`).
+- The old mask/gesture rig code remains in the repository as research history/fallback, but it is no longer the active TUI Cyber Mage implementation.
 
 ## Quality ladder
-- **Prototype:** camera silhouette with magic-circle overlays.
-- **Usable:** persistent anchors, smoothing, body-owned effects, temporal spell states, clean fullscreen operation. **Current baseline.**
-- **Polished:** real pose/hand landmarks, robust gestures, effect modules with fine-grained controls, good presets, graceful loss/reacquisition.
-- **Advanced:** predictive tracking, depth/occlusion, multi-layer particles/SDF glyphs, room-surface portals, audio+gesture state machine, multi-performer IDs.
-- **Ridiculous:** deterministic 60+ FPS spatial rig + lower-rate ControlNet/StreamV2V/temporal neural skin, projector-calibrated room interaction, semantic spell choreography, generative material changes attached to body and room surfaces.
+- **Prototype:** mask + circles/lines. **Rejected.**
+- **Usable:** persistent point tracking with coherent trails/mesh/sparks/shockwaves and graceful track reseeding. **Current implementation; hardware validation pending.**
+- **Polished:** GPU-native particle trails, signed-distance-field sprites, motion-vector distortion, velocity-color mapping, curated shot presets, stable foreground segmentation and no CPU readback in graphics path.
+- **Advanced:** real pose/hands plus generic point field, depth-aware occlusion, anchor-specific emitters, predictive tracking, room collisions, audio modulation, GPU compute/transform-feedback particles.
+- **Ridiculous:** persistent tracked points + true hands/pose + calibrated room anchors + depth/occlusion + GPU particle/fluid/SDF renderer + sparse temporally coherent neural style/material layer, suitable for dance footage and room-scale projection.
 
 ## Architecture contract
-`camera -> segmentation/pose/hands/flow -> PerformerRig -> gesture/event state -> SpellStateMachine -> deterministic FX modules -> optional neural style skin -> projector warp/compensation`
+`camera -> foreground/full-frame feature mask -> persistent point tracker -> motion descriptors -> SFX event field -> GPU shader/particle renderer -> optional neural semantic skin -> projector warp/compensation`
 
-Effects must consume semantic anchors/state, not raw pixel positions scattered through renderer code. A learned tracker may replace the anchor estimator without changing effect modules.
+Later pose/hands must **augment** the point field, not replace it. Generic tracked points are useful for fabric, hair, props, environmental features and motion trails even when semantic landmarks are available.
 
-## Effect modules to split out
-- `SigilRenderer`: concentric runes, arc segments, SDF glyph rings, rotating seals.
-- `ArcRenderer`: hand-hand, hand-core, limb/room lightning/plasma.
-- `TrailRenderer`: palm/staff/limb ribbons with history and decay.
-- `EmitterRenderer`: sparks, embers, particles, fluid seeds from joints.
-- `AuraRenderer`: silhouette plasma, halo, inner/outer glow.
-- `PortalRenderer`: palm/chest/shoulder/floor portals.
-- `GroundGlyphRenderer`: perspective/depth-aware circles locked under performer.
+## Tracking strategy
+1. Shi-Tomasi detects strong local features.
+2. Pyramidal LK propagates positions frame-to-frame.
+3. Forward/backward consistency rejects bad tracks.
+4. Tracks preserve IDs and history.
+5. Lost tracks decay visually rather than popping instantly.
+6. Reseeding occurs away from existing tracks.
+7. Future: add descriptor/re-identification for longer-term IDs and Kalman prediction over measured display latency.
 
-## Gesture vocabulary
-Implemented baseline: charge = hands together; shield/summon = arms spread; ascension = hands raised; generic cast = motion burst. Next gestures: directed thrust, swipe, spin, jump and crouch. Gestures need confidence, hysteresis, cooldowns and explicit state transitions rather than one-frame booleans.
+## SFX strategy
+Motion should control effects continuously, not depend on brittle gestures:
+- velocity -> trail length/brightness, directional sparks, chromatic energy;
+- acceleration -> shockwaves / burst emitters;
+- local point density -> plasma mesh / cloth-like field;
+- coherent flow clusters -> larger ribbons / vortices;
+- proximity graph -> energy connections;
+- segmentation edge -> optional aura, never semantic joint inference;
+- future real hand/pose landmarks -> specialized emitters/portals layered on top.
 
-## Temporal consistency strategy
-1. Persistent tracked IDs/anchors.
-2. EMA/Kalman/predictive smoothing using measured motion-to-photon latency.
-3. Persistent spell/effect state and particle IDs.
-4. Optical-flow/pose warping of previous style layers.
-5. Stable prompt/seed/style bank and low denoise for neural layer.
-6. Cross-frame/video model conditioning only after deterministic ownership works.
-
-## Neural style-skin path
-Feed current camera + performer mask + pose/edge/depth + deterministic energy mask + flow-warped previous stylized frame into low-strength streaming img2img/video diffusion. Keep AI inference latest-frame-wins at modest resolution on 6 GB cards; deterministic renderer continues at projector refresh. Evaluate TemporalNet/StreamV2V/ControlNet/IP-Adapter on stronger hardware.
+## Shader direction
+The ModernGL path is the beginning, not the endpoint. Continue toward:
+- GPU-native additive particles instead of drawing them with OpenCV;
+- SDF circles/sprites/runes with derivative antialiasing;
+- ping-pong feedback textures with flow advection;
+- velocity/distortion buffers;
+- bloom/downsample pyramid rather than single-pass taps;
+- signed-distance raymarched / volumetric-looking fields where useful;
+- ACES/filmic tonemapping and projector-aware contrast;
+- direct GL texture output / Spout on Windows to remove final readback.
 
 ## Open problems
-- Classical contour anchors are approximations, especially for crossed arms/occlusion.
-- No real hand landmarks/finger gestures yet.
-- Current spell gestures are coarse body-shape/motion events, not directional hand kinematics.
-- No depth-aware occlusion or room calibration in Cyber Mage path.
-- Sigils are OpenCV primitives; need proper GLSL/SDF glyph system for higher quality.
-- No live preset morph or audio fusion yet.
+- Current point tracker follows texture, not true anatomy; plain clothing can have few trackable features.
+- Foreground MOG2 can temporarily absorb slow performers into background.
+- ModernGL currently renders offscreen then reads back to CPU because the shared display sink is OpenCV; this is transitional.
+- Point SFX renderer still creates base tracks/mesh/sparks on CPU before the shader post pass.
+- No long-term track re-identification after occlusion.
+- No depth-aware occlusion, collision or room interaction yet.
+- No real pose/hand landmarks yet; when added they must be confidence-aware and hardware-tested before gesture triggers are promoted.
 
 ## Next queue
-1. Optional MediaPipe pose + hand backend behind `PerformerRig` interface; retain classical fallback.
-2. Landmark confidence/loss handling and per-anchor prediction.
-3. Derive hand velocity/direction and add thrust/swipe/spin/jump/crouch detectors to state machine.
-4. Split effect renderer into composable modules and expose per-module enable/intensity/scale/color controls.
-5. Add SDF/GLSL rune/glyph atlas and particle field.
-6. Fuse audio events with gestures: music can arm/intensify a spell, performer motion decides release.
-7. Add depth/segmentation occlusion and floor-plane estimation.
-8. Add calibrated room anchors: portal on wall, floor glyph in projector coordinates, hand-emitted light hitting surfaces.
-9. Add neural style-skin prototype with previous-frame flow warp + low-denoise StreamDiffusion.
-10. Evaluate temporal video models only if they improve stability at acceptable latency/VRAM.
+1. Hardware-test LK track count, drift and FPS under dance motion; tune max-points / FB threshold / feature reseeding.
+2. Move point sprites, trails, proximity links and sparks into ModernGL vertex/fragment pipeline with additive blending.
+3. Add GPU ping-pong feedback/advection and a proper multi-scale bloom chain.
+4. Add clustered-flow ribbon/vortex emitters so effects follow groups of points rather than independent spark noise.
+5. Add optional MediaPipe/other pose + hand landmarks as high-confidence semantic emitters alongside generic tracks.
+6. Add track/landmark prediction using measured camera->display latency.
+7. Add depth/person segmentation for foreground/background occlusion.
+8. Add room-plane collision: tracked motion can hit calibrated wall/floor/door coordinates and spawn effects there.
+9. Fuse audio events with SFX intensity/palette/scene state without tying every FFT fluctuation to every point.
+10. Neural skin only after deterministic SFX is polished: use point/velocity/pose/depth maps and flow-warped previous style as controls.
 
 ## Metrics
-Anchor jitter in pixels, reacquisition time, gesture precision/false trigger rate, spell-state trigger precision, motion-to-effect latency, effect ownership under fast motion, display FPS, neural keyframe age, temporal flicker, VRAM, projector registration error.
+Tracked-point lifetime, forward/backward error, retained-track ratio, track count, velocity stability, reseed rate, SFX frame time, shader frame time, readback cost, display FPS/p95 frame time, motion-to-effect latency, visual popping on track loss, foreground-mask stability, GPU/CPU utilization and subjective footage quality.
+
+## Preset vault
+- **Plasma Dance:** `plasma_mesh`, cyber, ~96 points, radius 95, feedback 0.91, nebula shader.
+- **Sparse Constellation:** `constellation`, ion, ~64 points, radius 130, feedback 0.94, black/nebula shader.
+- **Kinetic Afterburner:** `afterburner`, ember/acid, ~110 points, shorter feedback, stronger bloom.
+- **Liquid Wire:** `liquid_wire`, ice/cyber, long trails, liquid shader background.
