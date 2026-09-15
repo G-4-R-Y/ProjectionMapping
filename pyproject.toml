@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "projection-mapping-lab"
-version = "0.4.0"
+version = "0.4.1"
 description = "Research toolkit for projector-camera calibration, generative projection mapping, and spatial AR"
 readme = "README.md"
 requires-python = ">=3.10,<3.14"
 dependencies = [
-    "numpy>=1.26",
+    "numpy>=1.26,<2",
     "tomli>=2.0.1; python_version < '3.11'",
 ]
 classifiers = [
@@ -21,7 +21,7 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-vision = ["opencv-python>=4.9"]
+vision = ["opencv-python>=4.9,<5"]
 ml = ["torch>=2.2", "torchvision>=0.17"]
 ui = ["textual>=0.70"]
 audio = ["SoundCard>=0.4.5"]
