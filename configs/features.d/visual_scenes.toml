@@ -1,8 +1,8 @@
 [[feature]]
 id = "procedural_scene_lab"
-name = "Procedural Scene Lab"
+name = "Procedural Scene Lab (legacy CPU)"
 category = "Visual Madness"
-description = "Immediate-run scene pack from the Visual Madness playbook: portal architecture, bioluminescent infestation, liquid cathedral, mechanical possession, ancient ruin/living moss, and ceiling starfield. No camera or AI model required. F11 toggles fullscreen."
+description = "CPU fallback scene pack from the Visual Madness playbook. Portal seam fixed, but the ModernGL Shader Scene Lab is now the preferred high-end path. F11 toggles fullscreen."
 command = ["python", "experiments/11_procedural_scenes.py"]
 fullscreen = true
 
@@ -58,3 +58,83 @@ type = "float"
 default = 0.75
 min = 0.0
 max = 2.0
+
+[[feature]]
+id = "shader_scene_lab"
+name = "Shader Scene Lab / ModernGL"
+category = "Visual Madness"
+description = "GPU fragment-shader scenes with continuous domains and filmic color: Event Horizon, Aurora Void, Liquid Chrome, Neon Cathedral. Preferred procedural visual path. F11 toggles fullscreen."
+command = ["python", "experiments/14_shader_scene_lab.py"]
+fullscreen = true
+requires_modules = ["moderngl"]
+
+[[feature.param]]
+key = "scene"
+flag = "--scene"
+label = "Shader scene"
+type = "choice"
+default = "event_horizon"
+choices = ["event_horizon", "aurora_void", "liquid_chrome", "neon_cathedral"]
+
+[[feature.param]]
+key = "display"
+flag = "--display"
+label = "Projector display"
+type = "int"
+default = 1
+min = 0
+max = 8
+
+[[feature.param]]
+key = "projector_width"
+flag = "--projector-width"
+label = "Projector width"
+type = "int"
+default = 1920
+min = 320
+max = 7680
+
+[[feature.param]]
+key = "projector_height"
+flag = "--projector-height"
+label = "Projector height"
+type = "int"
+default = 1080
+min = 240
+max = 4320
+
+[[feature.param]]
+key = "render_width"
+flag = "--render-width"
+label = "Shader render width"
+type = "int"
+default = 960
+min = 320
+max = 1920
+
+[[feature.param]]
+key = "render_height"
+flag = "--render-height"
+label = "Shader render height"
+type = "int"
+default = 540
+min = 240
+max = 1080
+
+[[feature.param]]
+key = "speed"
+flag = "--speed"
+label = "Speed"
+type = "float"
+default = 1.0
+min = 0.05
+max = 5.0
+
+[[feature.param]]
+key = "intensity"
+flag = "--intensity"
+label = "Intensity"
+type = "float"
+default = 1.0
+min = 0.0
+max = 2.5
