@@ -2,7 +2,7 @@
 id = "streamdiffusion_live_safe"
 name = "Neural Mirror / 6GB Safe"
 category = "Visual Madness"
-description = "Conservative Neural Mirror profile for 6 GB GPUs: 512x288 async SD-Turbo, bounded submit rate, automatic xFormers/native-attention fallback, full startup telemetry and F11 fullscreen toggle."
+description = "Conservative Neural Mirror for 6 GB GPUs: 512x288 async SD-Turbo, bounded submit rate, optional-accelerator fallback, optical-flow temporal stabilization, startup telemetry and F11 fullscreen toggle."
 command = ["python", "experiments/04_streamdiffusion_live.py"]
 fullscreen = true
 platforms = ["windows", "linux"]
@@ -57,6 +57,22 @@ flag = "--prompt"
 label = "Prompt"
 type = "text"
 default = "cyber ritual portrait, luminous arcane circuitry, holographic sigils, cinematic projection art"
+
+[[feature.param]]
+key = "temporal_warp"
+flag = "--temporal-warp"
+label = "Flow-stabilize between AI frames"
+type = "bool"
+default = true
+
+[[feature.param]]
+key = "temporal_blend"
+flag = "--temporal-blend"
+label = "Fresh AI keyframe weight"
+type = "float"
+default = 0.78
+min = 0.1
+max = 1.0
 
 [[feature.param]]
 key = "show_input"
