@@ -71,7 +71,8 @@ class PointSFXRenderer:
         base = np.asarray(palette[pid % len(palette)], dtype=np.float32)
         hi = np.asarray(palette[-1], dtype=np.float32)
         mix = float(np.clip(energy, 0.0, 1.0))
-        return tuple(np.clip(base * (1.0 - mix * 0.45) + hi * (mix * 0.45), 0, 255).astype(np.uint8))
+        arr = np.clip(base * (1.0 - mix * 0.45) + hi * (mix * 0.45), 0, 255)
+        return tuple(int(v) for v in arr)
 
     def _draw_track(self, layer: np.ndarray, p: TrackedPoint) -> None:
         hist = self.histories[p.id]
@@ -113,7 +114,8 @@ class PointSFXRenderer:
                     continue
                 ca = np.asarray(self._color(a.id, kinetic), dtype=np.float32)
                 cb = np.asarray(self._color(b.id, kinetic), dtype=np.float32)
-                c = tuple(np.clip((ca + cb) * 0.5 * alpha, 0, 255).astype(np.uint8))
+                c_arr = np.clip((ca + cb) * 0.5 * alpha, 0, 255)
+                c = tuple(int(v) for v in c_arr)
                 cv2.line(layer, a.xy(), b.xy(), c, 1, cv2.LINE_AA)
 
     def _emit_sparks(self, layer: np.ndarray, p: TrackedPoint) -> None:
@@ -190,7 +192,6 @@ class PointSFXRenderer:
             cv2.circle(layer, p.xy(), radius, color, -1, cv2.LINE_AA)
             self._emit_sparks(layer, p)
 
-        # Detect acceleration BEFORE updating the per-track speed history.
         self._update_shockwaves(layer, points)
         for p in points:
             self.previous_speed[p.id] = p.speed
