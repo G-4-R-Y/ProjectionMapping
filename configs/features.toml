@@ -13,6 +13,7 @@ category = "Visual Madness"
 description = "Ultra-low-latency music-reactive fullscreen field. Mic input works cross-platform; system/loopback audio is native on Windows/Linux and can use a virtual input on macOS."
 command = ["python", "experiments/10_audio_reactive.py"]
 fullscreen = true
+requires_modules = ["soundcard"]
 
 [[feature.param]]
 key = "source"
@@ -160,6 +161,7 @@ description = "Live camera -> asynchronous StreamDiffusion -> projector or trans
 command = ["python", "experiments/04_streamdiffusion_live.py"]
 fullscreen = true
 platforms = ["windows", "linux"]
+requires_modules = ["streamdiffusion", "torch"]
 
 [[feature.param]]
 key = "camera"
@@ -435,6 +437,7 @@ description = "Benchmark preprocessing/inference throughput and latency. Produce
 command = ["python", "experiments/05_benchmark_streamdiffusion.py"]
 fullscreen = false
 platforms = ["windows", "linux"]
+requires_modules = ["streamdiffusion", "torch"]
 
 [[feature.param]]
 key = "model"
