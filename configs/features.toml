@@ -10,7 +10,7 @@
 id = "audio_reactive"
 name = "Audio Reactive Pulse Field"
 category = "Visual Madness"
-description = "Ultra-low-latency music-reactive fullscreen field. Mic input works cross-platform; system/loopback audio is native on Windows/Linux and can use a virtual input on macOS."
+description = "Low-latency system-audio reactive caustic/ribbon field. Bass breathes the field, mids bend ribbons, treble reveals fine caustics, and onsets launch shock fronts. F11 toggles fullscreen."
 command = ["python", "experiments/10_audio_reactive.py"]
 fullscreen = true
 requires_modules = ["soundcard"]
@@ -20,8 +20,8 @@ key = "source"
 flag = "--source"
 label = "Audio source"
 type = "choice"
-default = "mic"
-choices = ["mic", "system"]
+default = "system"
+choices = ["system", "mic"]
 
 [[feature.param]]
 key = "device"
@@ -71,7 +71,7 @@ key = "attack_ms"
 flag = "--attack-ms"
 label = "Attack (ms)"
 type = "float"
-default = 6.0
+default = 5.0
 min = 0.5
 max = 100.0
 
@@ -80,7 +80,7 @@ key = "release_ms"
 flag = "--release-ms"
 label = "Release (ms)"
 type = "float"
-default = 85.0
+default = 110.0
 min = 5.0
 max = 1000.0
 
@@ -89,7 +89,7 @@ key = "sensitivity"
 flag = "--sensitivity"
 label = "Sensitivity"
 type = "float"
-default = 1.7
+default = 1.8
 min = 0.1
 max = 8.0
 
@@ -98,7 +98,7 @@ key = "madness"
 flag = "--madness"
 label = "Madness"
 type = "float"
-default = 0.72
+default = 0.45
 min = 0.0
 max = 1.0
 
@@ -251,7 +251,7 @@ max = 8
 id = "grid"
 name = "Alignment Grid"
 category = "Projector Setup"
-description = "Fullscreen deterministic grid for placement, focus, keystone and overscan checks."
+description = "Fullscreen deterministic grid for placement, focus, keystone and overscan checks. F11 toggles fullscreen."
 command = ["python", "-m", "projection_mapping.cli", "patterns", "--kind", "grid"]
 fullscreen = true
 
