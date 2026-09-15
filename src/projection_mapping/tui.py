@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import os
+import shutil
+import subprocess
 from typing import Any
 
 from .feature_registry import Feature, FeatureParam, current_platform, load_registry
@@ -74,6 +77,8 @@ Screen { background: #090a0f; color: #e7e7ee; }
 .param-control { width: 1fr; }
 #launch { margin-top: 1; width: 1fr; }
 #stop { margin-top: 1; width: 1fr; }
+#log-actions { height: auto; margin-top: 1; }
+#copy-log, #open-log { width: 1fr; }
 #log-path { color: #8e91a7; margin-top: 1; }
 #log { height: 18; border: round #333344; padding: 1; overflow-y: auto; }
 .hint { color: #8e91a7; margin-top: 1; }
@@ -164,6 +169,8 @@ class ProjectionMappingApp(App):
         Binding("escape", "stop_or_back", "Stop visual"),
         Binding("r", "refresh_status", "Refresh"),
         Binding("l", "show_log", "Refresh log"),
+        Binding("c", "copy_log", "Copy full log"),
+        Binding("o", "open_log", "Open log"),
         Binding("q", "quit", "Quit"),
     ]
 
@@ -171,8 +178,6 @@ class ProjectionMappingApp(App):
         super().__init__()
         self.registry = load_registry(registry_path)
         self.feature_by_item_id: dict[str, Feature] = {}
-        # Do not force cwd here: FeatureLauncher knows how to find the bundled
-        # project root when frozen, while source runs still default to cwd.
         self.launcher = FeatureLauncher()
         self._last_state_text = ""
         self._last_log_text = ""
@@ -207,11 +212,14 @@ class ProjectionMappingApp(App):
                 )
                 yield Static("Idle", id="status", classes="status-idle")
                 yield Button("STOP ACTIVE VISUAL", id="stop", variant="error", disabled=True)
+                with Horizontal(id="log-actions"):
+                    yield Button("COPY FULL LOG", id="copy-log")
+                    yield Button("OPEN LOG FILE", id="open-log")
                 yield Static("No run log yet.", id="log-path")
                 yield Static("No run log yet.", id="log")
                 yield Static(
                     "Logs stream here live and the complete log is persisted to the path above. "
-                    "Keyboard: ESC stop tree · L refresh log · R refresh · Q quit.",
+                    "Keyboard: ESC stop tree · C copy full log · O open log · L refresh · R refresh · Q quit.",
                     classes="hint",
                 )
         yield Footer()
@@ -231,6 +239,10 @@ class ProjectionMappingApp(App):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "stop":
             self.stop_active()
+        elif event.button.id == "copy-log":
+            self.action_copy_log()
+        elif event.button.id == "open-log":
+            self.action_open_log()
 
     def launch_feature(self, feature: Feature, values: dict[str, Any]) -> None:
         state = self.launcher.launch(feature, values)
@@ -301,6 +313,69 @@ class ProjectionMappingApp(App):
         if force or text != self._last_log_text:
             self.query_one("#log", Static).update(text)
             self._last_log_text = text
+
+    def _copy_text_to_clipboard(self, text: str) -> bool:
+        candidates: list[tuple[list[str], bool]] = []
+        if os.name == "nt":
+            candidates.append((["clip"], True))
+        elif current_platform() == "macos":
+            candidates.append((["pbcopy"], True))
+        else:
+            candidates.extend([
+                (["wl-copy"], True),
+                (["xclip", "-selection", "clipboard"], True),
+                (["xsel", "--clipboard", "--input"], True),
+            ])
+        for argv, use_stdin in candidates:
+            if shutil.which(argv[0]) is None:
+                continue
+            try:
+                subprocess.run(
+                    argv,
+                    input=text if use_stdin else None,
+                    text=True,
+                    timeout=3.0,
+                    check=True,
+                )
+                return True
+            except Exception:
+                continue
+        return False
+
+    def action_copy_log(self) -> None:
+        if self.launcher.state.log_path is None:
+            self.notify("No run log yet.", title="Nothing to copy", severity="warning", timeout=4)
+            return
+        text = self.launcher.read_log()
+        if self._copy_text_to_clipboard(text):
+            self.notify("Full log copied to clipboard.", title="Copied", timeout=4)
+        else:
+            self.notify(
+                "No clipboard helper found. Install wl-clipboard (Wayland) or xclip/xsel (X11), "
+                "or use OPEN LOG FILE.",
+                title="Clipboard unavailable",
+                severity="warning",
+                timeout=8,
+            )
+
+    def action_open_log(self) -> None:
+        path = self.launcher.state.log_path
+        if path is None or not path.exists():
+            self.notify("No run log yet.", title="Nothing to open", severity="warning", timeout=4)
+            return
+        try:
+            if os.name == "nt":
+                os.startfile(str(path))  # type: ignore[attr-defined]
+            elif current_platform() == "macos":
+                subprocess.Popen(["open", str(path)])
+            else:
+                opener = shutil.which("xdg-open")
+                if opener is None:
+                    raise RuntimeError("xdg-open not found")
+                subprocess.Popen([opener, str(path)])
+            self.notify(str(path), title="Opened log", timeout=4)
+        except Exception as exc:
+            self.notify(f"Could not open log: {exc}\n{path}", title="Open log failed", severity="error", timeout=8)
 
     def action_stop_or_back(self) -> None:
         if self.launcher.poll().running:
