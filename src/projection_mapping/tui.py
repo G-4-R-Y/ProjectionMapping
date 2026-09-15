@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Any
 
 from .feature_registry import Feature, FeatureParam, current_platform, load_registry
@@ -69,12 +68,14 @@ Screen { background: #090a0f; color: #e7e7ee; }
 .feature-description { color: #b9bbcc; margin-bottom: 1; }
 .status-running { color: #8cffbd; text-style: bold; }
 .status-idle { color: #9a9aae; }
+.status-error { color: #ff7777; text-style: bold; }
 .param-row { height: auto; margin-bottom: 1; }
 .param-label { width: 26; padding-top: 1; }
 .param-control { width: 1fr; }
 #launch { margin-top: 1; width: 1fr; }
 #stop { margin-top: 1; width: 1fr; }
-#log { height: 10; border: round #333344; padding: 1; overflow-y: auto; }
+#log-path { color: #8e91a7; margin-top: 1; }
+#log { height: 18; border: round #333344; padding: 1; overflow-y: auto; }
 .hint { color: #8e91a7; margin-top: 1; }
 .unsupported { color: #777785; }
 """
@@ -119,7 +120,7 @@ class ConfigScreen(Screen):
             )
             yield Static(
                 "ESC in the projector window exits the visual and reveals this console again. "
-                "If the terminal has focus, ESC stops the active child from the main screen.",
+                "If the terminal has focus, ESC stops the complete child process tree.",
                 classes="hint",
             )
         yield Footer()
@@ -162,7 +163,7 @@ class ProjectionMappingApp(App):
     BINDINGS = [
         Binding("escape", "stop_or_back", "Stop visual"),
         Binding("r", "refresh_status", "Refresh"),
-        Binding("l", "show_log", "Last log"),
+        Binding("l", "show_log", "Refresh log"),
         Binding("q", "quit", "Quit"),
     ]
 
@@ -170,8 +171,11 @@ class ProjectionMappingApp(App):
         super().__init__()
         self.registry = load_registry(registry_path)
         self.feature_by_item_id: dict[str, Feature] = {}
-        self.launcher = FeatureLauncher(Path.cwd())
+        # Do not force cwd here: FeatureLauncher knows how to find the bundled
+        # project root when frozen, while source runs still default to cwd.
+        self.launcher = FeatureLauncher()
         self._last_state_text = ""
+        self._last_log_text = ""
 
     def compose(self):
         yield Header(show_clock=True)
@@ -203,9 +207,11 @@ class ProjectionMappingApp(App):
                 )
                 yield Static("Idle", id="status", classes="status-idle")
                 yield Button("STOP ACTIVE VISUAL", id="stop", variant="error", disabled=True)
+                yield Static("No run log yet.", id="log-path")
                 yield Static("No run log yet.", id="log")
                 yield Static(
-                    "Keyboard: ESC stop · L last log · R refresh · Q quit. Mouse works on lists/buttons.",
+                    "Logs stream here live and the complete log is persisted to the path above. "
+                    "Keyboard: ESC stop tree · L refresh log · R refresh · Q quit.",
                     classes="hint",
                 )
         yield Footer()
@@ -213,6 +219,7 @@ class ProjectionMappingApp(App):
     def on_mount(self) -> None:
         self.set_interval(0.35, self._poll_child)
         self._refresh_status()
+        self._refresh_log(force=True)
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         if event.item.id is None:
@@ -228,31 +235,42 @@ class ProjectionMappingApp(App):
     def launch_feature(self, feature: Feature, values: dict[str, Any]) -> None:
         state = self.launcher.launch(feature, values)
         self.notify(
-            f"Started {feature.name} (PID {state.pid}). ESC in visual returns here.",
+            f"Started {feature.name} (PID {state.pid}). Live output is shown in the log panel.",
             title="Launched",
             timeout=5,
         )
+        self._last_log_text = ""
         self._refresh_status()
+        self._refresh_log(force=True)
 
     def stop_active(self) -> None:
         state = self.launcher.poll()
         if state.running:
             self.launcher.stop()
-            self.notify(f"Stopped {state.feature_name}", title="Visual stopped", timeout=4)
+            self.notify(f"Stopped {state.feature_name} and child process tree", title="Visual stopped", timeout=4)
         self._refresh_status()
-        self._refresh_log()
+        self._refresh_log(force=True)
 
     def _poll_child(self) -> None:
         previous_running = self.launcher.state.running
         self.launcher.poll()
+        self._refresh_log()
         if previous_running and not self.launcher.state.running:
-            self._refresh_log()
-            self.notify(
-                f"{self.launcher.state.feature_name} returned to console "
-                f"(exit {self.launcher.state.returncode})",
-                title="Back from projector",
-                timeout=5,
-            )
+            state = self.launcher.state
+            self._refresh_log(force=True)
+            if state.returncode not in (0, None):
+                self.notify(
+                    f"{state.feature_name} failed with exit {state.returncode}. See live log below.",
+                    title="Visual failed",
+                    severity="error",
+                    timeout=10,
+                )
+            else:
+                self.notify(
+                    f"{state.feature_name} returned to console (exit {state.returncode})",
+                    title="Back from projector",
+                    timeout=5,
+                )
         self._refresh_status()
 
     def _refresh_status(self) -> None:
@@ -265,7 +283,7 @@ class ProjectionMappingApp(App):
             stop.disabled = False
         elif state.feature_name:
             text = f"IDLE  |  last: {state.feature_name}  |  exit {state.returncode}"
-            status.set_classes("status-idle")
+            status.set_classes("status-error" if state.returncode not in (0, None) else "status-idle")
             stop.disabled = True
         else:
             text = "IDLE  |  choose a feature and unleash it"
@@ -275,8 +293,14 @@ class ProjectionMappingApp(App):
             status.update(text)
             self._last_state_text = text
 
-    def _refresh_log(self) -> None:
-        self.query_one("#log", Static).update(self.launcher.read_log_tail())
+    def _refresh_log(self, force: bool = False) -> None:
+        state = self.launcher.state
+        path_text = f"Full log: {state.log_path}" if state.log_path else "No run log yet."
+        self.query_one("#log-path", Static).update(path_text)
+        text = self.launcher.read_log_tail()
+        if force or text != self._last_log_text:
+            self.query_one("#log", Static).update(text)
+            self._last_log_text = text
 
     def action_stop_or_back(self) -> None:
         if self.launcher.poll().running:
@@ -284,9 +308,10 @@ class ProjectionMappingApp(App):
 
     def action_refresh_status(self) -> None:
         self._refresh_status()
+        self._refresh_log(force=True)
 
     def action_show_log(self) -> None:
-        self._refresh_log()
+        self._refresh_log(force=True)
 
     def on_unmount(self) -> None:
         self.launcher.close()
