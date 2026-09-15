@@ -9,6 +9,7 @@ import numpy as np
 class Source(Protocol):
     def __call__(self) -> np.ndarray: ...
 
+
 class Sink(Protocol):
     def __call__(self, frame: np.ndarray) -> bool | None: ...
 
@@ -20,7 +21,12 @@ class RuntimeStats:
     last_frame_ms: float = 0.0
 
 
-def run_loop(source: Source, sink: Sink, processors: list[Callable[[np.ndarray], np.ndarray]] | None = None, max_frames: int | None = None) -> RuntimeStats:
+def run_loop(
+    source: Source,
+    sink: Sink,
+    processors: list[Callable[[np.ndarray], np.ndarray]] | None = None,
+    max_frames: int | None = None,
+) -> RuntimeStats:
     processors = processors or []
     stats = RuntimeStats()
     start = time.perf_counter()
@@ -39,19 +45,47 @@ def run_loop(source: Source, sink: Sink, processors: list[Callable[[np.ndarray],
 
 
 class FullscreenSink:
-    def __init__(self, window="ProjectionMapping", display=0, quit_key=27):
+    """OpenCV display sink with ESC-to-exit and F11 fullscreen toggle."""
+
+    # OpenCV waitKeyEx values vary by backend. 122 is VK_F11 on Windows;
+    # 65480 is XK_F11 on X11. Some builds encode the virtual key in upper bits.
+    _F11_CODES = {122, 65480, 0x7A0000, 0x7A0001}
+
+    def __init__(self, window="ProjectionMapping", display=0, quit_key=27, fullscreen=True):
         import cv2
+
         self.cv2 = cv2
         self.window = window
         self.quit_key = quit_key
+        self.display = int(display)
+        self.fullscreen = bool(fullscreen)
         cv2.namedWindow(window, cv2.WINDOW_NORMAL)
-        cv2.setWindowProperty(window, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-        if display > 0:
-            cv2.moveWindow(window, display * 1920, 0)
+        self._apply_window_mode()
+        if self.display > 0:
+            # Temporary placement heuristic; monitor enumeration is tracked separately.
+            cv2.moveWindow(window, self.display * 1920, 0)
+
+    def _apply_window_mode(self) -> None:
+        mode = self.cv2.WINDOW_FULLSCREEN if self.fullscreen else self.cv2.WINDOW_NORMAL
+        self.cv2.setWindowProperty(self.window, self.cv2.WND_PROP_FULLSCREEN, mode)
+
+    def toggle_fullscreen(self) -> None:
+        self.fullscreen = not self.fullscreen
+        self._apply_window_mode()
 
     def __call__(self, frame):
         self.cv2.imshow(self.window, frame)
-        return (self.cv2.waitKey(1) & 0xFF) != self.quit_key
+        key = self.cv2.waitKeyEx(1)
+        if key < 0:
+            return True
+        if (key & 0xFF) == self.quit_key:
+            return False
+        if key in self._F11_CODES or (key & 0xFFFF) in self._F11_CODES:
+            self.toggle_fullscreen()
+        return True
 
     def close(self):
-        self.cv2.destroyWindow(self.window)
+        try:
+            self.cv2.destroyWindow(self.window)
+        except Exception:
+            self.cv2.destroyAllWindows()
