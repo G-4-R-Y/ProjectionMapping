@@ -182,9 +182,11 @@ python -m projection_mapping.cli camera --device 0
 Keep StreamDiffusion outside the core dependency set because its CUDA/TensorRT pins move quickly. On supported Windows/Linux NVIDIA systems:
 
 ```text
-python -m pip install "git+https://github.com/daydreamlive/StreamDiffusion.git@main#egg=streamdiffusion[tensorrt,controlnet,ipadapter]"
+python -m pip install "streamdiffusion[tensorrt,controlnet,ipadapter] @ git+https://github.com/daydreamlive/StreamDiffusion.git@main"
 python -m streamdiffusion.tools.install-tensorrt
 ```
+
+> Recent pip versions reject the older `#egg=streamdiffusion[...]` extras syntax with `invalid-egg-fragment`. Use the PEP 508 direct-URL form above instead. If the first command fails, do not run the TensorRT installer yet because the `streamdiffusion` module will not exist.
 
 On Windows, Spout is the preferred same-machine GPU-sharing path into TouchDesigner/MadMapper. Linux currently uses direct fullscreen for the portable path while additional transport options are explored. macOS keeps the portable renderer/calibration path and will gain a native Syphon backend separately.
 
