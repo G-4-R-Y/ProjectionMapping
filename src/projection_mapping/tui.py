@@ -199,6 +199,8 @@ class ProjectionMappingApp(App):
                             suffix = "  [unsupported]"
                         elif feature.missing_commands():
                             suffix = f"  [missing: {', '.join(feature.missing_commands())}]"
+                        elif feature.missing_modules():
+                            suffix = f"  [missing py: {', '.join(feature.missing_modules())}]"
                         else:
                             suffix = ""
                         items.append(ListItem(Label(feature.name + suffix), id=item_id))
@@ -219,6 +221,7 @@ class ProjectionMappingApp(App):
                 yield Static("No run log yet.", id="log")
                 yield Static(
                     "Logs stream here live and the complete log is persisted to the path above. "
+                    "Neural model download/load/warmup stages are mirrored in the RUNNING status line. "
                     "Keyboard: ESC stop tree · C copy full log · O open log · L refresh · R refresh · Q quit.",
                     classes="hint",
                 )
@@ -285,12 +288,24 @@ class ProjectionMappingApp(App):
                 )
         self._refresh_status()
 
+    @staticmethod
+    def _latest_runtime_stage(log_text: str) -> str | None:
+        for line in reversed(log_text.splitlines()):
+            marker = "[neural] stage="
+            if marker not in line:
+                continue
+            value = line.split(marker, 1)[1].strip().split()[0]
+            return value.replace("-", " ").upper()
+        return None
+
     def _refresh_status(self) -> None:
         status = self.query_one("#status", Static)
         stop = self.query_one("#stop", Button)
         state = self.launcher.poll()
         if state.running:
-            text = f"RUNNING  {state.feature_name}  |  PID {state.pid}  |  started {state.started_at}"
+            stage = self._latest_runtime_stage(self.launcher.read_log_tail())
+            stage_text = f"  |  NEURAL {stage}" if stage else ""
+            text = f"RUNNING  {state.feature_name}  |  PID {state.pid}{stage_text}  |  started {state.started_at}"
             status.set_classes("status-running")
             stop.disabled = False
         elif state.feature_name:
