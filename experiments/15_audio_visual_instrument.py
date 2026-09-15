@@ -13,6 +13,7 @@ import cv2
 import numpy as np
 
 from projection_mapping.audio_music_features import RollingMusicFeatureExtractor
+from projection_mapping.audio_presets import PRESETS
 from projection_mapping.audio_reactive import AudioFeatureStream, format_device_table, list_audio_devices
 from projection_mapping.audio_shader import AudioShaderRenderer, PALETTES, SCENES
 from projection_mapping.music_reactivity import MusicalEventMapper
@@ -24,6 +25,7 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("--source", choices=["mic", "system"], default="system")
     ap.add_argument("--device", default=None)
     ap.add_argument("--list-devices", action="store_true")
+    ap.add_argument("--performance-preset", choices=["custom", *sorted(PRESETS)], default="custom")
     ap.add_argument("--scene", choices=SCENES, default="journey")
     ap.add_argument("--palette", choices=PALETTES, default="neon_aurora")
     ap.add_argument("--reactivity", choices=["smooth", "balanced", "punchy", "chaotic"], default="balanced")
@@ -47,11 +49,28 @@ def parse_args() -> argparse.Namespace:
     return ap.parse_args()
 
 
+def apply_performance_preset(args: argparse.Namespace) -> None:
+    if args.performance_preset == "custom":
+        return
+    preset = PRESETS[args.performance_preset]
+    args.scene = preset.scene
+    args.palette = preset.palette
+    args.reactivity = preset.reactivity
+    args.madness = preset.madness
+    args.event_threshold = preset.event_threshold
+    args.beat_threshold = preset.beat_threshold
+    args.sensitivity = preset.sensitivity
+    args.analysis_size = preset.analysis_size
+    args.transition_seconds = preset.transition_seconds
+    args.auto_scene_seconds = preset.auto_scene_seconds
+
+
 def main() -> None:
     args = parse_args()
     if args.list_devices:
         print(format_device_table(list_audio_devices()))
         return
+    apply_performance_preset(args)
 
     sink = FullscreenSink(window="ProjectionMapping-AudioInstrument", display=args.display, fullscreen=True)
     renderer = AudioShaderRenderer(
@@ -102,9 +121,9 @@ def main() -> None:
     last_drop_high = False
 
     print(
-        f"[audio-instrument] scene={args.scene} palette={args.palette} reactivity={args.reactivity} "
-        f"capture_block={args.blocksize} analysis={args.analysis_size} render={args.render_width}x{args.render_height} "
-        f"gl_backend={renderer.backend}",
+        f"[audio-instrument] bank={args.performance_preset} scene={args.scene} palette={args.palette} "
+        f"reactivity={args.reactivity} capture_block={args.blocksize} analysis={args.analysis_size} "
+        f"render={args.render_width}x{args.render_height} gl_backend={renderer.backend}",
         flush=True,
     )
 
