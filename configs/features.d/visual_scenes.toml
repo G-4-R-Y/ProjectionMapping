@@ -2,7 +2,7 @@
 id = "procedural_scene_lab"
 name = "Procedural Scene Lab"
 category = "Visual Madness"
-description = "Immediate-run scene pack from the Visual Madness playbook: portal architecture, bioluminescent infestation, liquid cathedral, and mechanical possession. No camera or AI model required. F11 toggles fullscreen."
+description = "Immediate-run scene pack from the Visual Madness playbook: portal architecture, bioluminescent infestation, liquid cathedral, mechanical possession, ancient ruin/living moss, and ceiling starfield. No camera or AI model required. F11 toggles fullscreen."
 command = ["python", "experiments/11_procedural_scenes.py"]
 fullscreen = true
 
@@ -12,7 +12,7 @@ flag = "--scene"
 label = "Scene"
 type = "choice"
 default = "portal"
-choices = ["portal", "infestation", "cathedral", "mechanical"]
+choices = ["portal", "infestation", "cathedral", "mechanical", "moss_ruin", "starfield"]
 
 [[feature.param]]
 key = "display"
