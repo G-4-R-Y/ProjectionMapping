@@ -63,8 +63,6 @@ void main() {
     vec2 uv = v_uv;
     vec2 p = uv - 0.5;
     float r = length(p);
-
-    // Subtle lens warp keeps the centre calm but gives the field a cinematic depth.
     vec2 warped = 0.5 + p * (1.0 + 0.055 * r * r * u_intensity);
     vec2 ca = normalize(p + vec2(1e-5)) * (0.0013 + 0.0022 * u_intensity);
     float rr = texture(u_tex, warped + ca).r;
@@ -72,7 +70,6 @@ void main() {
     float bb = texture(u_tex, warped - ca).b;
     vec3 src = vec3(rr, gg, bb);
 
-    // Cheap wide bloom. The CPU path already emits glows; this shader adds a coherent halo.
     vec2 px = 1.0 / vec2(textureSize(u_tex, 0));
     vec3 bloom = vec3(0.0);
     bloom += texture(u_tex, warped + px * vec2( 3.0, 0.0)).rgb;
@@ -107,8 +104,6 @@ void main() {
 
     float srcEnergy = max(src.r, max(src.g, src.b));
     vec3 col = src + bloom * (0.45 + 0.35 * u_intensity) + bg * (1.0 - smoothstep(0.05, 0.55, srcEnergy));
-
-    // Filmic-ish contrast and projector-safe vignette.
     col = col / (1.0 + col);
     col = pow(max(col, vec3(0.0)), vec3(0.88));
     float vignette = smoothstep(0.90, 0.22, r);
@@ -119,13 +114,7 @@ void main() {
 
 
 class ModernGLPostFX:
-    """Optional offscreen ModernGL post-processer.
-
-    The project still owns fullscreen/window lifecycle through OpenCV, which keeps display
-    placement/F11 behavior consistent. ModernGL handles the shader work and reads one final
-    RGB frame back for the existing sink. On systems without ModernGL/EGL the caller can
-    simply skip this stage.
-    """
+    """Optional offscreen ModernGL post-processer."""
 
     def __init__(self, width: int, height: int) -> None:
         import moderngl
@@ -144,7 +133,7 @@ class ModernGLPostFX:
                     self.ctx = moderngl.create_standalone_context(require=330, backend=backend)
                     self.backend = backend
                 break
-            except Exception as exc:  # pragma: no cover - backend depends on machine
+            except Exception as exc:  # pragma: no cover
                 errors.append(f"{backend or 'default'}: {exc}")
         if self.ctx is None:
             raise RuntimeError("could not create ModernGL context: " + " | ".join(errors))
@@ -162,10 +151,13 @@ class ModernGLPostFX:
         self.program["u_tex"].value = 0
 
     def render(self, rgb: np.ndarray, *, t: float, intensity: float = 1.0, background: int = 1) -> np.ndarray:
-        frame = np.ascontiguousarray(np.asarray(rgb, dtype=np.uint8))
+        frame = np.asarray(rgb, dtype=np.uint8)
         if frame.shape[:2] != (self.height, self.width):
             raise ValueError(f"shader input must be {self.width}x{self.height}")
-        self.texture.write(frame.tobytes())
+        # OpenGL's texture origin is bottom-left; flip upload and final readback so the
+        # existing OpenCV/projector coordinate convention remains top-left.
+        upload = np.ascontiguousarray(np.flipud(frame))
+        self.texture.write(upload.tobytes())
         self.texture.use(location=0)
         self.program["u_time"].value = float(t)
         self.program["u_intensity"].value = float(intensity)
