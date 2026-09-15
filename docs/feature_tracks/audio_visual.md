@@ -14,14 +14,15 @@ A performable visual instrument that responds to musical structure, not raw FFT 
 - Shader scenes: `aurora`, `liquid`, `pulse`, `void`, `cathedral`, plus `journey` mode that advances on strong macro drops or a maximum scene duration.
 - Palettes: Neon Aurora, Solar Flare, Bioluminescent, Intelli, Mono Accent, Prismatic.
 - Smooth/Balanced/Punchy/Chaotic musical reactivity modes and Calm<->Madness macro remain available.
+- Curated performance banks are implemented: `journey_balanced`, `techno_pulse`, `ambient_void`, `liquid_melodic`, `cathedral_installation`, `acid_afterhours`; `custom` exposes the fine controls.
 - Previous NumPy/OpenCV studio remains available as a CPU legacy fallback rather than the art-quality target.
 - F11 fullscreen, ESC return-to-console and runtime telemetry include feature age, event counts, BPM confidence and beat phase.
 
 ## Quality ladder
 - **Prototype:** audio reaches visual.
 - **Usable:** stable loopback + band-separated motion.
-- **Polished:** rolling spectral analysis, sparse adaptive events, tempo phase, GPU shader composition, dark-space discipline and seamless scene continuity. **Current implementation; hardware/art validation ongoing.**
-- **Advanced:** chroma/key, section boundaries, reliable half/double-time tempo handling, saved/morphable preset banks, live scene/palette mutation and MIDI/OSC/Ableton clock.
+- **Polished:** rolling spectral analysis, sparse adaptive events, tempo phase, GPU shader composition, dark-space discipline, seamless scene continuity and curated launchable banks. **Current implementation; hardware/art validation ongoing.**
+- **Advanced:** chroma/key, section boundaries, reliable half/double-time tempo handling, user-saved/morphable banks, live scene/palette mutation and MIDI/OSC/Ableton clock.
 - **Ridiculous:** audio embeddings -> semantic scene state, latent/LoRA/style interpolation, performer + room effects sharing one musical state machine, calibrated room surfaces responding by musical role rather than as one rectangular canvas.
 
 ## Design rules learned from hardware testing
@@ -45,7 +46,7 @@ A performable visual instrument that responds to musical structure, not raw FFT 
 - No chroma/key or robust section-boundary model yet.
 - ModernGL currently renders offscreen then reads back into the shared OpenCV fullscreen sink; direct GL display/shared texture is still the target.
 - Shader parameters are launch-time settings; no live hot-control/preset morphing yet.
-- No persistent named preset bank or A/B snapshot system.
+- Curated built-in banks exist, but user-saved named banks / A-B snapshots do not yet.
 - Drop detector is a macro-dynamics heuristic, not learned song-structure analysis.
 - Need real recordings of event precision against several genres before tuning defaults further.
 
@@ -55,7 +56,7 @@ A performable visual instrument that responds to musical structure, not raw FFT 
 3. Add chroma/key-class vector and harmonic-change descriptor from the rolling spectrum.
 4. Add section-boundary evidence from multi-second novelty/energy/color trajectories; distinguish breakdown/build/drop rather than one generic `drop` scalar.
 5. Add live local IPC for scene/palette/reactivity controls without relaunch.
-6. Add named preset banks, A/B snapshots and timed/beat-synchronous parameter morphs.
+6. Add user-saved named banks, A/B snapshots and timed/beat-synchronous parameter morphs on top of the built-in curated banks.
 7. Add MIDI/OSC mappings and Ableton Link/clock experiment.
 8. Move shader display to a GL-native window/shared texture path and remove readback.
 9. Route the same `MusicalSignals` bus into Cyber Mage point SFX, Human Reactor and Room Skin so music changes scene state rather than duplicating FFT logic in every feature.
@@ -65,9 +66,10 @@ A performable visual instrument that responds to musical structure, not raw FFT 
 Capture latency, feature age, bass-band stability at small capture blocks, event precision subjectively against kick/snare markers, duplicate-event rate, BPM error/confidence on steady material, event rate/minute, scene-transition frequency, display FPS/p95 frame time, shader/readback time, visual jitter under steady tones, setup friction.
 
 ## Preset vault
-- **Journey / Neon Aurora / Balanced / madness 0.42** — new broad default; coherent scene evolution.
-- **Pulse / Solar Flare / Punchy / madness 0.58** — kick-heavy techno/house.
-- **Void / Bioluminescent / Smooth / event gate ~0.70** — ambient/sparse.
-- **Cathedral / Intelli / Balanced** — architectural/installational.
-- **Liquid / Prismatic / Balanced** — colorful but continuous, good for melodic electronic material.
+- `journey_balanced` — Journey / Neon Aurora / Balanced / madness 0.42; broad default.
+- `techno_pulse` — Pulse / Solar Flare / Punchy; kick-heavy techno/house.
+- `ambient_void` — Void / Bioluminescent / Smooth; sparse/ambient.
+- `liquid_melodic` — Liquid / Prismatic / Balanced; continuous melodic/electronic material.
+- `cathedral_installation` — Cathedral / Intelli / Balanced; architectural/installational.
+- `acid_afterhours` — Journey / Prismatic / Punchy / higher madness; denser club material.
 - CPU legacy: Spectral Bloom / Neon Aurora / Balanced remains the low-dependency fallback.
