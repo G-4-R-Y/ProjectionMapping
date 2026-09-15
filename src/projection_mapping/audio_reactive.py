@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
+import sys
 import threading
 import time
 from typing import Iterable
@@ -22,13 +23,7 @@ class AudioFeatures:
 
 
 class AudioFeatureExtractor:
-    """Small realtime spectral feature extractor designed for tiny audio blocks.
-
-    The extractor intentionally avoids heavyweight beat trackers in the capture path.
-    It computes only bounded NumPy work: RMS, three broad spectral bands, spectral
-    centroid, positive spectral flux, and an onset envelope. Attack/release smoothing
-    keeps visuals responsive without jitter.
-    """
+    """Small realtime spectral feature extractor designed for tiny audio blocks."""
 
     def __init__(
         self,
@@ -76,7 +71,6 @@ class AudioFeatureExtractor:
         if mono.size < 16:
             return AudioFeatures(timestamp=now)
 
-        # DC removal improves bass stability for cheap microphones.
         mono = mono - float(np.mean(mono))
         rms_raw = float(np.sqrt(np.mean(np.square(mono)) + 1e-12))
         self._noise_floor = min(
@@ -104,7 +98,6 @@ class AudioFeatureExtractor:
             flux_raw = float(np.mean(positive))
         self._previous_spectrum = spectrum
 
-        # Adaptive gain: enough to react to a laptop mic while remaining bounded.
         reference = max(self._noise_floor * 6.0, 0.01)
         scale = self.sensitivity / reference
         values = np.array(
@@ -119,7 +112,6 @@ class AudioFeatureExtractor:
             ],
             dtype=np.float32,
         )
-        # Flux + level gives a cheap, very low-latency onset detector.
         values[6] = float(np.clip(values[5] * 1.7 + max(values[0] - 0.18, 0.0) * 0.35, 0.0, 1.0))
 
         dt = 1.0 / 120.0 if self._last_time is None else max(now - self._last_time, 1e-5)
@@ -140,10 +132,9 @@ class AudioFeatureExtractor:
 
 
 def list_audio_devices() -> list[dict[str, str | bool | int]]:
-    """Return SoundCard devices without importing the backend at package import time."""
     try:
         import soundcard as sc
-    except ImportError as exc:  # pragma: no cover - depends on optional extra
+    except ImportError as exc:
         raise RuntimeError("Install audio support with: python -m pip install -e '.[audio]'") from exc
 
     devices: list[dict[str, str | bool | int]] = []
@@ -160,6 +151,20 @@ def list_audio_devices() -> list[dict[str, str | bool | int]]:
     return devices
 
 
+def _looks_like_system_monitor(mic) -> bool:
+    text = f"{getattr(mic, 'name', '')} {getattr(mic, 'id', '')}".lower()
+    hints = (
+        "monitor",
+        ".monitor",
+        "loopback",
+        "stereo mix",
+        "what u hear",
+        "output monitor",
+        "sink monitor",
+    )
+    return bool(getattr(mic, "isloopback", False)) or any(hint in text for hint in hints)
+
+
 def _select_microphone(source: str, device: str | None):
     import soundcard as sc
 
@@ -171,30 +176,55 @@ def _select_microphone(source: str, device: str | None):
     if source != "system":
         raise ValueError("source must be 'mic' or 'system'")
 
-    candidates = [m for m in sc.all_microphones(include_loopback=True) if getattr(m, "isloopback", False)]
+    all_mics = list(sc.all_microphones(include_loopback=True))
+
     if device:
         lowered = device.lower()
-        matches = [m for m in candidates if lowered in str(m.name).lower() or lowered in str(m.id).lower()]
+        matches = [
+            m
+            for m in all_mics
+            if lowered in str(m.name).lower() or lowered in str(m.id).lower()
+        ]
         if matches:
             return matches[0]
-        # A user may intentionally pass a virtual input (BlackHole, monitor, etc.).
         return sc.get_microphone(device, include_loopback=True)
+
+    # Prefer explicit loopback/monitor devices. On Linux PipeWire/PulseAudio monitor
+    # sources are not consistently flagged as `isloopback` by every SoundCard build,
+    # so also match their conventional names/ids.
+    candidates = [m for m in all_mics if _looks_like_system_monitor(m)]
     if candidates:
         return candidates[0]
+
+    # Some backends expose the default speaker as a loopback microphone only when
+    # requested by speaker id/name. Try that before giving up.
+    try:
+        speaker = sc.default_speaker()
+        for selector in (getattr(speaker, "id", None), getattr(speaker, "name", None)):
+            if selector:
+                try:
+                    mic = sc.get_microphone(selector, include_loopback=True)
+                    if mic is not None:
+                        return mic
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
+    platform_hint = ""
+    if sys.platform.startswith("linux"):
+        platform_hint = (
+            " Linux needs a PipeWire/PulseAudio monitor source. Check `wpctl status` or "
+            "`pactl list short sources`; choose the source ending in `.monitor` with --device."
+        )
     raise RuntimeError(
-        "No system-audio loopback source was found. On macOS use a virtual input such as "
-        "BlackHole for now; on Linux expose a PipeWire/Pulse monitor source; on Windows "
-        "WASAPI loopback should appear automatically. Use --list-devices to inspect inputs."
+        "No system-audio loopback/monitor source was found." + platform_hint +
+        " Use --list-devices to inspect available inputs."
     )
 
 
 class AudioFeatureStream:
-    """Background native-audio capture feeding only the latest feature vector.
-
-    SoundCard calls the OS audio backend through CFFI. The capture thread never queues
-    analysis frames: consumers always read the newest feature vector, so render latency
-    cannot grow over time.
-    """
+    """Background native-audio capture feeding only the latest feature vector."""
 
     def __init__(
         self,
@@ -220,6 +250,7 @@ class AudioFeatureStream:
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
         self._error: BaseException | None = None
+        self.selected_device_name: str | None = None
 
     @property
     def latest(self) -> AudioFeatures:
@@ -251,14 +282,16 @@ class AudioFeatureStream:
 
     def _run(self) -> None:
         try:
-            import soundcard as sc  # noqa: F401 - triggers backend initialization
+            import soundcard as sc  # noqa: F401
+
             mic = _select_microphone(self.source, self.device)
+            self.selected_device_name = str(getattr(mic, "name", getattr(mic, "id", "unknown")))
+            print(f"[audio] source={self.source} device={self.selected_device_name}", flush=True)
             recorder_kwargs = {
                 "samplerate": self.sample_rate,
                 "channels": min(max(self.channels, 1), max(int(mic.channels), 1)),
                 "blocksize": self.blocksize,
             }
-            # SoundCard exposes exclusive_mode only on the Windows backend.
             if self.exclusive_mode:
                 recorder_kwargs["exclusive_mode"] = True
             try:
@@ -269,8 +302,6 @@ class AudioFeatureStream:
 
             with recorder_cm as recorder:
                 while not self._stop.is_set():
-                    # numframes=None asks SoundCard for whatever the native backend has now,
-                    # avoiding the extra buffering implied by requesting a fixed large block.
                     block = recorder.record(numframes=None)
                     if block is None or len(block) == 0:
                         time.sleep(0.0005)
@@ -278,7 +309,7 @@ class AudioFeatureStream:
                     features = self.extractor.process(np.asarray(block))
                     with self._lock:
                         self._latest = features
-        except BaseException as exc:  # surface backend failures to the renderer
+        except BaseException as exc:
             self._error = exc
             self._stop.set()
 
