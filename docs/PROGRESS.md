@@ -8,29 +8,54 @@ This file records concrete implementation progress against `ROADMAP.md`. Hardwar
 
 Implemented:
 - canonical fine-grained research ledger under `docs/feature_tracks/`
-- dedicated tracks for Audio/Audiovisual, Human Reactor, Cyber Mage, Neural Mirror, Room Skin, Calibration/Mapping, Compensation, Runtime/Transport/UI, and Semantic Room
+- dedicated tracks for Audio/Audiovisual, Human Reactor, Cyber Mage, Procedural Scenes, Neural Mirror, Room Skin, Calibration/Mapping, Compensation, Runtime/Transport/UI, and Semantic Room
 - each track records north star, current state, quality ladder, open problems, next queue, metrics and preset/operating-point knowledge
-- `ROADMAP.md` now links the tracks and contains a no-forgetting ledger of recent visual/research requests
-- experiment mapping extended through E13
+- `ROADMAP.md` links the tracks and contains a no-forgetting ledger of recent visual/research requests
+- experiment mapping extended through E14
 
-### M11 — performer instrument / Cyber Mage
+### M11 — Cyber Mage / point-SFX pivot
 
-Implemented:
-- `src/projection_mapping/performer_rig.py`: persistent classical performer rig with semantic anchors for head, chest/core, hands and feet
-- initial gesture state: arms spread, hands together, hands raised, motion burst
-- `src/projection_mapping/cyber_mage_fx.py`: deterministic body-owned sigils, plasma arcs, trails, aura, charge orb and ground glyph
-- `experiments/13_cyber_mage.py`: camera -> segmentation/flow -> performer rig -> spell renderer -> projector
-- TUI registry entry with palette, intensity, complexity, trail length, feedback, rig smoothing, camera underlay and mirror controls
-- synthetic performer-rig unit tests
+Hardware feedback rejected the first Cyber Mage art/interaction direction. The old semantic “hands” were contour extrema rather than tracked hands, so hands-together/charge/release gestures were unreliable and often did nothing. The OpenCV rings/lines also looked like debug primitives rather than finished SFX.
+
+Implemented replacement:
+- `src/projection_mapping/point_tracker.py`: persistent Shi-Tomasi + pyramidal Lucas-Kanade tracking
+- forward/backward flow consistency rejection, persistent track IDs, age, velocity, speed and quality
+- foreground/person-mask or full-frame point tracking
+- `src/projection_mapping/point_sfx.py`: track-history trails, proximity plasma mesh, velocity sparks, acceleration shockwaves, silhouette aura and persistent feedback
+- SFX modes: `plasma_mesh`, `constellation`, `afterburner`, `liquid_wire`
+- palettes: `cyber`, `ion`, `acid`, `ember`, `ice`
+- `src/projection_mapping/modern_gl_fx.py`: optional ModernGL cinematic post pass with chromatic split, wide bloom taps, lens warp, tone compression/vignette and procedural nebula/grid/liquid atmosphere
+- active `experiments/13_cyber_mage.py` rebuilt around point tracking; old performer-rig/spell-state code kept only as research history/fallback
+- TUI Cyber Mage controls now expose point count, track scope, trail length, connection radius, emitter radius, feedback, bloom, intensity, shader and shader atmosphere
+- synthetic LK tracking + SFX unit tests
 
 Next:
-- optional pose/hand landmark backend behind the same `PerformerRig` interface
-- confidence-aware loss/reacquisition and predictive smoothing
-- composable Sigil/Arc/Trail/Emitter/Aura/Portal/GroundGlyph modules
-- GLSL/SDF rune atlas and GPU particles
-- gesture state machine with charge/hold/release, cast, shield, swipe, spin, jump and crouch
-- audio/gesture fusion and room-targeted spells
-- flow-warped low-denoise neural style skin without surrendering deterministic spatial ownership
+- hardware-tune LK drift/reseed/track count under dance motion
+- move point sprites/trails/links/sparks from OpenCV into GPU-native ModernGL rendering
+- GPU ping-pong feedback/advection and multi-scale bloom
+- clustered-flow ribbons/vortices rather than only independent point emitters
+- add real pose/hand landmarks later as semantic emitters alongside generic point tracks, not as a replacement
+- depth/occlusion + room-surface collisions
+- audio modulation and eventual neural style layer after deterministic SFX quality is high
+
+### Procedural / Shader Scene Lab
+
+Hardware feedback also rejected the CPU scene pack as the artistic target. A visible portal branch-cut seam was traced to a non-integer angular harmonic multiplying `atan2`; the legacy portal now uses integer periodic harmonics.
+
+Implemented new preferred path:
+- `src/projection_mapping/shader_scenes.py`: ModernGL full-frame fragment shader renderer
+- `experiments/14_shader_scene_lab.py`
+- shader scenes: `event_horizon`, `aurora_void`, `liquid_chrome`, `neon_cathedral`
+- standalone ModernGL tries EGL first on Linux and platform default fallback
+- TUI entry **Shader Scene Lab / ModernGL**
+- optional `graphics` dependency extra (`moderngl>=5.10,<6`)
+- legacy NumPy/OpenCV scenes explicitly relabeled as CPU fallback
+
+Next:
+- hardware-test and ruthlessly rewrite/remove scenes that still read like generic shader demos
+- scene-specific art controls + curated preset vault
+- proper multi-pass bloom, SDF primitives, GPU feedback, particles, reaction diffusion and transitions
+- direct GL/shared-texture output to eliminate CPU readback
 
 ### Neural Mirror / temporal consistency
 
@@ -39,13 +64,18 @@ Implemented since previous log:
 - safe 6 GB laptop profile at lower inference resolution / bounded submission rate
 - explicit startup stages for preflight, model load/download, prepare, warmup, ready and running
 - benchmark path uses same guarded backend/fallback
+- display-side optical-flow temporal stabilizer: warp previous neural output forward with camera motion between sparse AI keyframes
+- fresh neural keyframes blended against the motion-predicted frame
+- temporal telemetry includes warp residual and neural-keyframe residual
 
 Next:
-- measure safe-profile latency/VRAM on RTX 4050 Laptop
-- previous-neural-frame optical-flow warp baseline
+- measure safe-profile latency/VRAM + temporal residuals on RTX 4050 Laptop
+- compare temporal warp on/off under identical motion and tune keyframe blend
 - stable seed/style bank and gradual prompt interpolation
+- similarity filtering/adaptive submit rate
 - mask-aware person/background/energy compositing
 - pose/depth/edge controls
+- feed prior/warped state into neural conditioning where backend allows
 - TemporalNet/StreamV2V evaluation only after the simpler temporal baseline is measured
 
 ### M7 — Audio Reactive Studio
@@ -73,8 +103,8 @@ Implemented since previous log:
 - rendered-video recording path
 
 Next:
-- share performer anchors with Cyber Mage
-- joint/body-axis emitters and skeleton arcs
+- share generic point tracks and later real semantic landmarks with Cyber Mage
+- joint/body-axis emitters and skeleton arcs only when actual pose landmarks exist
 - portrait/landscape/high-quality recording profiles and mask/matte outputs
 - multi-performer IDs and depth-aware layering
 
@@ -104,7 +134,7 @@ Current feature categories exposed:
 - Calibration
 - Diagnostics
 
-Current UI-visible features include Audio Reactive Pulse Field, Room Skin, live StreamDiffusion / Neural Mirror, baseline neural mirror, alignment grid, structured-light capture, radiometry capture, Spout diagnostics, and the RTX 4080 benchmark.
+Current UI-visible features include Audio Reactive Pulse Field, Room Skin, live StreamDiffusion / Neural Mirror, baseline neural mirror, alignment grid, structured-light capture, radiometry capture, Spout diagnostics, and the RTX benchmark.
 
 Next operator-surface work:
 - persistent named presets per feature
@@ -124,7 +154,7 @@ Next operator-surface work:
 Implemented:
 - low-latency native-audio capture path via SoundCard/CFFI (`src/projection_mapping/audio_reactive.py`)
 - microphone / line-input mode
-- system/loopback mode where the platform exposes output-monitor inputs
+- system/loopback mode where platform exposes output-monitor inputs
 - latest-only audio feature stream: no accumulating audio-analysis queue
 - RMS, bass, mid, treble, spectral centroid, spectral flux and onset features
 - configurable attack/release/sensitivity and audio block size
@@ -223,12 +253,14 @@ The preferred operator path is through `projection-ui`; equivalent scripts remai
 
 1. launch `projection-ui` and verify Alignment Grid on intended display;
 2. validate Audio Reactive Studio with system audio and inspect feature/event telemetry;
-3. test Human Reactor and Cyber Mage camera/performer paths;
-4. run Neural Mirror / 6GB Safe and record stage/inference/VRAM telemetry;
-5. collect Structured-Light Capture from the real room;
-6. collect Radiometry Dataset Capture without moving the rig;
-7. run Room Skin and inspect edge locking;
-8. validate Spout into TouchDesigner on Windows;
-9. merge performer/audio buses + async neural keyframes into stable deterministic rendering;
-10. train/apply physical appearance compensation;
-11. move toward the semantic-room and dynamic-mapping targets in `ROADMAP.md`.
+3. install graphics extra and test **Shader Scene Lab / ModernGL**;
+4. test **Cyber Mage SFX / Point Tracker** first in `full` scope, then `foreground` scope; inspect track count/speed/shock telemetry;
+5. test Human Reactor dance-video path;
+6. run Neural Mirror / 6GB Safe and record stage/inference/VRAM/temporal telemetry;
+7. collect Structured-Light Capture from real room;
+8. collect Radiometry Dataset Capture without moving rig;
+9. run Room Skin and inspect edge locking;
+10. validate Spout into TouchDesigner on Windows;
+11. merge point/performer/audio buses + async neural keyframes into stable GPU rendering;
+12. train/apply physical appearance compensation;
+13. move toward semantic-room and dynamic-mapping targets in `ROADMAP.md`.
