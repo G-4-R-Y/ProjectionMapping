@@ -1,0 +1,31 @@
+# Feature Tracks
+
+This directory is the no-forgetting research ledger for ProjectionMapping. `ROADMAP.md` remains the milestone-level canonical plan; these files preserve the finer-grained path from prototype -> usable -> polished -> advanced -> ridiculous / research-grade for each feature category.
+
+Every track should keep the same sections so visual ambition, engineering debt, measurements, and good presets do not disappear between experiments:
+
+1. **North star / finished state** — what excellent looks like.
+2. **Current state** — what is actually implemented now; hardware validation is stated separately.
+3. **Quality ladder** — Prototype -> Usable -> Polished -> Advanced -> Ridiculous/SOTA-ish.
+4. **Research directions** — promising techniques and references to evaluate.
+5. **Open problems** — concrete failure modes, not vague TODOs.
+6. **Next implementation queue** — ordered actionable work.
+7. **Metrics** — latency, temporal stability, registration, frame rate, setup friction, etc.
+8. **Preset / operating-point vault** — known-good parameter combinations worth preserving.
+9. **Promotion rule** — when a research experiment is allowed into the normal TUI/runtime.
+
+## Tracks
+
+- [`audio_visual.md`](audio_visual.md) — system-audio capture, musical event extraction, audiovisual scenes, MIDI/OSC/latent control.
+- [`human_reactor.md`](human_reactor.md) — dance/performance silhouette rendering, recording, pose-aware extensions.
+- [`cyber_mage.md`](cyber_mage.md) — performer rig, anchors, gestures, sigils/arcs/trails/portals, neural style skin.
+- [`neural_mirror.md`](neural_mirror.md) — StreamDiffusion, lightweight GPU profiles, temporal consistency, control maps.
+- [`room_skin.md`](room_skin.md) — spatially locked material hallucination and geometry-aware generation.
+- [`calibration_mapping.md`](calibration_mapping.md) — structured light, projector/camera geometry, dynamic/multi-projector mapping.
+- [`compensation.md`](compensation.md) — radiometry, learned inverse display, closed-loop optimization.
+- [`runtime_transport_ui.md`](runtime_transport_ui.md) — fullscreen/runtime, GPU transport, TUI, packaging, diagnostics, reliability.
+- [`semantic_room.md`](semantic_room.md) — persistent scene graph and independently controlled room/object behaviors.
+
+## Cross-track rule
+
+Prefer **deterministic spatial ownership first, generative stylization second**. Tracking, geometry, persistent IDs, masks and temporal state should own consistency; neural models decorate or semantically transform those stable structures. Neural output should normally run as sparse/latest-frame-wins semantic updates while procedural/shader/feedback layers maintain high-rate motion.
