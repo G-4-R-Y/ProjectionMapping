@@ -2,7 +2,7 @@
 id = "cyber_mage"
 name = "Cyber Mage"
 category = "Visual Madness"
-description = "Persistent performer rig with body-owned sigils, plasma arcs, hand trails, aura, ground glyphs and gesture-triggered events. Deterministic realtime baseline first; neural style-skin comes later. F11 toggles fullscreen."
+description = "Persistent performer rig with body-owned sigils, plasma arcs, hand trails, aura, ground glyphs and charge/hold/release spell states. Deterministic realtime baseline first; neural style-skin comes later. F11 toggles fullscreen."
 command = ["python", "experiments/13_cyber_mage.py"]
 fullscreen = true
 
@@ -76,6 +76,15 @@ type = "float"
 default = 0.72
 min = 0.0
 max = 0.98
+
+[[feature.param]]
+key = "charge_seconds"
+flag = "--charge-seconds"
+label = "Charge time to full spell (s)"
+type = "float"
+default = 0.65
+min = 0.15
+max = 3.0
 
 [[feature.param]]
 key = "camera_mix"
