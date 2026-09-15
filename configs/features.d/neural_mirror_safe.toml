@@ -1,0 +1,80 @@
+[[feature]]
+id = "streamdiffusion_live_safe"
+name = "Neural Mirror / 6GB Safe"
+category = "Visual Madness"
+description = "Conservative Neural Mirror profile for 6 GB GPUs: 512x288 async SD-Turbo, bounded submit rate, automatic xFormers/native-attention fallback, full startup telemetry and F11 fullscreen toggle."
+command = ["python", "experiments/04_streamdiffusion_live.py"]
+fullscreen = true
+platforms = ["windows", "linux"]
+requires_modules = ["streamdiffusion", "torch"]
+
+[[feature.param]]
+key = "camera"
+flag = "--camera"
+label = "Camera"
+type = "int"
+default = 0
+min = 0
+max = 16
+
+[[feature.param]]
+key = "display"
+flag = "--display"
+label = "Projector display"
+type = "int"
+default = 1
+min = 0
+max = 8
+
+[[feature.param]]
+key = "profile"
+flag = "--profile"
+label = "Quality profile"
+type = "choice"
+default = "safe"
+choices = ["safe", "balanced", "quality", "auto", "custom"]
+
+[[feature.param]]
+key = "acceleration"
+flag = "--acceleration"
+label = "Acceleration"
+type = "choice"
+default = "auto"
+choices = ["auto", "none", "xformers", "tensorrt"]
+
+[[feature.param]]
+key = "submit_fps"
+flag = "--submit-fps"
+label = "AI submit FPS (0 = profile default)"
+type = "float"
+default = 0.0
+min = 0.0
+max = 30.0
+
+[[feature.param]]
+key = "prompt"
+flag = "--prompt"
+label = "Prompt"
+type = "text"
+default = "cyber ritual portrait, luminous arcane circuitry, holographic sigils, cinematic projection art"
+
+[[feature.param]]
+key = "show_input"
+flag = "--show-input"
+label = "Show camera inset"
+type = "bool"
+default = false
+
+[[feature.param]]
+key = "spout"
+flag = "--spout"
+label = "Send via Spout (Windows)"
+type = "bool"
+default = false
+
+[[feature.param]]
+key = "sender"
+flag = "--sender"
+label = "Spout sender"
+type = "text"
+default = "ProjectionMapping"
