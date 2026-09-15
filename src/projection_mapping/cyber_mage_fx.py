@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 
 from .performer_rig import PerformerState
+from .spell_state import SpellState
 
 
 PALETTES: dict[str, tuple[tuple[int, int, int], tuple[int, int, int], tuple[int, int, int]]] = {
@@ -42,6 +43,7 @@ class CyberMageRenderer:
         self.left_trail: deque[tuple[int, int]] = deque(maxlen=max(2, int(trail_length)))
         self.right_trail: deque[tuple[int, int]] = deque(maxlen=max(2, int(trail_length)))
         self._burst = 0.0
+        self._release_radius = 0.0
 
     @property
     def palette(self):
@@ -101,10 +103,18 @@ class CyberMageRenderer:
             c = tuple(int(v * alpha) for v in color)
             cv2.line(layer, pts[i - 1], pts[i], c, max(1, int(1 + alpha * 4)), cv2.LINE_AA)
 
-    def render(self, mask: np.ndarray, state: PerformerState, t: float, intensity: float = 1.0) -> np.ndarray:
+    def render(
+        self,
+        mask: np.ndarray,
+        state: PerformerState,
+        t: float,
+        intensity: float = 1.0,
+        spell: SpellState | None = None,
+    ) -> np.ndarray:
         intensity = float(np.clip(intensity, 0.0, 2.0))
         layer = np.zeros((self.height, self.width, 3), dtype=np.uint8)
         c1, c2, c3 = self.palette
+        spell = spell or SpellState()
 
         if not state.visible:
             self.feedback *= self.feedback_decay
@@ -129,41 +139,62 @@ class CyberMageRenderer:
         edge = cv2.Canny(body, 50, 130)
         aura = cv2.GaussianBlur(body, (0, 0), 9.0).astype(np.float32) / 255.0
         edge_glow = cv2.GaussianBlur(edge, (0, 0), 3.0).astype(np.float32) / 255.0
-        layer[..., 0] = np.clip(aura * c1[0] * 0.18 + edge_glow * c1[0], 0, 255).astype(np.uint8)
-        layer[..., 1] = np.clip(aura * c1[1] * 0.18 + edge_glow * c1[1], 0, 255).astype(np.uint8)
-        layer[..., 2] = np.clip(aura * c1[2] * 0.18 + edge_glow * c1[2], 0, 255).astype(np.uint8)
+        aura_gain = 0.18 + spell.shield_energy * 0.20 + spell.ascension_energy * 0.12
+        layer[..., 0] = np.clip(aura * c1[0] * aura_gain + edge_glow * c1[0], 0, 255).astype(np.uint8)
+        layer[..., 1] = np.clip(aura * c1[1] * aura_gain + edge_glow * c1[1], 0, 255).astype(np.uint8)
+        layer[..., 2] = np.clip(aura * c1[2] * aura_gain + edge_glow * c1[2], 0, 255).astype(np.uint8)
 
         if state.bbox is not None:
             _x, _y, bw, bh = state.bbox
         else:
             bw, bh = self.width // 3, self.height // 2
-        hand_r = int(max(12, min(bw, bh) * (0.10 + 0.04 * intensity)))
+        hand_r = int(max(12, min(bw, bh) * (0.10 + 0.04 * intensity + 0.04 * spell.charge)))
         chest_r = int(max(18, min(bw, bh) * (0.16 + 0.05 * self._burst)))
 
         self._sigil(layer, lh, hand_r, t, c1)
         self._sigil(layer, rh, hand_r, -t * 1.07, c2)
         self._sigil(layer, chest, chest_r, t * 0.45, c3)
-        if g.hands_raised:
-            self._sigil(layer, (head[0], max(12, head[1] - int(bh * 0.16))), int(chest_r * 1.15), -t * 0.35, c1)
+        if spell.ascension_energy > 0.08:
+            halo_center = (head[0], max(12, head[1] - int(bh * 0.16)))
+            self._sigil(layer, halo_center, int(chest_r * (1.0 + 0.5 * spell.ascension_energy)), -t * 0.35, c1)
 
         self._trail(layer, self.left_trail, c1)
         self._trail(layer, self.right_trail, c2)
 
-        arc_energy = np.clip(0.25 + motion * 1.8 + (0.65 if g.hands_together else 0.0), 0.0, 1.0)
+        arc_energy = np.clip(0.20 + motion * 1.6 + spell.charge * 0.8, 0.0, 1.0)
         self._arc(layer, lh, rh, t, c3, float(arc_energy))
-        self._arc(layer, lh, core, t + 0.4, c1, float(np.clip(motion * 1.2, 0, 1)))
-        self._arc(layer, rh, core, t - 0.3, c2, float(np.clip(motion * 1.2, 0, 1)))
+        self._arc(layer, lh, core, t + 0.4, c1, float(np.clip(motion * 1.1 + spell.cast_energy, 0, 1)))
+        self._arc(layer, rh, core, t - 0.3, c2, float(np.clip(motion * 1.1 + spell.cast_energy, 0, 1)))
 
-        if g.arms_spread:
-            cv2.circle(layer, chest, int(chest_r * (1.7 + 0.25 * math.sin(t * 4.0))), c3, 2, cv2.LINE_AA)
-        if g.hands_together:
+        if spell.shield_energy > 0.05:
+            shield_r = int(chest_r * (1.5 + 0.8 * spell.shield_energy))
+            cv2.circle(layer, chest, shield_r, c3, max(1, int(1 + spell.shield_energy * 3)), cv2.LINE_AA)
+            cv2.circle(layer, chest, int(shield_r * 0.82), c1, 1, cv2.LINE_AA)
+
+        if spell.charge > 0.02:
             mx, my = int((lh[0] + rh[0]) * 0.5), int((lh[1] + rh[1]) * 0.5)
-            orb_r = int(hand_r * (0.65 + 0.25 * math.sin(t * 8.0)))
-            cv2.circle(layer, (mx, my), max(4, orb_r), c3, -1, cv2.LINE_AA)
+            orb_r = int(hand_r * (0.35 + spell.charge * 0.80 + 0.08 * math.sin(t * 10.0)))
+            cv2.circle(layer, (mx, my), max(3, orb_r), c3, -1, cv2.LINE_AA)
+            cv2.circle(layer, (mx, my), max(5, int(orb_r * 1.8)), c2, 1, cv2.LINE_AA)
+
+        # A charged release becomes a spatial event instead of simply turning the orb off.
+        if spell.release_energy > 0.02:
+            self._release_radius += 9.0 + spell.release_energy * 14.0
+            max_r = max(self.width, self.height) * 0.72
+            if self._release_radius > max_r:
+                self._release_radius = 0.0
+            cv2.circle(layer, chest, max(1, int(self._release_radius)), c3, max(1, int(1 + spell.release_energy * 5)), cv2.LINE_AA)
+        else:
+            self._release_radius *= 0.90
+
+        if spell.cast_energy > 0.05:
+            for p, color in ((lh, c1), (rh, c2)):
+                r = int(hand_r * (1.2 + spell.cast_energy * 2.0))
+                cv2.circle(layer, p, r, color, max(1, int(1 + spell.cast_energy * 3)), cv2.LINE_AA)
 
         ground_y = max(lf[1], rf[1])
         ground_x = int((lf[0] + rf[0]) * 0.5)
-        ground_r = int(max(20, abs(rf[0] - lf[0]) * 0.72))
+        ground_r = int(max(20, abs(rf[0] - lf[0]) * (0.72 + 0.20 * spell.shield_energy)))
         cv2.ellipse(layer, (ground_x, ground_y), (ground_r, max(8, int(ground_r * 0.25))), 0, 0, 360, c1, 1, cv2.LINE_AA)
 
         layer = self._add_glow(layer, 5.0 + 3.0 * self.complexity, 0.55 + 0.35 * intensity)
