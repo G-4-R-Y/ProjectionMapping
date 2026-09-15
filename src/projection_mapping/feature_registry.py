@@ -82,11 +82,9 @@ class Feature:
         return "all supported OSs" if not self.platforms else ", ".join(self.platforms)
 
     def missing_commands(self) -> tuple[str, ...]:
-        """Return optional external executables that are not currently on PATH."""
         return tuple(command for command in self.requires_commands if shutil.which(command) is None)
 
     def missing_modules(self) -> tuple[str, ...]:
-        """Return Python modules required by the feature but not importable."""
         missing: list[str] = []
         for module in self.requires_modules:
             try:
@@ -115,8 +113,7 @@ class Feature:
     def build_argv(self, values: dict[str, Any] | None = None) -> list[str]:
         if not self.supported_on():
             raise RuntimeError(
-                f"{self.name} is not supported on {current_platform()}; "
-                f"supported: {self.platform_hint()}"
+                f"{self.name} is not supported on {current_platform()}; supported: {self.platform_hint()}"
             )
         missing = self.missing_commands()
         if missing:
@@ -133,8 +130,6 @@ class Feature:
         values = values or {}
         if self.command and self.command[0] == "python":
             if is_frozen():
-                # A frozen app has no standalone Python executable. Relaunch the
-                # desktop binary in hidden child-runner mode instead.
                 argv = [sys.executable, "--pm-child", *self.command[1:]]
             else:
                 argv = [sys.executable, *self.command[1:]]
@@ -179,14 +174,28 @@ def _default_registry_path() -> Path:
     return candidates[0]
 
 
+def _registry_files(registry_path: Path) -> list[Path]:
+    """Return the main registry plus optional configs/features.d/*.toml fragments."""
+    files = [registry_path]
+    fragments = registry_path.parent / "features.d"
+    if fragments.is_dir():
+        files.extend(sorted(fragments.glob("*.toml")))
+    return files
+
+
 def load_registry(path: str | Path | None = None) -> FeatureRegistry:
     registry_path = Path(path) if path else _default_registry_path()
     if not registry_path.exists():
         raise FileNotFoundError(f"feature registry not found: {registry_path}")
-    data = tomllib.loads(registry_path.read_text(encoding="utf-8"))
+
+    raw_features: list[dict[str, Any]] = []
+    for file_path in _registry_files(registry_path):
+        data = tomllib.loads(file_path.read_text(encoding="utf-8"))
+        raw_features.extend(data.get("feature", []))
+
     features: list[Feature] = []
     seen: set[str] = set()
-    for raw in data.get("feature", []):
+    for raw in raw_features:
         feature_id = raw["id"]
         if feature_id in seen:
             raise ValueError(f"duplicate feature id: {feature_id}")
