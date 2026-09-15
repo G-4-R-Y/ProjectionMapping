@@ -1,8 +1,171 @@
 [[feature]]
-id = "audio_reactive_studio"
-name = "Audio Reactive Studio"
+id = "audio_visual_instrument"
+name = "Audio Visual Instrument / GPU"
 category = "Visual Madness"
-description = "Curated music-reactive visual studio with semantic beat/onset gating, six visual presets, six palettes and calm-to-chaotic reactivity modes. Designed to react to musical structure instead of constant FFT noise. F11 toggles fullscreen."
+description = "GPU-first music instrument: rolling 2048-sample analysis over low-latency capture blocks, adaptive event gating, tempo/beat phase, drop detection, seamless ModernGL scene journeys and projector-grade shader composition. F11 toggles fullscreen."
+command = ["python", "experiments/15_audio_visual_instrument.py"]
+fullscreen = true
+requires_modules = ["soundcard", "moderngl"]
+
+[[feature.param]]
+key = "source"
+flag = "--source"
+label = "Audio source"
+type = "choice"
+default = "system"
+choices = ["system", "mic"]
+
+[[feature.param]]
+key = "scene"
+flag = "--scene"
+label = "Shader scene"
+type = "choice"
+default = "journey"
+choices = ["journey", "aurora", "liquid", "pulse", "void", "cathedral"]
+
+[[feature.param]]
+key = "palette"
+flag = "--palette"
+label = "Palette"
+type = "choice"
+default = "neon_aurora"
+choices = ["neon_aurora", "solar_flare", "bioluminescent", "intelli", "mono_accent", "prismatic"]
+
+[[feature.param]]
+key = "reactivity"
+flag = "--reactivity"
+label = "Musical reactivity"
+type = "choice"
+default = "balanced"
+choices = ["smooth", "balanced", "punchy", "chaotic"]
+
+[[feature.param]]
+key = "madness"
+flag = "--madness"
+label = "Calm to madness"
+type = "float"
+default = 0.42
+min = 0.0
+max = 1.0
+
+[[feature.param]]
+key = "event_threshold"
+flag = "--event-threshold"
+label = "Minimum strong-onset gate"
+type = "float"
+default = 0.64
+min = 0.30
+max = 0.95
+
+[[feature.param]]
+key = "beat_threshold"
+flag = "--beat-threshold"
+label = "Minimum beat/kick gate"
+type = "float"
+default = 0.50
+min = 0.25
+max = 0.90
+
+[[feature.param]]
+key = "sensitivity"
+flag = "--sensitivity"
+label = "Input sensitivity"
+type = "float"
+default = 1.20
+min = 0.25
+max = 3.0
+
+[[feature.param]]
+key = "analysis_size"
+flag = "--analysis-size"
+label = "Spectral analysis window (samples)"
+type = "choice"
+default = "2048"
+choices = ["1024", "2048", "4096"]
+
+[[feature.param]]
+key = "blocksize"
+flag = "--blocksize"
+label = "Capture block (samples)"
+type = "choice"
+default = "256"
+choices = ["128", "256", "512"]
+
+[[feature.param]]
+key = "transition_seconds"
+flag = "--transition-seconds"
+label = "Scene crossfade seconds"
+type = "float"
+default = 2.4
+min = 0.25
+max = 10.0
+
+[[feature.param]]
+key = "auto_scene_seconds"
+flag = "--auto-scene-seconds"
+label = "Journey maximum scene duration"
+type = "float"
+default = 28.0
+min = 8.0
+max = 120.0
+
+[[feature.param]]
+key = "display"
+flag = "--display"
+label = "Projector display"
+type = "int"
+default = 1
+min = 0
+max = 8
+
+[[feature.param]]
+key = "render_width"
+flag = "--render-width"
+label = "Shader render width"
+type = "int"
+default = 768
+min = 320
+max = 1920
+
+[[feature.param]]
+key = "render_height"
+flag = "--render-height"
+label = "Shader render height"
+type = "int"
+default = 432
+min = 180
+max = 1080
+
+[[feature.param]]
+key = "projector_width"
+flag = "--projector-width"
+label = "Projector width"
+type = "int"
+default = 1920
+min = 320
+max = 7680
+
+[[feature.param]]
+key = "projector_height"
+flag = "--projector-height"
+label = "Projector height"
+type = "int"
+default = 1080
+min = 240
+max = 4320
+
+[[feature.param]]
+key = "device"
+flag = "--device"
+label = "Audio device name/id (optional)"
+type = "text"
+default = ""
+
+[[feature]]
+id = "audio_reactive_studio_cpu"
+name = "Audio Reactive Studio / CPU Legacy"
+category = "Visual Madness"
+description = "Previous NumPy/OpenCV music visualizer kept as a lightweight compatibility fallback. The GPU Audio Visual Instrument is now the quality target."
 command = ["python", "experiments/10_audio_reactive.py"]
 fullscreen = true
 requires_modules = ["soundcard"]
@@ -40,42 +203,6 @@ default = "balanced"
 choices = ["smooth", "balanced", "punchy", "chaotic"]
 
 [[feature.param]]
-key = "madness"
-flag = "--madness"
-label = "Calm to madness"
-type = "float"
-default = 0.45
-min = 0.0
-max = 1.0
-
-[[feature.param]]
-key = "event_threshold"
-flag = "--event-threshold"
-label = "Strong onset threshold"
-type = "float"
-default = 0.62
-min = 0.25
-max = 0.95
-
-[[feature.param]]
-key = "beat_threshold"
-flag = "--beat-threshold"
-label = "Beat / kick threshold"
-type = "float"
-default = 0.50
-min = 0.20
-max = 0.90
-
-[[feature.param]]
-key = "sensitivity"
-flag = "--sensitivity"
-label = "Input sensitivity"
-type = "float"
-default = 1.8
-min = 0.1
-max = 8.0
-
-[[feature.param]]
 key = "display"
 flag = "--display"
 label = "Projector display"
@@ -83,28 +210,3 @@ type = "int"
 default = 1
 min = 0
 max = 8
-
-[[feature.param]]
-key = "projector_width"
-flag = "--projector-width"
-label = "Projector width"
-type = "int"
-default = 1920
-min = 320
-max = 7680
-
-[[feature.param]]
-key = "projector_height"
-flag = "--projector-height"
-label = "Projector height"
-type = "int"
-default = 1080
-min = 240
-max = 4320
-
-[[feature.param]]
-key = "device"
-flag = "--device"
-label = "Audio device name/id (optional)"
-type = "text"
-default = ""
