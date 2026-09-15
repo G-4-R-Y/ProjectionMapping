@@ -24,7 +24,7 @@ classifiers = [
 vision = ["opencv-python>=4.9,<5"]
 ml = ["torch>=2.2", "torchvision>=0.17"]
 ui = ["textual>=0.70"]
-audio = ["SoundCard>=0.4.5"]
+audio = ["SoundCard>=0.4.6"]
 graphics = ["moderngl>=5.10,<6"]
 desktop = ["pyinstaller>=6.10"]
 dev = ["pytest>=8", "ruff>=0.6"]
