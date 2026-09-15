@@ -2,7 +2,7 @@
 id = "human_reactor"
 name = "Human Reactor"
 category = "Visual Madness"
-description = "Camera-driven silhouette reactor: foreground edges glow, motion becomes energy, and fast movement leaves persistent comet-like trails. No pose model required. F11 toggles fullscreen."
+description = "Dance/performance reactor: silhouette energy, optical-flow motion, afterimages, trails, palettes, optional camera blend and clean rendered-video recording. F11 toggles fullscreen."
 command = ["python", "experiments/12_human_reactor.py"]
 fullscreen = true
 
@@ -25,22 +25,20 @@ min = 0
 max = 8
 
 [[feature.param]]
-key = "projector_width"
-flag = "--projector-width"
-label = "Projector width"
-type = "int"
-default = 1920
-min = 320
-max = 7680
+key = "style"
+flag = "--style"
+label = "Reactor style"
+type = "choice"
+default = "plasma"
+choices = ["plasma", "outline", "ghost", "ember", "xray"]
 
 [[feature.param]]
-key = "projector_height"
-flag = "--projector-height"
-label = "Projector height"
-type = "int"
-default = 1080
-min = 240
-max = 4320
+key = "palette"
+flag = "--palette"
+label = "Palette"
+type = "choice"
+default = "neon"
+choices = ["neon", "jade", "ember", "ice", "violet", "mono"]
 
 [[feature.param]]
 key = "intensity"
@@ -58,4 +56,99 @@ label = "Trail persistence"
 type = "float"
 default = 0.90
 min = 0.0
-max = 0.985
+max = 0.99
+
+[[feature.param]]
+key = "edge_gain"
+flag = "--edge-gain"
+label = "Edge glow"
+type = "float"
+default = 1.35
+min = 0.0
+max = 4.0
+
+[[feature.param]]
+key = "motion_gain"
+flag = "--motion-gain"
+label = "Motion energy"
+type = "float"
+default = 1.25
+min = 0.0
+max = 4.0
+
+[[feature.param]]
+key = "body_glow"
+flag = "--body-glow"
+label = "Body fill / aura"
+type = "float"
+default = 0.55
+min = 0.0
+max = 3.0
+
+[[feature.param]]
+key = "spark_gain"
+flag = "--spark-gain"
+label = "Motion sparks"
+type = "float"
+default = 0.85
+min = 0.0
+max = 4.0
+
+[[feature.param]]
+key = "echoes"
+flag = "--echoes"
+label = "Temporal echoes"
+type = "int"
+default = 4
+min = 0
+max = 12
+
+[[feature.param]]
+key = "echo_strength"
+flag = "--echo-strength"
+label = "Echo strength"
+type = "float"
+default = 0.70
+min = 0.0
+max = 2.0
+
+[[feature.param]]
+key = "camera_mix"
+flag = "--camera-mix"
+label = "Original camera mix"
+type = "float"
+default = 0.0
+min = 0.0
+max = 1.0
+
+[[feature.param]]
+key = "mirror"
+flag = "--mirror"
+label = "Mirror camera"
+type = "bool"
+default = true
+
+[[feature.param]]
+key = "record"
+flag = "--record"
+label = "Record rendered video (optional path)"
+type = "text"
+default = ""
+
+[[feature.param]]
+key = "projector_width"
+flag = "--projector-width"
+label = "Output width"
+type = "int"
+default = 1920
+min = 320
+max = 7680
+
+[[feature.param]]
+key = "projector_height"
+flag = "--projector-height"
+label = "Output height"
+type = "int"
+default = 1080
+min = 240
+max = 4320
