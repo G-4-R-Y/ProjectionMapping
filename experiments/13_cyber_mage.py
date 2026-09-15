@@ -1,8 +1,8 @@
 """Cyber Mage: performer-anchored realtime spell FX.
 
 Classical realtime baseline first: foreground segmentation -> persistent performer rig ->
-body-owned sigils/arcs/trails/auras. Neural generation is intentionally not required for
-spatial stability; a later neural style skin can decorate this renderer at lower FPS.
+gesture state machine -> body-owned sigils/arcs/trails/auras. Neural generation is not
+required for spatial stability; a later neural style skin can decorate this renderer at lower FPS.
 
 F11 toggles fullscreen; ESC exits.
 """
@@ -19,6 +19,7 @@ from projection_mapping.cyber_mage_fx import CyberMageRenderer, PALETTES
 from projection_mapping.perception import BackgroundMask, optical_flow
 from projection_mapping.performer_rig import PerformerRig
 from projection_mapping.runtime import FullscreenSink
+from projection_mapping.spell_state import SpellStateMachine
 
 
 def main() -> None:
@@ -35,6 +36,7 @@ def main() -> None:
     ap.add_argument("--trail-length", type=int, default=30)
     ap.add_argument("--feedback", type=float, default=0.90)
     ap.add_argument("--rig-smoothing", type=float, default=0.72)
+    ap.add_argument("--charge-seconds", type=float, default=0.65)
     ap.add_argument("--mirror", action="store_true")
     ap.add_argument("--camera-mix", type=float, default=0.08)
     args = ap.parse_args()
@@ -42,6 +44,7 @@ def main() -> None:
     sink = FullscreenSink(window="ProjectionMapping-CyberMage", display=args.display)
     bg = BackgroundMask(history=240, threshold=19.0)
     rig = PerformerRig(smoothing=args.rig_smoothing)
+    spells = SpellStateMachine(charge_seconds=args.charge_seconds)
     renderer = CyberMageRenderer(
         args.capture_width,
         args.capture_height,
@@ -53,12 +56,15 @@ def main() -> None:
 
     previous = None
     t0 = time.perf_counter()
+    last_t = t0
     report_t = t0
     frames = 0
     try:
         with Camera(args.camera, args.capture_width, args.capture_height) as cam:
             while True:
                 now = time.perf_counter()
+                dt = min(max(now - last_t, 1e-4), 0.2)
+                last_t = now
                 frame = cam.read()
                 frame = cv2.resize(frame, (args.capture_width, args.capture_height), interpolation=cv2.INTER_AREA)
                 if args.mirror:
@@ -77,7 +83,8 @@ def main() -> None:
                 previous = frame.copy()
 
                 state = rig.update(mask, flow_mag)
-                fx = renderer.render(mask, state, now - t0, args.intensity)
+                spell = spells.update(state.gestures, dt)
+                fx = renderer.render(mask, state, now - t0, args.intensity, spell=spell)
 
                 camera_mix = float(np.clip(args.camera_mix, 0.0, 1.0))
                 if camera_mix > 0.0:
@@ -96,7 +103,8 @@ def main() -> None:
                     print(
                         f"fps={frames / (now - report_t):.1f} visible={state.visible} "
                         f"occupancy={state.occupancy:.3f} motion={g.motion_energy:.3f} "
-                        f"spread={g.arms_spread} together={g.hands_together} raised={g.hands_raised} "
+                        f"spell={spell.phase} charge={spell.charge:.2f} release={spell.release_energy:.2f} "
+                        f"shield={spell.shield_energy:.2f} ascension={spell.ascension_energy:.2f} "
                         "F11=fullscreen ESC=exit",
                         flush=True,
                     )
