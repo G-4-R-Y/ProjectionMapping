@@ -1,6 +1,6 @@
 # Performance Visuals
 
-This document covers the projector-ready performance modes added after hardware bring-up.
+This document covers projector-ready performance modes added after hardware bring-up. Fine-grained research/polish queues live under [`docs/feature_tracks/`](feature_tracks/README.md).
 
 ## Audio Reactive Studio
 
@@ -53,6 +53,32 @@ Record the rendered projector feed:
 python experiments/12_human_reactor.py --style plasma --palette neon --mirror --record captures/reactor_take01.mp4
 ```
 
+## Cyber Mage
+
+**Cyber Mage** is the deterministic performer-owned spell stack. It deliberately does not require generative AI: segmentation + flow feed a persistent `PerformerRig`, which estimates semantic anchors for head, chest/core, hands and feet. The renderer owns spatial consistency and keeps effects attached to those anchors.
+
+Current deterministic effects:
+- palm and chest sigils
+- hand-to-hand and hand-to-core plasma arcs
+- persistent hand trails
+- body aura / glowing silhouette
+- charge orb when hands approach
+- halo/sigil when hands are raised
+- expanded chest seal when arms spread
+- floor/ground glyph under the performer
+
+Gesture telemetry currently includes `arms_spread`, `hands_together`, `hands_raised` and `motion_burst`. These are a classical baseline; the next step is an optional pose/hand landmark backend behind the same `PerformerRig` interface.
+
+Palettes: `arcane`, `solar`, `void`, `jade`.
+
+Example:
+
+```bash
+python experiments/13_cyber_mage.py --palette arcane --mirror --intensity 1.1 --complexity 0.85 --trail-length 36
+```
+
+The longer-term neural path is intentionally additive: deterministic sigils/arcs/trails remain exact at display rate while lower-rate StreamDiffusion/video models supply a temporally stabilized style/material skin using performer masks, pose/depth/edge controls and a flow-warped previous stylized frame.
+
 ## Neural Mirror: 6 GB safe path
 
 The TUI exposes **Neural Mirror / 6GB Safe**. The `safe` profile uses 512x288 inference and a bounded default submission rate while still rendering/upscaling to projector resolution.
@@ -81,4 +107,4 @@ F11 toggles fullscreen on direct display output. ESC exits cleanly and returns t
 
 ## Performance principle
 
-For all performance modes: prefer stable 60 Hz deterministic rendering around sparse semantic events. Neural inference remains asynchronous/latest-frame-wins and should never create a stale frame queue. Visual intensity should come from composition, feedback, spatial structure and event design—not from making every noisy feature modulate every pixel.
+For all performance modes: prefer stable high-rate deterministic rendering around sparse semantic events. Neural inference remains asynchronous/latest-frame-wins and should never create a stale frame queue. Tracking, persistent identities and geometry own spatial consistency; neural models supply slower semantic/material/style updates. Visual intensity should come from composition, feedback, spatial structure and event design—not from making every noisy feature modulate every pixel.
