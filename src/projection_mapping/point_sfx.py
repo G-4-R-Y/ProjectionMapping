@@ -171,8 +171,14 @@ class PointSFXRenderer:
 
         live_ids = {p.id for p in points}
         for stale in list(self.histories):
-            if stale not in live_ids and len(self.histories[stale]) == 0:
+            if stale in live_ids:
+                continue
+            hist = self.histories[stale]
+            if hist:
+                hist.popleft()
+            if len(hist) < 2:
                 self.histories.pop(stale, None)
+                self.previous_speed.pop(stale, None)
 
         self._draw_connections(layer, points)
         for p in points:
@@ -183,9 +189,11 @@ class PointSFXRenderer:
             cv2.circle(layer, p.xy(), radius + 4, tuple(int(v * 0.18) for v in color), -1, cv2.LINE_AA)
             cv2.circle(layer, p.xy(), radius, color, -1, cv2.LINE_AA)
             self._emit_sparks(layer, p)
-            self.previous_speed[p.id] = p.speed
 
+        # Detect acceleration BEFORE updating the per-track speed history.
         self._update_shockwaves(layer, points)
+        for p in points:
+            self.previous_speed[p.id] = p.speed
 
         if mask is not None and self.mode in {"plasma_mesh", "liquid_wire"}:
             m = (np.asarray(mask) > 0).astype(np.uint8) * 255
