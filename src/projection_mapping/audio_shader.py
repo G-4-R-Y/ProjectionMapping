@@ -43,7 +43,6 @@ uniform float u_scene_mix;
 in vec2 v_uv;
 out vec4 fragColor;
 
-#define PI 3.141592653589793
 #define TAU 6.283185307179586
 
 float hash21(vec2 p) {
@@ -107,7 +106,8 @@ vec2 centeredUV() {
 }
 
 vec3 auroraScene(vec2 p) {
-    float t = u_time*(0.08 + 0.10*u_mids);
+    float tempoDrive = 0.00015*clamp(u_tempo, 0.0, 180.0);
+    float t = u_time*(0.07 + 0.10*u_mids + tempoDrive);
     vec2 q = p*1.55;
     float n1 = fbm(q*1.6 + vec2(t, -t*.37));
     float n2 = fbm(q*2.7 + vec2(-t*.41, t*.72) + n1*1.6);
@@ -144,7 +144,6 @@ vec3 liquidScene(vec2 p) {
 vec3 pulseScene(vec2 p) {
     float r = length(p)+1e-4;
     float a = atan(p.y,p.x);
-    // Integer angular harmonics are periodic across atan's branch cut: no portal seam.
     float angular = sin(a*8.0 + u_time*.10) * .55 + sin(a*12.0-u_time*.07)*.25;
     float z = -log(r);
     float phaseDrive = u_phase*TAU;
@@ -168,7 +167,7 @@ vec3 voidScene(vec2 p) {
     vec2 f = fract((p+vec2(3.0))*vec2(42.0,24.0))-.5;
     float h = hash21(cell);
     float star = h>.965 ? pow(max(0.0,1.0-length(f)*3.0),10.0) : 0.0;
-    star *= .40 + .60*sin(u_time*(1.2+h*2.0)+h*20.0)*.5+.5;
+    star *= .90 + .30*sin(u_time*(1.2+h*2.0)+h*20.0);
     star *= .38 + 1.25*u_highs;
 
     float r = length(p);
@@ -214,11 +213,9 @@ void main() {
     float m = u_scene_mix*u_scene_mix*(3.0-2.0*u_scene_mix);
     vec3 col = mix(a,b,m);
 
-    // Rare macro events should alter the whole composition, not create per-pixel noise.
     col *= 1.0 + u_drop*.28;
     col += palette(.95)*u_drop*.10*(1.0-smoothstep(.0,1.25,length(p)));
 
-    // Filmic compression + projector-safe blacks. Preserve dark negative space.
     col = max(col, vec3(0.0));
     col = col / (1.0 + col);
     col = pow(col, vec3(.86));
