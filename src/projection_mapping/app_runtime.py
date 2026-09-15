@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import gc
 import runpy
 import sys
 from pathlib import Path
@@ -21,6 +22,29 @@ def runtime_root() -> Path:
     root = Path.home() / ".projection_mapping"
     root.mkdir(parents=True, exist_ok=True)
     return root
+
+
+def release_runtime_resources() -> None:
+    """Best-effort cleanup before a child process exits.
+
+    Process termination is the real hard boundary that releases CUDA contexts, but
+    explicitly dropping Python garbage and cached PyTorch allocations makes graceful
+    shutdown cleaner and is useful when child-runner code returns normally.
+    """
+    gc.collect()
+    torch = sys.modules.get("torch")
+    if torch is None:
+        return
+    try:
+        cuda = getattr(torch, "cuda", None)
+        if cuda is not None and cuda.is_available():
+            cuda.empty_cache()
+            ipc_collect = getattr(cuda, "ipc_collect", None)
+            if callable(ipc_collect):
+                ipc_collect()
+    except Exception:
+        # Cleanup must never mask the original renderer error/exit code.
+        pass
 
 
 def run_frozen_child(argv: list[str]) -> int:
@@ -56,4 +80,5 @@ def run_frozen_child(argv: list[str]) -> int:
         runpy.run_path(str(script), run_name="__main__")
         return 0
     finally:
+        release_runtime_resources()
         sys.argv = old_argv
