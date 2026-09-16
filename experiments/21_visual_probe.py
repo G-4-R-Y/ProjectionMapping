@@ -25,11 +25,9 @@ def _probe(name: str, fn) -> bool:
 
 
 def main() -> None:
-    from projection_mapping.graphics_runtime import probe_graphics_runtime
+    from projection_mapping.graphics_runtime import probe_context
 
-    report=probe_graphics_runtime(require=330)
-    if not report.available:
-        raise SystemExit(f"OpenGL unavailable: {report.error}")
+    report=probe_context(require=330)
     print(
         f"[visual-probe] GL backend={report.backend} version={report.gl_version} "
         f"vendor={report.vendor} renderer={report.renderer}",
