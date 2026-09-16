@@ -84,7 +84,6 @@ class MusicStructureTracker:
             candidate = "steady"
             confidence = float(np.clip(0.52 + self._fast * 0.30, 0.0, 1.0))
 
-        # Drops override dwell. Other labels need persistence so choreography does not chatter.
         if candidate == "drop":
             if self._section != "drop":
                 self._section_since = float(now)
@@ -105,23 +104,23 @@ class MusicStructureTracker:
 
 
 class ParticleJourneyController:
-    """Select particle choreography at section boundaries without resetting particle state."""
+    """Select choreography at section/phrase boundaries without resetting particle state."""
 
     _SECTION_BANK = {
-        "breakdown": "constellation_bloom",
-        "build": "vortex_gate",
-        "drop": "dual_comet",
-        "release": "orbit_reactor",
-        "steady": "orbit_reactor",
+        "breakdown": "nebula_bloom",
+        "build": "polar_gate",
+        "drop": "techno_lattice",
+        "release": "reactor_bloom",
+        "steady": "helix_fountain",
     }
 
-    def __init__(self, *, initial: str = "orbit_reactor", minimum_dwell: float = 6.0) -> None:
+    def __init__(self, *, initial: str = "helix_fountain", minimum_dwell: float = 6.0) -> None:
         self.bank = initial
         self.minimum_dwell = float(max(minimum_dwell, 1.0))
         self._last_switch = -999.0
 
     def update(self, structure: MusicStructure, now: float) -> str:
-        desired = self._SECTION_BANK.get(structure.section, "orbit_reactor")
+        desired = self._SECTION_BANK.get(structure.section, "reactor_bloom")
         urgent = structure.section == "drop" and desired != self.bank
         phrase_edge = structure.phrase_phase < 0.06 or structure.phrase_phase > 0.94
         if desired != self.bank and (
