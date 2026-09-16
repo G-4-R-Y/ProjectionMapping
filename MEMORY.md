@@ -1,0 +1,226 @@
+# ProjectionMapping — Project Memory / Agent Handoff
+
+This file is the durable working memory for humans and auxiliary agents continuing this repository. Read it together with `ROADMAP.md` and `docs/feature_tracks/README.md` before making substantial changes.
+
+It is intentionally opinionated: it preserves successful decisions, hardware findings, rejected approaches, visual-quality standards, and the reasoning behind the current architecture so a future agent does not rediscover old mistakes or silently regress the project.
+
+## 1. North star
+
+Build a fully open, extensible realtime spatial-performance / mixed-reality instrument:
+
+`camera + audio + controls + generated assets -> shared semantic state -> deterministic high-rate GPU rendering -> optional sparse neural semantic/style updates -> projector calibration/compensation -> room -> camera feedback`
+
+The project should eventually support:
+- projector-native installations and room transformation;
+- performer/body/hand tracked SFX comparable in polish to strong TouchDesigner work;
+- music-driven visual choreography that responds to musical structure rather than FFT noise;
+- generated 2D/3D assets from external pipelines such as Genforge;
+- mixed-reality summons/entities/arena-like interactions;
+- realtime neural style/material transformation when it adds something deterministic graphics cannot.
+
+TouchDesigner is an **aesthetic and workflow reference**, not a required dependency. The canonical runtime should remain open-source.
+
+## 2. Non-negotiable architecture rules
+
+1. **Deterministic spatial ownership first; generative stylization second.** Tracking, geometry, IDs, masks and room calibration decide where an effect belongs. AI may decorate/transform that stable state.
+2. **Latest-frame-wins neural inference.** Never build a queue of stale camera frames.
+3. **Shared state, not feature islands.** `TrackingState`, `PerformanceState`, `MusicalSignals`, gestures and room events should be reusable across Performer FX, Human Reactor, Song Studio, Neural Mirror and Room Skin.
+4. **Generated assets are content, not motion logic.** Renderer/tracking/physics own continuity.
+5. **Do not promote debug primitives as final visuals.** OpenCV lines/circles are acceptable diagnostic scaffolding, not the art-quality target.
+6. **Keep classical/deterministic baselines beside learned paths.** A research model is promoted only when it beats a simpler baseline on actual hardware or unlocks a qualitatively new effect.
+7. **Measure latency and stability.** Prefer p50/p95/p99 timings, track age/confidence, render/readback cost, VRAM headroom and temporal residuals over vague speed claims.
+8. **Hardware validation is separate from implementation.** Never claim a path is validated because code/CI exists.
+9. **F11 toggles fullscreen; ESC exits only the child visual and returns to the control deck.** Preserve this interaction.
+10. **Keep the feature tracks updated.** Major work is incomplete until the appropriate `docs/feature_tracks/*.md` file and `ROADMAP.md` are updated.
+
+## 3. Current hardware targets
+
+Primary laptop test machine observed in logs:
+- Linux 6.8 / X11
+- NVIDIA RTX 4050 Laptop GPU
+- 6141 MiB VRAM, ~5.6 GiB free idle
+- Python 3.10 supported
+
+Stronger desktop target:
+- RTX 4080
+- Windows path is especially relevant for Spout/shared-texture workflows and heavier neural modes.
+
+Design 6 GiB profiles conservatively. Do not let optional TensorRT/xFormers/model caches consume all free VRAM.
+
+## 4. Important hardware findings / fixes
+
+### Linux camera
+An old camera implementation selected DirectShow merely because the OpenCV constant existed. Fixed: Windows uses DSHOW/MSMF/ANY, Linux uses V4L2/ANY, macOS AVFoundation/ANY.
+
+### Linux system audio
+System loopback was confirmed working through the native Pulse/PipeWire monitor path (`parec`). Keep that path first on Linux with SoundCard as fallback.
+
+### Audio spectral resolution
+Never tie FFT size to capture block size. A 256-sample FFT at 48 kHz has 187.5 Hz bin spacing and is useless for a 35–180 Hz bass control. Current design keeps 128/256-sample capture possible while rolling ~2048 samples for spectral analysis.
+
+### Neural Mirror xFormers failure
+A real test showed SD-Turbo loaded, then StreamDiffusion failed specifically when xFormers was requested but unavailable. xFormers is optional; the backend now falls back to native PyTorch attention rather than treating it as mandatory.
+
+### Mixed-reality asset launch failure
+The first MR asset TUI test exited in argparse because the asset field was empty and `--asset` was required. That was a product/registry contract bug, not an OpenGL/RTMPose/render failure. The stage now defaults to built-in procedural meshes so the pipeline can be smoke-tested without an external GLB.
+
+### ModernGL packaging warning
+Desktop packaging previously omitted the graphics extra/context package. `moderngl` + `glcontext` are now explicit; Linux context creation probes EGL first. Use `experiments/18_graphics_probe.py` when graphics availability is ambiguous.
+
+## 5. Rejected approaches — do not repeat
+
+### Fake semantic hands from silhouette extrema
+The first Cyber Mage treated upper-silhouette left/right extrema as hands. Gesture logic such as hands-together therefore frequently did nothing. Never build semantic gesture behavior on guessed silhouette extrema.
+
+### Generic OpenCV Cyber Mage aesthetics
+Circles, straight lines and debug-like geometry were rejected as visually cheap. The active direction is real point/landmark tracking + GPU particles + analytic SDF/GLSL effects.
+
+### Generic template shader scenes
+Several early procedural/shader scenes looked like stock demos and failed the artistic bar. In particular, the first Cathedral scene read as nearly static. Weak visual branches should be rewritten or removed rather than defended because they are technically correct.
+
+### Muddy particle tone mapping
+The first GPU particle material looked as if a grey shade/film covered the vivid colors. Causes include broad low-threshold bloom, persistent low-energy feedback and per-channel Reinhard compression. Current direction: white-hot cores, saturated shells, thresholded bloom, clean black floor and hue-preserving exponential display transform.
+
+## 6. Art direction — this matters as much as plumbing
+
+The user supplied an older casual ModernGL shader playground made after roughly two hours of shader experimentation. Despite being technically simple, its visible result was judged **substantially more aesthetic, vivid and colorful** than several of this repository's earlier shader templates. Treat that as a benchmark and a warning: complexity is not artistic quality.
+
+Useful properties of that reference:
+- aspect-correct centered coordinates;
+- radial distance as the primary spatial language;
+- repeated domains / layered harmonics;
+- cosine palettes with strong saturated color travel;
+- narrow inverse-distance luminous contours;
+- simple coherent time motion;
+- black background and obvious bright structures;
+- no apologetic grey fog covering the image.
+
+Current visual target:
+- vivid emissive color;
+- strong negative space;
+- white-hot local cores, not globally whitened frames;
+- mathematical coherence and symmetry where appropriate;
+- motion hierarchy: continuous field motion + sparse strong events;
+- projection-readable macro forms with high-frequency detail layered on top;
+- no random rainbow noise merely to create complexity.
+
+Read `docs/ART_DIRECTION.md` before creating/promoting a new visual scene.
+
+## 7. Current renderer / visual lanes
+
+### Song Studio
+The highest-potential branch. Musical analysis produces `MusicalSignals`; a GPU particle stage turns them into persistent choreography. Current direction includes section/phrase-aware Journey control and analytic Polar Math backdrops. Music should conduct a scene, not twitch every pixel.
+
+### Performer FX
+Preferred open performer-effects path:
+`RTMPose/whole-body -> semantic anchors -> SpellGrammar -> GPU particles + SDF spell geometry -> optional generated assets -> projector`.
+
+Generic LK point tracking remains useful for fabric, hair, props and non-semantic motion even when real landmarks are present.
+
+### Polar Math Lab
+Analytic vivid radial shader branch with five equation families:
+- rose lattice;
+- hypotrochoid engine;
+- log-spiral interference;
+- phyllotaxis reactor;
+- Bessel wave chamber.
+
+This branch exists specifically to raise the art bar beyond generic procedural templates.
+
+### Shader Scene Lab
+Keep as a scene-research branch, not sacred legacy. Event Horizon/Aurora/Liquid can evolve; Cathedral was rewritten once already because the original was too static. Delete/rewrite weak work aggressively.
+
+### Neural Mirror
+Use neural video as semantic/material skin, not as the source of exact hand/room geometry. Existing baseline flow-warps previous neural output between sparse AI keyframes and measures residuals.
+
+### Mixed Reality assets
+Built-in assets make bring-up possible without files; external GLB/glTF/OBJ can come from Genforge or other content pipelines. The current mesh renderer is geometry/normals/emissive-first; PBR textures, skins and animation are future work.
+
+## 8. Current generated/built-in asset vocabulary
+
+Built-in MR mesh names should stay usable as test fixtures:
+- `builtin:cyber_orb`
+- `builtin:energy_ring`
+- `builtin:crystal`
+- `builtin:relic`
+- `builtin:drone`
+- `builtin:sigil_totem`
+- `builtin:summon_proxy`
+
+VFX packs should retain generator/model/prompt/seed/provenance/license metadata when available.
+
+## 9. Song Studio design rules
+
+- Continuous bass/mids/highs modulate broad field properties; they do not all trigger discrete events.
+- Highs are detail, not the global clock.
+- Strong visual events use adaptive gates + refractory spacing.
+- One captured audio block can trigger an event at most once even if the display loop reads it multiple times.
+- Scene/choreography changes prefer phrase boundaries; drops may override dwell for an urgent change.
+- Particle state should survive choreography transitions rather than resetting.
+- Default particle background can be pure black. If a Polar Math background is enabled, blend it as restrained emissive structure, not haze.
+- Record useful operating points in `docs/feature_tracks/audio_visual.md`.
+
+## 10. Neural/video continuity ladder
+
+1. deterministic high-rate geometry/points/landmarks;
+2. previous-frame optical-flow warp;
+3. blend fresh neural keyframes against motion prediction;
+4. stable seed/style/prompt interpolation;
+5. mask-aware compositing;
+6. prior-style/latent/state reuse where the backend allows;
+7. pose/depth/edge/semantic control maps;
+8. TemporalNet/StreamV2V/causal video experiments;
+9. newer video models only when they beat the measured baseline on latency/VRAM/stability.
+
+Never claim a generative model mathematically guarantees frame consistency.
+
+## 11. Useful commands
+
+Typical development setup:
+
+```bash
+git pull
+source .venv/bin/activate
+python -m pip install -e '.[ui,vision,audio,graphics,performer,assets3d,interop,dev]'
+python -m projection_mapping.tui
+```
+
+Graphics probe:
+
+```bash
+python experiments/18_graphics_probe.py
+```
+
+Run tests:
+
+```bash
+python -m pytest -q
+python -m ruff check src tests --select E9,F63,F7,F82
+```
+
+## 12. Handoff protocol for future agents
+
+Before changing a subsystem:
+1. Read this file.
+2. Read `ROADMAP.md`.
+3. Read the subsystem feature track.
+4. Inspect current implementation and recent hardware logs before proposing a rewrite.
+5. Separate facts observed on hardware from hypotheses.
+6. Preserve good presets and rejected-path lessons in the track.
+7. Implement a measurable baseline before adding a research-heavy model.
+8. Update tests and registry/dependency declarations when adding a runnable artifact.
+9. Update the roadmap/track with what is **implemented**, **hardware-validated**, and **still speculative**.
+10. Prefer finishing one visually convincing vertical slice over creating many mediocre demo branches.
+
+## 13. Immediate quality priorities
+
+1. Validate the vivid particle material overhaul on the RTX 4050/projector; tune bloom/black floor from actual footage.
+2. Validate all five Polar Math modes and keep only visually strong variations.
+3. Make Song Studio Journey reliably move between choreography banks at musically sensible boundaries.
+4. Continue improving GPU spell/SDF geometry and generated assets.
+5. Validate RTMPose hand/body anchors and performer FX latency.
+6. Add PBR/animated generated-asset rendering and the Genforge exporter contract.
+7. Remove GL -> CPU readback once the visual language is worth preserving.
+8. Then integrate performer/audio/room state and neural skinning into one coherent stage system.
+
+The standard is not “works”. The standard is **worth filming and projecting**.
