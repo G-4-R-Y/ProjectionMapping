@@ -42,6 +42,10 @@ def main() -> None:
         "textual",
         "--collect-all",
         "soundcard",
+        "--collect-all",
+        "moderngl",
+        "--collect-all",
+        "glcontext",
         "--hidden-import",
         "cv2",
         "--add-data",
@@ -53,6 +57,10 @@ def main() -> None:
         "--add-data",
         add_data_arg("docs/assets", "docs/assets"),
     ]
+    packs = ROOT / "assets" / "packs"
+    if packs.exists():
+        args.extend(["--add-data", add_data_arg("assets/packs", "assets/packs")])
+
     print("Building desktop bundle:\n  " + " ".join(args))
     subprocess.run(args, cwd=ROOT, check=True)
 
