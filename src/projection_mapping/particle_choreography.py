@@ -33,6 +33,7 @@ class ParticleChoreography:
     feedback: float
     bloom: float
     palette: str
+    material: str = "plasma"
 
 
 def _phase_angle(s: MusicalSignals, t: float, multiplier: float = 1.0) -> float:
@@ -61,7 +62,7 @@ def choreography(bank: str, s: MusicalSignals, t: float, madness: float = 0.45) 
             vx = -math.sin(a) * (0.24 + 0.20 * s.mids)
             vy = math.cos(a) * (0.24 + 0.20 * s.mids)
             emitters.append(ParticleEmitter(x, y, vx, vy, 0.55 + 0.45 * loud, (i / 4.0 + s.color * 0.22) % 1.0, 0.010 + 0.012 * beat))
-        return ParticleChoreography(tuple(emitters), 4200 + 7600 * loud + 5200 * drop, 0.18 + 0.24 * m, 1.15, 0.935, 1.15, "cyber")
+        return ParticleChoreography(tuple(emitters), 4200 + 7600 * loud + 5200 * drop, 0.18 + 0.24 * m, 1.15, 0.935, 1.15, "cyber", "plasma")
 
     if bank == "dual_comet":
         swing = 0.22 + 0.08 * s.bass
@@ -74,7 +75,7 @@ def choreography(bank: str, s: MusicalSignals, t: float, madness: float = 0.45) 
             ParticleEmitter(x1, y1, math.cos(angle) * speed, math.sin(angle) * speed, 0.65 + 0.35 * loud, 0.04 + s.color * 0.12, 0.018),
             ParticleEmitter(x2, y2, -math.cos(angle) * speed, -math.sin(angle) * speed, 0.65 + 0.35 * loud, 0.62 + s.color * 0.12, 0.018),
         )
-        return ParticleChoreography(emitters, 5200 + 9000 * loud + 8000 * strike, 0.10 + 0.20 * m, 0.92, 0.945, 1.30, "prismatic")
+        return ParticleChoreography(emitters, 5200 + 9000 * loud + 8000 * strike, 0.10 + 0.20 * m, 0.92, 0.945, 1.30, "prismatic", "comet")
 
     if bank == "cathedral_rain":
         emitters = []
@@ -83,7 +84,7 @@ def choreography(bank: str, s: MusicalSignals, t: float, madness: float = 0.45) 
             x = (i + 0.5) / columns
             pulse = 0.55 + 0.45 * math.sin(angle + i * 1.7)
             emitters.append(ParticleEmitter(x, 0.05, 0.0, 0.22 + 0.34 * s.bass, 0.30 + 0.55 * loud * pulse, 0.45 + i * 0.025, 0.008))
-        return ParticleChoreography(tuple(emitters), 3500 + 6500 * loud + 4500 * beat, 0.06 + 0.12 * m, 0.72, 0.955, 0.95, "bio")
+        return ParticleChoreography(tuple(emitters), 3500 + 6500 * loud + 4500 * beat, 0.06 + 0.12 * m, 0.72, 0.955, 0.95, "bio", "spark")
 
     if bank == "vortex_gate":
         emitters = []
@@ -94,7 +95,7 @@ def choreography(bank: str, s: MusicalSignals, t: float, madness: float = 0.45) 
             y = 0.5 + math.sin(a) * radius
             tangent = 0.36 + 0.32 * s.mids + 0.30 * drop
             emitters.append(ParticleEmitter(x, y, -math.sin(a) * tangent, math.cos(a) * tangent, 0.44 + 0.48 * loud, (0.78 + i * 0.045) % 1.0, 0.014))
-        return ParticleChoreography(tuple(emitters), 4800 + 7600 * loud + 10000 * drop, 0.30 + 0.34 * m, 0.88, 0.948, 1.25, "solar")
+        return ParticleChoreography(tuple(emitters), 4800 + 7600 * loud + 10000 * drop, 0.30 + 0.34 * m, 0.88, 0.948, 1.25, "solar", "comet")
 
     if bank == "constellation_bloom":
         emitters = []
@@ -103,14 +104,13 @@ def choreography(bank: str, s: MusicalSignals, t: float, madness: float = 0.45) 
             a = i * math.tau / max(count, 1) + angle * 0.12
             radius = 0.22 + 0.08 * math.sin(angle * 0.25 + i)
             emitters.append(ParticleEmitter(0.5 + math.cos(a) * radius, 0.5 + math.sin(a) * radius, 0.02 * math.cos(a), 0.02 * math.sin(a), 0.22 + 0.55 * loud + 0.4 * strike, (s.color + i / max(count, 1)) % 1.0, 0.006 + 0.016 * strike))
-        return ParticleChoreography(tuple(emitters), 900 + 3200 * loud + 9000 * strike + 12000 * drop, 0.12 + 0.24 * m, 1.32, 0.965, 1.35, "cyber")
+        return ParticleChoreography(tuple(emitters), 900 + 3200 * loud + 9000 * strike + 12000 * drop, 0.12 + 0.24 * m, 1.32, 0.965, 1.35, "cyber", "mote")
 
     if bank == "reactor_bloom":
-        # Concentric emitters breathe radially, then explode outward on marked events.
         emitters=[]
         pulse=.04+.13*s.bass+.10*beat
         for ring in range(2):
-            count=4 if ring == 0 else 4
+            count=4
             radius=.08+ring*.12+pulse*(.45+.25*ring)
             for i in range(count):
                 a=angle*(.42+.16*ring)+i*math.tau/count+ring*.39
@@ -120,10 +120,10 @@ def choreography(bank: str, s: MusicalSignals, t: float, madness: float = 0.45) 
                 vy=math.sin(a)*radial+math.cos(a)*tangent
                 hue=(.78+ring*.16+i*.045+s.color*.10)%1.0
                 emitters.append(ParticleEmitter(.5+math.cos(a)*radius,.5+math.sin(a)*radius,vx,vy,.52+.48*loud+.30*drop,hue,.010+.010*beat))
-        return ParticleChoreography(tuple(emitters[:8]),5200+9200*loud+15000*drop, .14+.28*m+.12*strike, .98, .948, 1.48, "cyber")
+        material="shock_ring" if drop>.48 else "plasma"
+        return ParticleChoreography(tuple(emitters[:8]),5200+9200*loud+15000*drop,.14+.28*m+.12*strike,.98,.948,1.48,"cyber",material)
 
     if bank == "polar_gate":
-        # Eight rotating gate emitters with alternating tangent directions and a violent drop expansion.
         emitters=[]
         radius=.23+.055*s.bass+.08*drop
         for i in range(8):
@@ -132,12 +132,11 @@ def choreography(bank: str, s: MusicalSignals, t: float, madness: float = 0.45) 
             tangent=(.24+.38*s.mids+.22*beat)*direction
             radial=.03+.28*drop
             vx=-math.sin(a)*tangent+math.cos(a)*radial
-            vy= math.cos(a)*tangent+math.sin(a)*radial
+            vy=math.cos(a)*tangent+math.sin(a)*radial
             emitters.append(ParticleEmitter(.5+math.cos(a)*radius,.5+math.sin(a)*radius,vx,vy,.45+.50*loud+.32*drop,(.57+i*.055+s.color*.16)%1.0,.010+.010*strike))
-        return ParticleChoreography(tuple(emitters),4600+8400*loud+13000*drop, .22+.30*m, 1.02, .952, 1.38, "prismatic")
+        return ParticleChoreography(tuple(emitters),4600+8400*loud+13000*drop,.22+.30*m,1.02,.952,1.38,"prismatic","comet")
 
     if bank == "ritual_rain":
-        # Ordered vertical lances: sparse, elegant, then accented by kick/strike rather than constant noise.
         emitters=[]
         for i in range(8):
             x=(i+.5)/8.0 + .018*math.sin(angle*.25+i)
@@ -146,10 +145,9 @@ def choreography(bank: str, s: MusicalSignals, t: float, madness: float = 0.45) 
             hue=(.32+i*.028+s.color*.08)%1.0
             energy=.22+.50*loud+(.34 if (i%2)==0 else .12)*strike
             emitters.append(ParticleEmitter(x,.03,drift,downward,energy,hue,.006+.005*beat))
-        return ParticleChoreography(tuple(emitters),2600+5600*loud+7000*strike, .035+.10*m, .68, .958, 1.12, "bio")
+        return ParticleChoreography(tuple(emitters),2600+5600*loud+7000*strike,.035+.10*m,.68,.958,1.12,"bio","spark")
 
     if bank == "helix_fountain":
-        # Two phase-opposed emitters climb and twist around the center like a DNA/plasma fountain.
         emitters=[]
         for i in range(8):
             lane=-1.0 if i%2==0 else 1.0
@@ -160,10 +158,9 @@ def choreography(bank: str, s: MusicalSignals, t: float, madness: float = 0.45) 
             vy=-(.20+.32*s.bass+.18*beat)
             hue=(.80+lane*.10+i*.032+s.color*.12)%1.0
             emitters.append(ParticleEmitter(x,y,vx,vy,.42+.55*loud,hue,.009+.006*strike))
-        return ParticleChoreography(tuple(emitters),4000+7800*loud+8000*beat, .10+.22*m, .86, .950, 1.30, "cyber")
+        return ParticleChoreography(tuple(emitters),4000+7800*loud+8000*beat,.10+.22*m,.86,.950,1.30,"cyber","comet")
 
     if bank == "nebula_bloom":
-        # Low-density slow bloom for breakdowns/ambient sections, with rare event-driven flareups.
         emitters=[]
         for i in range(6):
             a=angle*.08+i*math.tau/6.0
@@ -171,9 +168,8 @@ def choreography(bank: str, s: MusicalSignals, t: float, madness: float = 0.45) 
             vx=.025*math.cos(a)+.055*math.cos(a+math.pi*.5)*s.mids
             vy=.025*math.sin(a)+.055*math.sin(a+math.pi*.5)*s.mids
             emitters.append(ParticleEmitter(.5+math.cos(a)*radius,.5+math.sin(a)*radius,vx,vy,.16+.42*loud+.55*drop,(s.color+i*.14)%1.0,.016+.012*drop))
-        return ParticleChoreography(tuple(emitters),650+2300*loud+11000*drop, .08+.16*m, 1.42, .972, 1.42, "prismatic")
+        return ParticleChoreography(tuple(emitters),650+2300*loud+11000*drop,.08+.16*m,1.42,.972,1.42,"prismatic","mote")
 
-    # techno_lattice: beat-quantized rectangular symmetry without turning into noisy equalizer bars.
     emitters=[]
     phase=angle*.25
     points=((.24,.24),(.50,.20),(.76,.24),(.80,.50),(.76,.76),(.50,.80),(.24,.76),(.20,.50))
@@ -188,7 +184,8 @@ def choreography(bank: str, s: MusicalSignals, t: float, madness: float = 0.45) 
         vx=dx/norm*radial-dy/norm*tangent
         vy=dy/norm*radial+dx/norm*tangent
         emitters.append(ParticleEmitter(x,y,vx,vy,.36+.52*loud+.40*beat,(.02+i*.10+s.color*.08)%1.0,.008+.012*strike))
-    return ParticleChoreography(tuple(emitters),3800+7200*loud+10500*beat+9000*drop,.09+.20*m,1.05,.944,1.36,"solar")
+    material="shock_ring" if drop>.55 else "spark"
+    return ParticleChoreography(tuple(emitters),3800+7200*loud+10500*beat+9000*drop,.09+.20*m,1.05,.944,1.36,"solar",material)
 
 
-__all__ = ["BANKS", "ParticleChoreography", "choreography"]
+__all__=["BANKS","ParticleChoreography","choreography"]
