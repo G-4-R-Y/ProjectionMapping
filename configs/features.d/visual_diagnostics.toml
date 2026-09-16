@@ -1,0 +1,7 @@
+[[feature]]
+id = "visual_stack_probe"
+name = "Visual Stack / Compile Probe"
+category = "Diagnostics"
+description = "Creates a real OpenGL context, compiles/renders every Polar Math mode and Shader Scene Lab scene, then exercises the vivid GPU particle pipeline. Use this before debugging art or the TUI after shader/driver changes."
+command = ["python", "experiments/21_visual_probe.py"]
+requires_modules = ["moderngl"]
