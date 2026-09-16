@@ -16,9 +16,10 @@ Every track should keep the same sections so visual ambition, engineering debt, 
 
 ## Tracks
 
-- [`audio_visual.md`](audio_visual.md) — system-audio capture, musical event extraction, audiovisual scenes, MIDI/OSC/latent control.
+- [`performer_fx.md`](performer_fx.md) — umbrella performer/mixed-reality VFX engine: shared semantic bus, real hands/pose, GPU particles, spell grammar, generated 2D/3D assets, room interactions and neural skinning.
+- [`audio_visual.md`](audio_visual.md) — system-audio capture, musical event extraction, shader worlds, particle choreography, MIDI/OSC/latent control.
 - [`human_reactor.md`](human_reactor.md) — dance/performance silhouette rendering, recording, pose-aware extensions.
-- [`cyber_mage.md`](cyber_mage.md) — performer rig, anchors, gestures, sigils/arcs/trails/portals, neural style skin.
+- [`cyber_mage.md`](cyber_mage.md) — generic tracked-point SFX research plus semantic performer effects now converging into Performer FX.
 - [`procedural_scenes.md`](procedural_scenes.md) — projector-native procedural worlds, shaders, particles, feedback and stable high-rate visual layers.
 - [`neural_mirror.md`](neural_mirror.md) — StreamDiffusion, lightweight GPU profiles, temporal consistency, control maps.
 - [`room_skin.md`](room_skin.md) — spatially locked material hallucination and geometry-aware generation.
@@ -30,3 +31,5 @@ Every track should keep the same sections so visual ambition, engineering debt, 
 ## Cross-track rule
 
 Prefer **deterministic spatial ownership first, generative stylization second**. Tracking, geometry, persistent IDs, masks and temporal state should own consistency; neural models decorate or semantically transform those stable structures. Neural output should normally run as sparse/latest-frame-wins semantic updates while procedural/shader/feedback layers maintain high-rate motion.
+
+The shared `PerformanceState` / `TrackingState` / `MusicalSignals` contracts are the cross-feature boundary: Song Studio, Performer FX, Human Reactor, Cyber Mage, Room Skin and Neural Mirror should consume the same semantic state rather than each implementing incompatible tracking/audio logic.
