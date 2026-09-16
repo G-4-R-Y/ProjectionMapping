@@ -1,0 +1,58 @@
+[pack]
+id = "polar_ritual"
+name = "Polar Ritual Mathematical VFX"
+version = "0.1.0"
+license = "MIT"
+author = "ProjectionMapping project"
+source = "procedural"
+generated_with = "ProjectionMapping Polar Math / GLSL"
+
+[[asset]]
+id = "rose_lattice"
+kind = "shader"
+binding = "screen"
+tags = ["polar", "rose", "mandala", "emissive", "math"]
+blend = "add"
+shader = "polar_math"
+mode = "rose_lattice"
+palette = "spectral"
+
+[[asset]]
+id = "hypotrochoid_engine"
+kind = "shader"
+binding = "world"
+tags = ["hypotrochoid", "gear", "sigil", "portal", "math"]
+blend = "add"
+shader = "polar_math"
+mode = "hypotrochoid_engine"
+palette = "cyber"
+
+[[asset]]
+id = "log_spiral_interference"
+kind = "shader"
+binding = "world"
+tags = ["spiral", "vortex", "portal", "interference", "math"]
+blend = "add"
+shader = "polar_math"
+mode = "log_spiral_interference"
+palette = "ultraviolet"
+
+[[asset]]
+id = "phyllotaxis_reactor"
+kind = "shader"
+binding = "screen"
+tags = ["phyllotaxis", "golden-angle", "reactor", "organic", "math"]
+blend = "add"
+shader = "polar_math"
+mode = "phyllotaxis_reactor"
+palette = "bio"
+
+[[asset]]
+id = "bessel_wave_chamber"
+kind = "shader"
+binding = "screen"
+tags = ["bessel", "standing-wave", "radial", "installation", "math"]
+blend = "add"
+shader = "polar_math"
+mode = "bessel_wave_chamber"
+palette = "spectral"
