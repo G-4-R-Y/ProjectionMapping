@@ -1,0 +1,53 @@
+[pack]
+id = "particle_arsenal"
+name = "Vivid GPU Particle Arsenal"
+version = "0.1.0"
+license = "MIT"
+author = "ProjectionMapping project"
+source = "procedural"
+generated_with = "ProjectionMapping GPUParticleField"
+
+[[asset]]
+id = "plasma_motes"
+kind = "material"
+binding = "world"
+tags = ["particle", "plasma", "emissive", "general"]
+blend = "add"
+renderer = "gpu_particles"
+material = "plasma"
+
+[[asset]]
+id = "comet_streaks"
+kind = "material"
+binding = "world"
+tags = ["particle", "comet", "velocity", "trail"]
+blend = "add"
+renderer = "gpu_particles"
+material = "comet"
+
+[[asset]]
+id = "pulse_sparks"
+kind = "material"
+binding = "world"
+tags = ["particle", "spark", "transient", "strike"]
+blend = "add"
+renderer = "gpu_particles"
+material = "spark"
+
+[[asset]]
+id = "constellation_motes"
+kind = "material"
+binding = "world"
+tags = ["particle", "mote", "constellation", "ambient"]
+blend = "add"
+renderer = "gpu_particles"
+material = "mote"
+
+[[asset]]
+id = "shockwave_sprites"
+kind = "material"
+binding = "room_hit"
+tags = ["particle", "shockwave", "ring", "impact"]
+blend = "add"
+renderer = "gpu_particles"
+material = "shock_ring"
