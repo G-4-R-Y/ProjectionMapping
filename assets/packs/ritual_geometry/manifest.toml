@@ -1,0 +1,48 @@
+[pack]
+id = "ritual_geometry"
+name = "Ritual Geometry / Polar Math Arsenal"
+version = "0.1.0"
+license = "MIT"
+author = "ProjectionMapping project"
+source = "procedural"
+generated_with = "ProjectionMapping PolarMathRenderer"
+
+[[asset]]
+id = "rose_lattice"
+kind = "shader"
+binding = "screen"
+tags = ["polar", "rose", "mandala", "ritual", "radial"]
+renderer = "polar_math"
+mode = "rose_lattice"
+
+[[asset]]
+id = "hypotrochoid_engine"
+kind = "shader"
+binding = "screen"
+tags = ["polar", "hypotrochoid", "spirograph", "mechanical", "ritual"]
+renderer = "polar_math"
+mode = "hypotrochoid_engine"
+
+[[asset]]
+id = "log_spiral_interference"
+kind = "shader"
+binding = "screen"
+tags = ["polar", "spiral", "interference", "portal", "radial"]
+renderer = "polar_math"
+mode = "log_spiral_interference"
+
+[[asset]]
+id = "phyllotaxis_reactor"
+kind = "shader"
+binding = "screen"
+tags = ["polar", "phyllotaxis", "golden-angle", "reactor", "organic"]
+renderer = "polar_math"
+mode = "phyllotaxis_reactor"
+
+[[asset]]
+id = "bessel_wave_chamber"
+kind = "shader"
+binding = "screen"
+tags = ["polar", "bessel", "wave", "standing-wave", "installation"]
+renderer = "polar_math"
+mode = "bessel_wave_chamber"
