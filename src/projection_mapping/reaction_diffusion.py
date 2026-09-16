@@ -101,7 +101,7 @@ void main(){
     float dx=texture(u_state,v_uv+vec2(u_texel.x,0)).g-texture(u_state,v_uv-vec2(u_texel.x,0)).g;
     float dy=texture(u_state,v_uv+vec2(0,u_texel.y)).g-texture(u_state,v_uv-vec2(0,u_texel.y)).g;
     float edge=sqrt(dx*dx+dy*dy);
-    float phase=v*1.72-u*.36+edge*4.2+u_time*.008;
+    float phase=v*1.72-u*.36+edge*4.2+u_time*.008+u_mids*.19;
     vec3 col=pal(phase)*(v*1.45+edge*2.4);
     col+=pal(.64+phase*.28)*pow(max(v-.18,0.0),1.8)*1.2;
     col+=vec3(1.0,.98,.94)*pow(clamp(edge*5.0,0.0,1.0),3.0)*(.24+.36*u_highs+.32*u_beat);
