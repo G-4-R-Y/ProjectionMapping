@@ -62,7 +62,7 @@ vec3 eventHorizon(vec2 p, float t) {
     float r = length(p) + 1e-5;
     float a = atan(p.y,p.x);
     float ring = exp(-22.0*abs(r - (0.39 + 0.025*sin(t*0.37))));
-    float inner = smoothstep(0.43,0.08,r);
+    float inner = 1.0-smoothstep(0.08,0.43,r);
     float swirl = fbm(vec2(log(r)*3.5 - t*0.16, a*6.0/PI));
     float spokes = 0.5 + 0.5*cos(a*12.0 + 13.0/r - t*1.35 + swirl*2.0);
     float filaments = pow(spokes, 6.0) * exp(-2.2*r);
@@ -156,7 +156,7 @@ void main() {
     else if(u_scene==2) c=liquidChrome(p,t);
     else c=neonCathedral(p,t);
 
-    float vignette=smoothstep(1.45,0.18,length(p));
+    float vignette=1.0-smoothstep(0.18,1.45,length(p));
     c *= mix(0.72,1.0,vignette);
     c *= 0.86 + 0.40*u_intensity;
     // Hue-preserving emissive transform: vivid highlights, clean black floor.
@@ -209,11 +209,7 @@ class ShaderSceneRenderer:
 
     def close(self) -> None:
         for obj in (self.fbo,self.target,self.vao,self.vbo,self.program):
-            try:
-                obj.release()
-            except Exception:
-                pass
-        try:
-            self.ctx.release()
-        except Exception:
-            pass
+            try: obj.release()
+            except Exception: pass
+        try: self.ctx.release()
+        except Exception: pass
