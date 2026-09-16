@@ -73,8 +73,7 @@ def main() -> None:
             )
             if sink(cv2.cvtColor(out, cv2.COLOR_RGB2BGR)) is False:
                 break
-            key = cv2.waitKeyEx(1)
-            if key in (ord("r"), ord("R")):
+            if sink.last_key in (ord("r"), ord("R")):
                 seed += 1
                 renderer.reset(seed=seed)
                 print(f"[reaction-diffusion] reseed={seed}", flush=True)
