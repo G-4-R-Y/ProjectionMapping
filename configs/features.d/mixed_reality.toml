@@ -1,0 +1,134 @@
+[[feature]]
+id = "mixed_reality_asset"
+name = "Mixed Reality / Generated 3D Asset"
+category = "Visual Madness"
+description = "Load a generated GLB/glTF/mesh, attach it to a real RTMPose body anchor or world centre, render it with our ModernGL mesh shader, and optionally surround it with a GPU particle aura. First open Genforge-to-MR bridge."
+command = ["python", "experiments/19_mixed_reality_asset.py"]
+fullscreen = true
+requires_modules = ["moderngl", "trimesh", "rtmlib"]
+
+[[feature.param]]
+key = "asset"
+flag = "--asset"
+label = "Generated 3D asset path (GLB/glTF/etc)"
+type = "text"
+default = ""
+
+[[feature.param]]
+key = "anchor"
+flag = "--anchor"
+label = "Attach asset to"
+type = "choice"
+default = "right_palm"
+choices = ["world", "left_palm", "right_palm", "chest", "head"]
+
+[[feature.param]]
+key = "style"
+flag = "--style"
+label = "Cyber material"
+type = "choice"
+default = "cyber"
+choices = ["cyber", "bio", "solar", "prismatic"]
+
+[[feature.param]]
+key = "scale"
+flag = "--scale"
+label = "Asset scale"
+type = "float"
+default = 0.34
+min = 0.02
+max = 3.0
+
+[[feature.param]]
+key = "spin_speed"
+flag = "--spin-speed"
+label = "Spin speed"
+type = "float"
+default = 0.65
+min = 0.0
+max = 4.0
+
+[[feature.param]]
+key = "camera_mix"
+flag = "--camera-mix"
+label = "Camera background mix"
+type = "float"
+default = 0.72
+min = 0.0
+max = 1.0
+
+[[feature.param]]
+key = "particle_aura"
+flag = "--particle-aura"
+label = "GPU particle aura"
+type = "bool"
+default = true
+
+[[feature.param]]
+key = "particles"
+flag = "--particles"
+label = "Aura particle capacity"
+type = "choice"
+default = "16384"
+choices = ["8192", "16384", "32768"]
+
+[[feature.param]]
+key = "mirror"
+flag = "--mirror"
+label = "Mirror camera"
+type = "bool"
+default = true
+
+[[feature.param]]
+key = "camera"
+flag = "--camera"
+label = "Camera"
+type = "int"
+default = 0
+min = 0
+max = 16
+
+[[feature.param]]
+key = "display"
+flag = "--display"
+label = "Projector display"
+type = "int"
+default = 1
+min = 0
+max = 8
+
+[[feature.param]]
+key = "render_width"
+flag = "--render-width"
+label = "3D render width"
+type = "int"
+default = 768
+min = 320
+max = 1920
+
+[[feature.param]]
+key = "render_height"
+flag = "--render-height"
+label = "3D render height"
+type = "int"
+default = 432
+min = 180
+max = 1080
+
+[[feature.param]]
+key = "projector_width"
+flag = "--projector-width"
+label = "Projector width"
+type = "int"
+default = 1920
+min = 320
+max = 7680
+
+[[feature.param]]
+key = "projector_height"
+flag = "--projector-height"
+label = "Projector height"
+type = "int"
+default = 1080
+min = 240
+max = 4320
