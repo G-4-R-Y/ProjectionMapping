@@ -150,6 +150,30 @@ def main() -> None:
         finally:
             r.close()
 
+    def attractors() -> None:
+        from projection_mapping.attractor_lab import AttractorRenderer
+
+        for i, mode in enumerate(("lorenz", "clifford", "ikeda")):
+            r = AttractorRenderer(192, 108, mode=mode, points=7000)
+            try:
+                frame = r.render(
+                    t=0.31 + i * 0.27,
+                    intensity=1.0,
+                    zoom=1.35,
+                    point_size=2.0,
+                    bloom=1.0,
+                )
+                assert frame.shape == (108, 192, 3)
+                assert np.isfinite(frame).all()
+                assert int(frame.max()) > 8, f"{mode} attractor rendered suspiciously dark"
+                print(
+                    f"[visual-probe]   attractor={mode} peak={int(frame.max())} "
+                    f"mean={float(frame.mean()):.2f}",
+                    flush=True,
+                )
+            finally:
+                r.close()
+
     def particles() -> None:
         from projection_mapping.gpu_particles import GPUParticleField, ParticleEmitter
 
@@ -187,6 +211,7 @@ def main() -> None:
     ok &= _probe("Shader Scene Lab all modes + seam regression", scenes)
     ok &= _probe("Famous Math all modes", famous_math)
     ok &= _probe("Gray-Scott reaction diffusion presets", reaction_diffusion)
+    ok &= _probe("Classic attractor GPU point clouds", attractors)
     ok &= _probe("GPU particle materials", particles)
     if not ok:
         raise SystemExit(2)
