@@ -1,3 +1,4 @@
+from projection_mapping.gpu_particles import GPUParticleField
 from projection_mapping.music_reactivity import MusicalSignals
 from projection_mapping.particle_choreography import BANKS, choreography
 
@@ -30,6 +31,8 @@ def test_every_bank_produces_emitters_and_valid_parameters():
         assert c.emitters
         assert c.emission_rate >= 0.0
         assert 0.0 <= c.feedback <= 1.0
+        assert c.palette in GPUParticleField.PALETTES
+        assert c.material in GPUParticleField.MATERIALS
         for emitter in c.emitters:
             assert 0.0 <= emitter.x <= 1.0
             assert 0.0 <= emitter.y <= 1.0
@@ -46,3 +49,10 @@ def test_constellation_is_sparse_until_accents():
     quiet = choreography("constellation_bloom", signals(loudness=0.1, strike=0.0, drop=0.0), t=3.0)
     accent = choreography("constellation_bloom", signals(loudness=0.1, strike=1.0, drop=1.0), t=3.0)
     assert accent.emission_rate > quiet.emission_rate * 5.0
+
+
+def test_drop_can_switch_reactor_to_shock_ring_material():
+    quiet = choreography("reactor_bloom", signals(drop=0.0), t=2.0)
+    drop = choreography("reactor_bloom", signals(drop=1.0), t=2.0)
+    assert quiet.material == "plasma"
+    assert drop.material == "shock_ring"
