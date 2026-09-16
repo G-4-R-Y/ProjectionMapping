@@ -2,7 +2,7 @@
 id = "audio_particle_stage"
 name = "Song Studio / GPU Particle Stage"
 category = "Visual Madness"
-description = "Music-driven GPU particle choreography with vivid emissive materials, phrase/section-aware Journey mode, persistent feedback/advection, and optional analytic Polar Math backdrops. Uses the shared MusicalSignals bus. F11 toggles fullscreen."
+description = "Music-driven GPU particle choreography with vivid emissive materials, phrase/section-aware Journey mode, persistent feedback/advection, and optional Polar Math or structured-chaos shader backdrops. Uses the shared MusicalSignals bus. F11 toggles fullscreen."
 command = ["python", "experiments/16_audio_particle_stage.py"]
 fullscreen = true
 requires_modules = ["soundcard", "moderngl"]
@@ -26,15 +26,15 @@ choices = ["journey", "orbit_reactor", "dual_comet", "cathedral_rain", "vortex_g
 [[feature.param]]
 key = "backdrop"
 flag = "--backdrop"
-label = "Polar math backdrop"
+label = "Backdrop / conductor layer"
 type = "choice"
 default = "none"
-choices = ["none", "auto", "rose_lattice", "hypotrochoid_engine", "log_spiral_interference", "phyllotaxis_reactor", "bessel_wave_chamber"]
+choices = ["none", "auto", "rose_lattice", "hypotrochoid_engine", "log_spiral_interference", "phyllotaxis_reactor", "bessel_wave_chamber", "scene:event_horizon", "scene:aurora_void", "scene:liquid_chrome", "scene:neon_cathedral", "scene:wormhole_choir", "scene:plasma_singularity", "scene:vortex_crown", "scene:collapse_flower"]
 
 [[feature.param]]
 key = "backdrop_palette"
 flag = "--backdrop-palette"
-label = "Backdrop palette"
+label = "Polar backdrop palette"
 type = "choice"
 default = "spectral"
 choices = ["spectral", "cyber", "solar", "bio", "ultraviolet"]
@@ -44,9 +44,18 @@ key = "backdrop_intensity"
 flag = "--backdrop-intensity"
 label = "Backdrop mix"
 type = "float"
-default = 0.34
+default = 0.28
 min = 0.0
 max = 1.0
+
+[[feature.param]]
+key = "backdrop_chaos"
+flag = "--backdrop-chaos"
+label = "Shader backdrop chaos"
+type = "float"
+default = 1.20
+min = 0.0
+max = 2.5
 
 [[feature.param]]
 key = "reactivity"
