@@ -124,7 +124,6 @@ void main() {
         vel += f * u_turbulence * u_dt * (.30 + .70*seed);
         vel *= exp(-u_drag*u_dt);
         pos += vel*u_dt;
-        // Soft screen wrap keeps long-lived atmospheric particles coherent.
         if (pos.x < -.08) pos.x = 1.08;
         if (pos.x > 1.08) pos.x = -.08;
         if (pos.y < -.08) pos.y = 1.08;
@@ -144,6 +143,7 @@ uniform vec2 u_resolution;
 out float v_life;
 out float v_hue;
 out float v_seed;
+out float v_speed;
 void main() {
     int id = gl_VertexID;
     vec4 s0 = texelFetch(u_state0, ivec2(id,0), 0);
@@ -153,10 +153,11 @@ void main() {
     if (life <= 0.0) p = vec2(-10.0);
     gl_Position = vec4(p.x*2.0-1.0, 1.0-p.y*2.0, 0.0, 1.0);
     float aspectScale = clamp(min(u_resolution.x,u_resolution.y)/720.0, .6, 2.2);
-    gl_PointSize = clamp(s1.w * aspectScale * (.75 + .45*u_energy), 1.0, 24.0);
+    gl_PointSize = clamp(s1.w * aspectScale * (.72 + .50*u_energy), 1.0, 26.0);
     v_life = life;
     v_hue = s1.z;
     v_seed = s0.w;
+    v_speed = length(s1.xy);
 }
 """
 
@@ -165,26 +166,52 @@ _PARTICLE_FRAGMENT = r"""
 in float v_life;
 in float v_hue;
 in float v_seed;
+in float v_speed;
 uniform int u_palette;
 uniform float u_strike;
 out vec4 fragColor;
 #define TAU 6.28318530718
-vec3 pal(float t) {
-    if (u_palette == 1) return .50 + .50*cos(TAU*(vec3(.16,.12,.08)+t+vec3(0.0,.08,.18)));
-    if (u_palette == 2) return .48 + .46*cos(TAU*(vec3(.90,.72,.62)*t+vec3(.35,.10,.02)));
-    if (u_palette == 3) return .50 + .50*cos(TAU*(vec3(1.0,.82,.67)*t+vec3(.00,.16,.39)));
-    return .50 + .50*cos(TAU*(vec3(.92,.80,.72)*t+vec3(.56,.12,.02)));
+
+vec3 satPalette(float t) {
+    t=fract(t);
+    if (u_palette == 1) {
+        vec3 a=vec3(1.00,.12,.015), b=vec3(1.00,.72,.04), c=vec3(1.00,.02,.26);
+        return mix(mix(a,b,smoothstep(0.0,.48,t)),c,smoothstep(.48,1.0,t));
+    }
+    if (u_palette == 2) {
+        vec3 a=vec3(.01,1.00,.34), b=vec3(.00,.88,1.00), c=vec3(.40,.06,1.00);
+        return mix(mix(a,b,smoothstep(0.0,.52,t)),c,smoothstep(.52,1.0,t));
+    }
+    if (u_palette == 3) {
+        return .54 + .54*cos(TAU*(vec3(1.0,.78,.58)*t+vec3(.00,.17,.43)));
+    }
+    vec3 a=vec3(.00,.92,1.00), b=vec3(.12,.20,1.00), c=vec3(1.00,.03,.78);
+    return mix(mix(a,b,smoothstep(0.0,.46,t)),c,smoothstep(.46,1.0,t));
 }
+
 void main() {
     vec2 q = gl_PointCoord*2.0-1.0;
     float r = length(q);
-    float core = 1.0-smoothstep(.02,.34,r);
-    float halo = 1.0-smoothstep(.12,1.0,r);
-    float life = smoothstep(0.0,.20,v_life);
-    vec3 c = pal(fract(v_hue));
-    c = mix(c, vec3(1.0), core*(.58+.24*u_strike));
-    float a = (core*1.25 + halo*.56)*life;
-    fragColor = vec4(c*a, a);
+    if (r > 1.0) discard;
+
+    float core = 1.0-smoothstep(.00,.18,r);
+    float shell = exp(-pow((r-.25)*4.6,2.0));
+    float halo = exp(-r*3.15);
+    float farHalo = exp(-r*1.55)*.20;
+    float crossSpark = (exp(-abs(q.x)*24.0)+exp(-abs(q.y)*24.0))*exp(-r*2.4);
+    float life = smoothstep(0.0,.16,v_life);
+    float speedLift = smoothstep(.12,.95,v_speed);
+
+    vec3 base = max(satPalette(v_hue + v_seed*.035), vec3(0.0));
+    vec3 hot = vec3(1.0,.985,.94);
+    vec3 col = base*(shell*1.55 + halo*.72 + farHalo*.28);
+    col += hot*core*(2.15 + .75*u_strike);
+    col += mix(base,hot,.45)*crossSpark*(.10+.32*speedLift+.22*u_strike);
+    col *= life*(.88+.24*speedLift);
+
+    // Additive pass: RGB is energy. Avoid grey alpha fog entirely.
+    float a = life*clamp(core + shell*.72 + halo*.28,0.0,1.0);
+    fragColor = vec4(col,a);
 }
 """
 
@@ -200,32 +227,48 @@ uniform float u_strike;
 uniform float u_drop;
 in vec2 v_uv;
 out vec4 fragColor;
+
+vec3 brightOnly(vec3 c, float threshold) {
+    float m=max(c.r,max(c.g,c.b));
+    float k=max((m-threshold)/max(m,1e-4),0.0);
+    return c*k;
+}
+
 void main() {
     vec2 uv = v_uv;
     vec2 p = uv-.5;
     vec2 px = 1.0/u_resolution;
-    // Tiny coherent advection makes trails fluid rather than static persistence.
+
     vec2 flow = vec2(sin(uv.y*9.0+u_time*.21), cos(uv.x*8.0-u_time*.17));
-    vec3 prev = texture(u_prev, uv-flow*px*(.9+u_bloom)).rgb * u_feedback;
+    vec3 prev = texture(u_prev, uv-flow*px*(.75+.55*u_bloom)).rgb;
+    // Persistence is intentionally chromatic and slightly energy-decaying, never a grey veil.
+    prev *= u_feedback*.965;
+    prev = max(prev-vec3(.0016),vec3(0.0));
+
     vec3 cur = texture(u_particles, uv).rgb;
     vec3 bloom = vec3(0.0);
-    bloom += texture(u_particles, uv+px*vec2( 2, 0)).rgb;
-    bloom += texture(u_particles, uv+px*vec2(-2, 0)).rgb;
-    bloom += texture(u_particles, uv+px*vec2( 0, 2)).rgb;
-    bloom += texture(u_particles, uv+px*vec2( 0,-2)).rgb;
-    bloom += texture(u_particles, uv+px*vec2( 4, 4)).rgb;
-    bloom += texture(u_particles, uv+px*vec2(-4, 4)).rgb;
-    bloom += texture(u_particles, uv+px*vec2( 4,-4)).rgb;
-    bloom += texture(u_particles, uv+px*vec2(-4,-4)).rgb;
-    bloom *= .125*u_bloom;
-    vec3 col = prev + cur + bloom;
-    col *= 1.0 + .20*u_strike + .20*u_drop;
-    // Filmic shoulder, dark-space discipline, subtle vignette.
-    col = col/(1.0+col);
-    col = pow(max(col,vec3(0.0)),vec3(.84));
-    float vignette = smoothstep(.86,.22,length(p));
-    col *= mix(.62,1.0,vignette);
-    fragColor = vec4(clamp(col,0.0,1.0),1.0);
+    vec2 taps[12]=vec2[](
+        vec2( 2,0),vec2(-2,0),vec2(0, 2),vec2(0,-2),
+        vec2( 4,4),vec2(-4,4),vec2(4,-4),vec2(-4,-4),
+        vec2( 8,0),vec2(-8,0),vec2(0, 8),vec2(0,-8)
+    );
+    for(int i=0;i<12;++i){
+        bloom += brightOnly(texture(u_particles,uv+px*taps[i]).rgb,.16);
+    }
+    bloom *= (u_bloom/12.0)*.74;
+
+    vec3 col = prev + cur*1.24 + bloom;
+    col *= 1.0 + .24*u_strike + .32*u_drop;
+
+    // Exponential display transform preserves hue better than the old per-channel Reinhard wash.
+    col = vec3(1.0)-exp(-max(col,vec3(0.0))*1.28);
+    col = pow(col,vec3(.76));
+    float vignette=smoothstep(.98,.18,length(p));
+    col *= mix(.80,1.0,vignette);
+    // Clean black floor: kill low-energy haze that read as a shaded film over the stage.
+    float peak=max(col.r,max(col.g,col.b));
+    col *= smoothstep(.012,.055,peak);
+    fragColor=vec4(clamp(col,0.0,1.0),1.0);
 }
 """
 
@@ -234,9 +277,9 @@ class GPUParticleField:
     """OpenGL 3.3 particle simulation/render pipeline.
 
     Particle state lives entirely in ping-pong float textures. A fragment pass updates every
-    particle, a point-sprite pass renders additive SDF-like particles, and a feedback pass adds
-    trail advection/bloom. Only the final display image is read back while the shared fullscreen
-    sink is still OpenCV-based.
+    particle, a point-sprite pass renders additive emissive particles, and a feedback pass adds
+    chromatic trail advection plus thresholded bloom. Only the final display image is read back
+    while the shared fullscreen sink is still OpenCV-based.
     """
 
     PALETTES = {"cyber": 0, "solar": 1, "bio": 2, "prismatic": 3}
