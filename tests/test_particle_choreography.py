@@ -1,0 +1,48 @@
+from projection_mapping.music_reactivity import MusicalSignals
+from projection_mapping.particle_choreography import BANKS, choreography
+
+
+def signals(**kwargs):
+    values = dict(
+        loudness=0.4,
+        bass=0.5,
+        mids=0.3,
+        highs=0.2,
+        color=0.4,
+        strike=0.0,
+        beat=0.0,
+        ascension=0.0,
+        tempo_bpm=120.0,
+        beat_phase=0.25,
+        bar_phase=0.31,
+        beat_confidence=0.9,
+        section_energy=0.4,
+        drop=0.0,
+    )
+    values.update(kwargs)
+    return MusicalSignals(**values)
+
+
+def test_every_bank_produces_emitters_and_valid_parameters():
+    s = signals()
+    for bank in BANKS:
+        c = choreography(bank, s, t=1.0, madness=0.5)
+        assert c.emitters
+        assert c.emission_rate >= 0.0
+        assert 0.0 <= c.feedback <= 1.0
+        for emitter in c.emitters:
+            assert 0.0 <= emitter.x <= 1.0
+            assert 0.0 <= emitter.y <= 1.0
+            assert emitter.energy >= 0.0
+
+
+def test_drop_expands_vortex_emission_rate():
+    quiet = choreography("vortex_gate", signals(drop=0.0), t=2.0)
+    drop = choreography("vortex_gate", signals(drop=1.0), t=2.0)
+    assert drop.emission_rate > quiet.emission_rate
+
+
+def test_constellation_is_sparse_until_accents():
+    quiet = choreography("constellation_bloom", signals(loudness=0.1, strike=0.0, drop=0.0), t=3.0)
+    accent = choreography("constellation_bloom", signals(loudness=0.1, strike=1.0, drop=1.0), t=3.0)
+    assert accent.emission_rate > quiet.emission_rate * 5.0
