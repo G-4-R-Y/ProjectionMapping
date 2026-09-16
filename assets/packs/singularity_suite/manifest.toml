@@ -1,0 +1,48 @@
+[pack]
+id = "singularity_suite"
+name = "Structured Chaos / Singularity Suite"
+version = "0.1.0"
+license = "MIT"
+author = "ProjectionMapping project"
+source = "procedural"
+generated_with = "ProjectionMapping ShaderSceneRenderer"
+
+[[asset]]
+id = "event_horizon_seamless"
+kind = "shader"
+binding = "screen"
+tags = ["shader", "singularity", "portal", "seamless", "radial"]
+renderer = "shader_scenes"
+scene = "event_horizon"
+
+[[asset]]
+id = "wormhole_choir"
+kind = "shader"
+binding = "screen"
+tags = ["shader", "wormhole", "harmonics", "chaos", "radial"]
+renderer = "shader_scenes"
+scene = "wormhole_choir"
+
+[[asset]]
+id = "plasma_singularity"
+kind = "shader"
+binding = "screen"
+tags = ["shader", "plasma", "domain-warp", "chaos", "emissive"]
+renderer = "shader_scenes"
+scene = "plasma_singularity"
+
+[[asset]]
+id = "vortex_crown"
+kind = "shader"
+binding = "screen"
+tags = ["shader", "vortex", "multi-attractor", "cyber", "chaos"]
+renderer = "shader_scenes"
+scene = "vortex_crown"
+
+[[asset]]
+id = "collapse_flower"
+kind = "shader"
+binding = "screen"
+tags = ["shader", "flower", "harmonic", "collapse", "radial"]
+renderer = "shader_scenes"
+scene = "collapse_flower"
