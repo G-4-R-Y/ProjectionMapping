@@ -1,11 +1,11 @@
 [pack]
 id = "mathematical_worlds"
 name = "Mathematical Worlds"
-version = "0.1.0"
+version = "0.2.0"
 license = "MIT"
 author = "ProjectionMapping project"
 source = "procedural"
-generated_with = "ProjectionMapping FamousMath / ReactionDiffusion / Attractor renderers"
+generated_with = "ProjectionMapping FamousMath / ReactionDiffusion / CellularWorld / Attractor renderers"
 
 [[asset]]
 id = "mandelbrot_julia"
@@ -78,6 +78,14 @@ binding = "surface"
 tags = ["pde", "reaction-diffusion", "gray-scott", "turing-pattern", "stateful"]
 renderer = "reaction_diffusion"
 presets = ["coral", "mitosis", "worms", "maze", "solitons", "waves"]
+
+[[asset]]
+id = "cellular_worlds"
+kind = "shader"
+binding = "surface"
+tags = ["cellular-automata", "life", "brians-brain", "cyclic", "seeds", "stateful"]
+renderer = "cellular_worlds"
+modes = ["conway_life", "brians_brain", "cyclic_8", "seeds"]
 
 [[asset]]
 id = "classic_strange_attractors"
