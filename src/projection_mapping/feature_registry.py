@@ -26,6 +26,28 @@ def current_platform() -> str:
     return "other"
 
 
+def _module_install_hint(modules: tuple[str, ...]) -> str:
+    """Return the most useful project extra for common optional runtime groups."""
+    names = set(modules)
+    hints: list[str] = []
+    if names & {"moderngl", "glcontext"}:
+        hints.append("graphics")
+    if names & {"rtmlib", "onnxruntime"}:
+        hints.append("performer")
+    if "mediapipe" in names:
+        hints.append("mediapipe")
+    if names & {"trimesh"}:
+        hints.append("assets3d")
+    if names & {"pythonosc", "python_osc"}:
+        hints.append("interop")
+    if names & {"soundcard"}:
+        hints.append("audio")
+    if not hints:
+        return ""
+    extras = ",".join(dict.fromkeys(hints))
+    return f"; install with `python -m pip install -e '.[{extras}]'`"
+
+
 @dataclass(frozen=True)
 class FeatureParam:
     key: str
@@ -107,7 +129,10 @@ class Feature:
             return f"missing external command(s): {', '.join(missing)}"
         missing_modules = self.missing_modules()
         if missing_modules:
-            return f"missing Python module(s): {', '.join(missing_modules)}"
+            return (
+                f"missing Python module(s): {', '.join(missing_modules)}"
+                f"{_module_install_hint(missing_modules)}"
+            )
         return "available"
 
     def build_argv(self, values: dict[str, Any] | None = None) -> list[str]:
@@ -124,7 +149,7 @@ class Feature:
         if missing_modules:
             raise RuntimeError(
                 f"{self.name} requires Python module(s) not installed in this environment: "
-                f"{', '.join(missing_modules)}"
+                f"{', '.join(missing_modules)}{_module_install_hint(missing_modules)}"
             )
 
         values = values or {}
