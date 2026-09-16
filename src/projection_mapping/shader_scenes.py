@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from .graphics_runtime import create_context
+
 
 VERTEX_SHADER = r"""
 #version 330
@@ -23,6 +25,7 @@ in vec2 v_uv;
 out vec4 fragColor;
 
 #define PI 3.14159265359
+#define TAU 6.28318530718
 
 float hash21(vec2 p) {
     p = fract(p * vec2(123.34, 345.45));
@@ -49,7 +52,10 @@ float fbm(vec2 p) {
 }
 
 vec3 pal(float t, vec3 phase) {
-    return 0.48 + 0.48*cos(6.28318*(vec3(0.92,0.78,0.66)*t + phase));
+    return 0.50 + 0.50*cos(TAU*(vec3(0.96,0.81,0.68)*t + phase));
+}
+float lineGlow(float d,float gain){
+    return exp(-abs(d)*gain) + .45*exp(-abs(d)*gain*.22);
 }
 
 vec3 eventHorizon(vec2 p, float t) {
@@ -63,8 +69,7 @@ vec3 eventHorizon(vec2 p, float t) {
     float lens = pow(max(0.0,1.0-abs(r-0.47)*7.0),4.0);
     vec3 c = pal(swirl*0.8 + t*0.025, vec3(0.03,0.28,0.58));
     c *= ring*2.0 + filaments*(0.35+u_intensity*0.45) + lens*0.5;
-    c += vec3(0.02,0.00,0.05)*inner;
-    c += vec3(0.35,0.05,0.55)*pow(inner,3.0)*0.45;
+    c += vec3(0.36,0.02,0.62)*pow(inner,3.0)*0.45;
     return c;
 }
 
@@ -75,12 +80,12 @@ vec3 auroraVoid(vec2 p, float t) {
     float y = q.y + 0.34*sin(q.x*2.2+t*0.25+n*2.4) + 0.18*sin(q.x*5.1-t*0.18+n2);
     float curtain = exp(-7.0*abs(y))* (0.4+0.6*n);
     float curtain2 = exp(-10.0*abs(y-0.28*sin(q.x*1.4-t*0.19)))*(0.3+0.7*n2);
-    vec3 c1 = vec3(0.02,0.90,0.82);
-    vec3 c2 = vec3(0.80,0.08,1.00);
-    vec3 c = mix(c1,c2,clamp(n2*1.2,0.0,1.0))*curtain*1.4;
-    c += mix(vec3(0.08,0.20,1.0),vec3(1.0,0.10,0.50),n)*curtain2*0.75;
+    vec3 c1 = vec3(0.00,1.00,0.88);
+    vec3 c2 = vec3(0.92,0.03,1.00);
+    vec3 c = mix(c1,c2,clamp(n2*1.2,0.0,1.0))*curtain*1.55;
+    c += mix(vec3(0.02,0.20,1.0),vec3(1.0,0.03,0.48),n)*curtain2*0.88;
     float stars = pow(hash21(floor((p+0.5)*u_resolution/5.0)),38.0);
-    c += vec3(stars)*0.7;
+    c += vec3(stars)*0.8;
     return c;
 }
 
@@ -91,35 +96,54 @@ vec3 liquidChrome(vec2 p, float t) {
     float n2=fbm(q*2.0-vec2(t*0.06,t*0.04));
     float ridge=1.0-abs(2.0*n2-1.0);
     ridge=pow(ridge,5.0);
-    vec3 chrome=mix(vec3(0.015,0.02,0.04),vec3(0.65,0.86,1.0),ridge);
-    chrome += pal(n+n2+t*0.02,vec3(0.03,0.31,0.61))*pow(max(0.0,ridge-0.45),2.0)*0.85;
+    vec3 chrome=mix(vec3(0.003,0.006,0.018),vec3(0.50,0.88,1.0),ridge);
+    chrome += pal(n+n2+t*0.02,vec3(0.03,0.31,0.61))*pow(max(0.0,ridge-0.42),2.0)*1.10;
     float spec=pow(max(0.0,1.0-abs(n-n2)*4.0),14.0);
-    chrome += vec3(1.0,0.92,0.78)*spec*0.8;
+    chrome += vec3(1.0,0.96,0.86)*spec*1.1;
     return chrome;
 }
 
-float sdBox(vec2 p, vec2 b) {
-    vec2 d=abs(p)-b;
-    return length(max(d,0.0))+min(max(d.x,d.y),0.0);
-}
-
 vec3 neonCathedral(vec2 p, float t) {
-    p.x=abs(p.x);
-    vec2 q=p;
-    q.y += 0.13;
-    float columns=exp(-30.0*abs(fract((q.x+0.04)*5.0)-0.5))*smoothstep(0.8,-0.75,q.y);
-    float archR=length(vec2(fract(q.x*2.5)-0.5,q.y*0.85+0.13));
-    float arches=exp(-42.0*abs(archR-(0.36+0.018*sin(t*0.33))));
-    float floorLine=exp(-35.0*abs(q.y+0.55));
-    float perspective=pow(max(0.0,1.0-abs(fract((q.x/(0.18+abs(q.y+0.66)*0.22))+t*0.025)-0.5)*2.0),9.0);
-    float fog=fbm(vec2(q.x*3.0,q.y*2.0-t*0.045));
+    // Rebuilt as a moving radial vault: polar arches + perspective floor + travelling caustics.
+    float slow=t*.23;
+    float breathe=.94+.055*sin(t*.31);
+    p*=breathe;
+    p.x += .035*sin(t*.17) + .012*sin(p.y*5.0+t*.31);
+    float r=length(p)+1e-4;
+    float a=atan(p.y,p.x);
+
     vec3 c=vec3(0.0);
-    c += vec3(0.05,0.72,1.0)*columns*0.42;
-    c += vec3(1.0,0.08,0.72)*arches*1.15;
-    c += vec3(0.20,0.32,1.0)*floorLine*(0.4+0.6*perspective);
-    c += vec3(0.12,0.04,0.24)*fog*0.35;
-    float altar=exp(-18.0*length(vec2(q.x,q.y+0.17)));
-    c += vec3(0.9,0.18,1.0)*altar*0.55;
+    // Concentric vault ribs moving through depth.
+    float z=-log(r+.08);
+    float ribs=pow(.5+.5*cos(z*13.0 - slow*2.1 + .65*sin(a*8.0+slow)),18.0);
+    float spokes=pow(.5+.5*cos(a*14.0 + z*1.8 - slow*.72),24.0);
+    float vault=(ribs*.92 + spokes*.42)*exp(-r*.72);
+    c += pal(z*.12+a/TAU*.14+t*.012,vec3(.58,.10,.02))*vault*1.25;
+
+    // Pointed-arch interference: mirrored harmonic lobes instead of static box lines.
+    float archShape = abs(r - (.35 + .11*cos(a*6.0 + slow*.55) + .035*cos(a*12.0-slow*.33)));
+    float arches=lineGlow(archShape,64.0)*(.56+.44*pow(.5+.5*cos(a*6.0),5.0));
+    c += mix(vec3(.00,.90,1.0),vec3(1.0,.02,.72),.5+.5*sin(a*3.0+t*.11))*arches*1.15;
+
+    // Perspective floor/ceiling grid streams outward from the central vanishing point.
+    float perspective=1.0/max(.12,abs(p.y+.02)+.10);
+    float floorMask=smoothstep(.02,.80,-p.y);
+    float floorRays=pow(.5+.5*cos(p.x*perspective*9.0),28.0)*floorMask;
+    float floorBands=pow(.5+.5*cos(perspective*1.85-t*.66),22.0)*floorMask;
+    c += vec3(.03,.32,1.0)*(floorRays*.42+floorBands*.52);
+
+    // Travelling stained-light caustics keep the structure continuously alive.
+    float n=fbm(p*3.3+vec2(t*.08,-t*.055));
+    float n2=fbm(p*6.2+vec2(-t*.041,t*.067));
+    float caustic=pow(max(0.0,1.0-abs(n-n2)*3.2),7.0);
+    vec3 glass=pal(n*.72+n2*.36+t*.021,vec3(.03,.26,.61));
+    c += glass*caustic*(.28+.42*exp(-r*.65));
+
+    // White-hot altar/oculus pulses rather than a flat magenta dot.
+    float oculus=exp(-r*11.0)*(1.0+.35*sin(t*1.25));
+    float halo=exp(-42.0*abs(r-(.17+.018*sin(t*.43))));
+    c += vec3(1.0,.965,.92)*oculus*.58;
+    c += pal(t*.025+.84,vec3(.10,.18,.54))*halo*.95;
     return c;
 }
 
@@ -132,11 +156,14 @@ void main() {
     else if(u_scene==2) c=liquidChrome(p,t);
     else c=neonCathedral(p,t);
 
-    float vignette=smoothstep(1.35,0.25,length(p));
-    c *= mix(0.52,1.0,vignette);
-    c *= 0.82 + 0.32*u_intensity;
-    c = c/(1.0+c);
-    c = pow(max(c,vec3(0.0)),vec3(0.82));
+    float vignette=smoothstep(1.45,0.18,length(p));
+    c *= mix(0.72,1.0,vignette);
+    c *= 0.86 + 0.40*u_intensity;
+    // Hue-preserving emissive transform: vivid highlights, clean black floor.
+    c = vec3(1.0)-exp(-max(c,vec3(0.0))*1.18);
+    c = pow(c,vec3(0.78));
+    float peak=max(c.r,max(c.g,c.b));
+    c *= smoothstep(.008,.045,peak);
     fragColor=vec4(clamp(c,0.0,1.0),1.0);
 }
 """
@@ -157,21 +184,9 @@ class ShaderSceneRenderer:
         self.moderngl = moderngl
         self.width = int(width)
         self.height = int(height)
-        errors: list[str] = []
-        self.ctx = None
-        for backend in ("egl", None):
-            try:
-                self.ctx = (
-                    moderngl.create_standalone_context(require=330, backend=backend)
-                    if backend is not None
-                    else moderngl.create_standalone_context(require=330)
-                )
-                self.backend = backend or "default"
-                break
-            except Exception as exc:  # pragma: no cover
-                errors.append(f"{backend or 'default'}: {exc}")
-        if self.ctx is None:
-            raise RuntimeError("could not create ModernGL scene context: " + " | ".join(errors))
+        self.ctx, info = create_context(require=330)
+        self.backend = info.backend
+        self.context_info = info
 
         self.program = self.ctx.program(vertex_shader=VERTEX_SHADER, fragment_shader=FRAGMENT_SHADER)
         vertices = np.asarray([-1.0,-1.0, 3.0,-1.0, -1.0,3.0],dtype="f4")
@@ -187,11 +202,18 @@ class ShaderSceneRenderer:
         self.program["u_scene"].value=int(SCENE_IDS[scene])
         self.fbo.use()
         self.ctx.viewport=(0,0,self.width,self.height)
+        self.fbo.clear(0.0,0.0,0.0,1.0)
         self.vao.render(mode=self.moderngl.TRIANGLES)
         data=self.fbo.read(components=3,alignment=1)
         return np.flipud(np.frombuffer(data,dtype=np.uint8).reshape(self.height,self.width,3)).copy()
 
     def close(self) -> None:
         for obj in (self.fbo,self.target,self.vao,self.vbo,self.program):
-            try: obj.release()
-            except Exception: pass
+            try:
+                obj.release()
+            except Exception:
+                pass
+        try:
+            self.ctx.release()
+        except Exception:
+            pass
