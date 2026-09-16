@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "projection-mapping-lab"
-version = "0.4.2"
-description = "Research toolkit for projector-camera calibration, generative projection mapping, and spatial AR"
+version = "0.5.0"
+description = "Research toolkit for projector-camera calibration, realtime performer VFX, generative projection mapping, and spatial AR"
 readme = "README.md"
 requires-python = ">=3.10,<3.14"
 dependencies = [
@@ -25,7 +25,15 @@ vision = ["opencv-python>=4.9,<5"]
 ml = ["torch>=2.2", "torchvision>=0.17"]
 ui = ["textual>=0.70"]
 audio = ["SoundCard>=0.4.6"]
-graphics = ["moderngl>=5.10,<6"]
+# ModernGL 5.12 is the current stable line; glcontext owns platform context creation.
+graphics = ["moderngl>=5.12,<6", "glcontext>=3,<4"]
+# Fully-open performer tracking path. RTMLib exposes RTMPose/RTMW whole-body models
+# without the full MMDetection/MMCV stack. ONNX Runtime is intentionally explicit.
+performer = ["rtmlib>=0.0.16,<0.1", "onnxruntime>=1.20"]
+# Optional Google MediaPipe Tasks compatibility backend; current wheels target <=3.12.
+mediapipe = ["mediapipe>=1.0,<2; python_version < '3.13'"]
+assets3d = ["trimesh>=5,<6"]
+interop = ["python-osc>=1.9,<2"]
 desktop = ["pyinstaller>=6.10"]
 dev = ["pytest>=8", "ruff>=0.6"]
 
