@@ -247,7 +247,7 @@ void main() {
 
     vec3 cur = texture(u_particles, uv).rgb;
     vec3 bloom = vec3(0.0);
-    vec2 taps[12]=vec2[](
+    vec2 taps[12]=vec2[12](
         vec2( 2,0),vec2(-2,0),vec2(0, 2),vec2(0,-2),
         vec2( 4,4),vec2(-4,4),vec2(4,-4),vec2(-4,-4),
         vec2( 8,0),vec2(-8,0),vec2(0, 8),vec2(0,-8)
@@ -263,7 +263,7 @@ void main() {
     // Exponential display transform preserves hue better than the old per-channel Reinhard wash.
     col = vec3(1.0)-exp(-max(col,vec3(0.0))*1.28);
     col = pow(col,vec3(.76));
-    float vignette=smoothstep(.98,.18,length(p));
+    float vignette=1.0-smoothstep(.18,.98,length(p));
     col *= mix(.80,1.0,vignette);
     // Clean black floor: kill low-energy haze that read as a shaded film over the stage.
     float peak=max(col.r,max(col.g,col.b));
