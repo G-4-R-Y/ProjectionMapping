@@ -1,8 +1,9 @@
-"""Performer FX v1: open whole-body tracking -> spell grammar -> GPU particle field.
+"""Performer FX v1: open whole-body tracking -> spell grammar -> GPU particles + SDF spells.
 
 The default path uses RTMLib RTMW/Wholebody semantics rather than guessed silhouette anchors.
 Semantic landmarks create continuous emitters; SpellGrammar contributes sparse high-level events.
-The renderer is our own ModernGL particle pipeline. F11 toggles fullscreen; ESC exits.
+Our own ModernGL pipeline renders persistent particles plus analytic portals/shields/sigils.
+F11 toggles fullscreen; ESC exits.
 """
 from __future__ import annotations
 
@@ -15,6 +16,7 @@ import numpy as np
 
 from projection_mapping.capture import Camera
 from projection_mapping.gpu_particles import GPUParticleField, ParticleEmitter
+from projection_mapping.gpu_sdf_spells import SDFSpell, SDFSpellRenderer
 from projection_mapping.pose_tracking import MediaPipeTaskTracker, RTMPoseWholeBodyTracker
 from projection_mapping.runtime import FullscreenSink
 from projection_mapping.spell_grammar import SpellGrammar
@@ -26,6 +28,8 @@ PALETTE_BY_STYLE = {
     "bio": "bio",
     "prismatic": "prismatic",
 }
+
+HUE_BY_STYLE = {"cyber": 0.78, "solar": 0.04, "bio": 0.38, "prismatic": 0.90}
 
 
 def _make_tracker(name: str, confidence: float, smoothing: float):
@@ -106,7 +110,7 @@ def _portal_emitters(event, t: float, style: str) -> list[ParticleEmitter]:
     cx = float(event.payload.get("cx", 0.5))
     cy = float(event.payload.get("cy", 0.5))
     radius = float(event.payload.get("radius", 0.16))
-    hue0 = {"cyber": 0.76, "solar": 0.05, "bio": 0.38, "prismatic": 0.88}[style]
+    hue0 = HUE_BY_STYLE[style]
     out: list[ParticleEmitter] = []
     for i in range(8):
         a = t * 1.5 + i * math.tau / 8.0
@@ -144,6 +148,7 @@ def main() -> None:
     ap.add_argument("--madness", type=float, default=0.48)
     ap.add_argument("--feedback", type=float, default=0.94)
     ap.add_argument("--bloom", type=float, default=1.20)
+    ap.add_argument("--glyphs", action=argparse.BooleanOptionalAction, default=True)
     ap.add_argument("--camera-mix", type=float, default=0.06)
     ap.add_argument("--confidence", type=float, default=0.35)
     ap.add_argument("--smoothing", type=float, default=0.58)
@@ -158,10 +163,11 @@ def main() -> None:
         capacity=args.particles,
         palette=PALETTE_BY_STYLE[args.style],
     )
+    glyph_renderer = SDFSpellRenderer(args.render_width, args.render_height) if args.glyphs else None
     sink = FullscreenSink(window="ProjectionMapping-PerformerFX", display=args.display, fullscreen=True)
 
     print(
-        f"[performer-fx] tracker={args.tracker} particles={field.capacity} "
+        f"[performer-fx] tracker={args.tracker} particles={field.capacity} glyphs={args.glyphs} "
         f"gl={field.context_info.gl_version} renderer={field.context_info.renderer} backend={field.backend}",
         flush=True,
     )
@@ -176,11 +182,15 @@ def main() -> None:
     portal_energy = 0.0
     slash_energy = 0.0
     portal_emitters: list[ParticleEmitter] = []
+    portal_center = (0.5, 0.5)
+    portal_radius = 0.16
+    release_center = (0.5, 0.5)
 
     try:
         with Camera(args.camera, args.capture_width, args.capture_height) as cam:
             while True:
                 now = time.perf_counter()
+                t = now - t0
                 dt = float(np.clip(now - last, 1e-4, 0.08))
                 last = now
                 frame = cam.read()
@@ -207,6 +217,13 @@ def main() -> None:
                         charge = max(charge, event.strength)
                     elif event.name == "charge_release":
                         release_energy = max(release_energy, event.strength)
+                        left = state.anchor("left_palm", 0.25)
+                        right = state.anchor("right_palm", 0.25)
+                        if left and right:
+                            release_center = (
+                                (left.position.x + right.position.x) * 0.5,
+                                (left.position.y + right.position.y) * 0.5,
+                            )
                     elif event.name == "slash_trail":
                         slash_energy = max(slash_energy, event.strength)
                     elif event.name == "shield_dome" and event.phase != "release":
@@ -215,7 +232,12 @@ def main() -> None:
                         ascension_energy = max(ascension_energy, event.strength)
                     elif event.name == "portal_open":
                         portal_energy = max(portal_energy, event.strength)
-                        portal_emitters = _portal_emitters(event, now - t0, args.style)
+                        portal_center = (
+                            float(event.payload.get("cx", 0.5)),
+                            float(event.payload.get("cy", 0.5)),
+                        )
+                        portal_radius = float(event.payload.get("radius", 0.16))
+                        portal_emitters = _portal_emitters(event, t, args.style)
 
                 emitters = _anchor_emitters(state, args.style, args.intensity)
                 left = state.anchor("left_palm", 0.35)
@@ -249,7 +271,7 @@ def main() -> None:
 
                 fx = field.render(
                     emitters,
-                    t=now - t0,
+                    t=t,
                     dt=dt,
                     emission_rate=emission,
                     turbulence=turbulence,
@@ -261,6 +283,37 @@ def main() -> None:
                     strike=max(release_energy, slash_energy),
                     drop=portal_energy,
                 )
+
+                if glyph_renderer is not None:
+                    spells: list[SDFSpell] = []
+                    hue = HUE_BY_STYLE[args.style]
+                    if charge > 0.03 and left and right:
+                        cx = (left.position.x + right.position.x) * 0.5
+                        cy = (left.position.y + right.position.y) * 0.5
+                        spells.append(
+                            SDFSpell("orb", cx, cy, 0.035 + 0.055 * charge, 0.35 + charge, t * 1.8, hue)
+                        )
+                    if shield_energy > 0.05 and left and right:
+                        cx = (left.position.x + right.position.x) * 0.5
+                        cy = (left.position.y + right.position.y) * 0.5
+                        radius = max(math.hypot(left.position.x - right.position.x, left.position.y - right.position.y) * 0.62, 0.14)
+                        spells.append(SDFSpell("shield", cx, cy, radius, shield_energy * 0.95, -t * 0.28, hue + 0.12, 1.18))
+                    if portal_energy > 0.04:
+                        spells.append(
+                            SDFSpell("portal", portal_center[0], portal_center[1], max(portal_radius, 0.06), portal_energy * 1.25, t * 0.65, hue)
+                        )
+                    head = state.anchor("head", 0.30)
+                    if ascension_energy > 0.04 and head is not None:
+                        spells.append(
+                            SDFSpell("ascension", head.position.x, max(head.position.y - 0.08, 0.04), 0.10 + 0.05 * ascension_energy, ascension_energy, -t * 0.48, hue + 0.2, 0.62)
+                        )
+                    if release_energy > 0.04:
+                        spells.append(
+                            SDFSpell("impact", release_center[0], release_center[1], 0.08 + (1.0 - release_energy) * 0.20, release_energy, t, hue + 0.08)
+                        )
+                    if spells:
+                        glyphs = glyph_renderer.render(spells, t=t)
+                        fx = np.clip(fx.astype(np.float32) + glyphs.astype(np.float32) * 0.92, 0, 255).astype(np.uint8)
 
                 mix = float(np.clip(args.camera_mix, 0.0, 0.9))
                 if mix > 0.0:
@@ -292,6 +345,8 @@ def main() -> None:
         except Exception:
             pass
         field.close()
+        if glyph_renderer is not None:
+            glyph_renderer.close()
         sink.close()
         cv2.destroyAllWindows()
 
