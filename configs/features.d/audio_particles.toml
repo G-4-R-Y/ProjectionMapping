@@ -1,0 +1,144 @@
+[[feature]]
+id = "audio_particle_stage"
+name = "Song Studio / GPU Particle Stage"
+category = "Visual Madness"
+description = "TouchDesigner-grade direction without TouchDesigner: beat/bar-phase-aware GPU particle choreography, persistent feedback/advection, additive point sprites and musical macro events. Uses the same robust Song Studio MusicalSignals bus. F11 toggles fullscreen."
+command = ["python", "experiments/16_audio_particle_stage.py"]
+fullscreen = true
+requires_modules = ["soundcard", "moderngl"]
+
+[[feature.param]]
+key = "source"
+flag = "--source"
+label = "Audio source"
+type = "choice"
+default = "system"
+choices = ["system", "mic"]
+
+[[feature.param]]
+key = "bank"
+flag = "--bank"
+label = "Particle choreography"
+type = "choice"
+default = "orbit_reactor"
+choices = ["orbit_reactor", "dual_comet", "cathedral_rain", "vortex_gate", "constellation_bloom"]
+
+[[feature.param]]
+key = "reactivity"
+flag = "--reactivity"
+label = "Musical reactivity"
+type = "choice"
+default = "balanced"
+choices = ["smooth", "balanced", "punchy", "chaotic"]
+
+[[feature.param]]
+key = "madness"
+flag = "--madness"
+label = "Calm to madness"
+type = "float"
+default = 0.45
+min = 0.0
+max = 1.0
+
+[[feature.param]]
+key = "event_threshold"
+flag = "--event-threshold"
+label = "Strong onset gate"
+type = "float"
+default = 0.64
+min = 0.30
+max = 0.95
+
+[[feature.param]]
+key = "beat_threshold"
+flag = "--beat-threshold"
+label = "Beat / kick gate"
+type = "float"
+default = 0.50
+min = 0.25
+max = 0.90
+
+[[feature.param]]
+key = "capacity"
+flag = "--capacity"
+label = "GPU particle capacity"
+type = "choice"
+default = "32768"
+choices = ["8192", "16384", "32768", "65536"]
+
+[[feature.param]]
+key = "analysis_size"
+flag = "--analysis-size"
+label = "Spectral analysis window"
+type = "choice"
+default = "2048"
+choices = ["1024", "2048", "4096"]
+
+[[feature.param]]
+key = "blocksize"
+flag = "--blocksize"
+label = "Capture block"
+type = "choice"
+default = "256"
+choices = ["128", "256", "512"]
+
+[[feature.param]]
+key = "sensitivity"
+flag = "--sensitivity"
+label = "Input sensitivity"
+type = "float"
+default = 1.20
+min = 0.25
+max = 3.0
+
+[[feature.param]]
+key = "display"
+flag = "--display"
+label = "Projector display"
+type = "int"
+default = 1
+min = 0
+max = 8
+
+[[feature.param]]
+key = "render_width"
+flag = "--render-width"
+label = "Particle render width"
+type = "int"
+default = 768
+min = 320
+max = 1920
+
+[[feature.param]]
+key = "render_height"
+flag = "--render-height"
+label = "Particle render height"
+type = "int"
+default = 432
+min = 180
+max = 1080
+
+[[feature.param]]
+key = "projector_width"
+flag = "--projector-width"
+label = "Projector width"
+type = "int"
+default = 1920
+min = 320
+max = 7680
+
+[[feature.param]]
+key = "projector_height"
+flag = "--projector-height"
+label = "Projector height"
+type = "int"
+default = 1080
+min = 240
+max = 4320
+
+[[feature.param]]
+key = "device"
+flag = "--device"
+label = "Audio device name/id (optional)"
+type = "text"
+default = ""
