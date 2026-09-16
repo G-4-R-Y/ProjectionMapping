@@ -2,7 +2,7 @@
 id = "performer_fx_gpu"
 name = "Performer FX / Whole-Body GPU"
 category = "Visual Madness"
-description = "Fully-open performer VFX path: RTMPose/RTMW whole-body landmarks -> real palm/body anchors -> semantic spell grammar -> our GPU particle engine. No TouchDesigner required. Install the performer + graphics extras. F11 toggles fullscreen."
+description = "Fully-open performer VFX path: RTMPose/RTMW whole-body landmarks -> real palm/body anchors -> semantic spell grammar -> our GPU particles + analytic SDF portals/shields/sigils. No TouchDesigner required. Install performer + graphics extras. F11 toggles fullscreen."
 command = ["python", "experiments/17_performer_fx.py"]
 fullscreen = true
 requires_modules = ["moderngl", "rtmlib"]
@@ -27,7 +27,7 @@ choices = ["rtmpose", "auto", "mediapipe"]
 [[feature.param]]
 key = "style"
 flag = "--style"
-label = "Particle material"
+label = "Particle / spell material"
 type = "choice"
 default = "cyber"
 choices = ["cyber", "solar", "bio", "prismatic"]
@@ -75,6 +75,13 @@ type = "float"
 default = 1.20
 min = 0.0
 max = 2.5
+
+[[feature.param]]
+key = "glyphs"
+flag = "--glyphs"
+label = "SDF spell geometry"
+type = "bool"
+default = true
 
 [[feature.param]]
 key = "camera_mix"
