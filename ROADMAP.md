@@ -4,7 +4,12 @@ This is the canonical milestone roadmap. Milestone numbering **M0–M6 is stable
 
 Legend: **✅ done / implemented** · **🟡 implemented but needs integration or hardware validation** · **⬜ planned** · **🧪 research / stretch**
 
-Fine-grained research/progress is tracked permanently in [`docs/feature_tracks/`](docs/feature_tracks/README.md). Every meaningful feature change must update its track so successful presets, failed approaches, measurements, open problems and the path toward the advanced version do not disappear.
+Before substantial work, read:
+- [`MEMORY.md`](MEMORY.md) — durable project/agent handoff memory, hardware findings, rejected approaches, and non-negotiable engineering rules.
+- [`docs/ART_DIRECTION.md`](docs/ART_DIRECTION.md) — visual-quality contract and promotion bar.
+- [`docs/feature_tracks/`](docs/feature_tracks/README.md) — fine-grained research/progress ledgers.
+
+Every meaningful feature change must update its track so successful presets, failed approaches, measurements, open problems and the path toward the advanced version do not disappear.
 
 ## North star
 
@@ -24,6 +29,7 @@ Core runtime rules:
 - F11 fullscreen toggle / ESC returns to control deck
 - hardware-measured latency and frame-time telemetry
 - visual quality is evaluated on projector/recorded footage, not only in code
+- weak visuals are rewritten or retired; technical complexity does not excuse mediocre art direction
 
 A central design rule applies across Performer FX, Human Reactor, Cyber Mage, Neural Mirror and Room Skin: **deterministic spatial ownership first; generative stylization second**.
 
@@ -158,10 +164,14 @@ Implemented:
 - ✅ standalone Room Skin prototype
 - ✅ model-free procedural scene experiments
 - ✅ ModernGL Shader Scene Lab baseline
+- ✅ **Polar Math Lab** with five vivid analytic radial families: Rose Lattice, Hypotrochoid Engine, Log Spiral Interference, Phyllotaxis Reactor, Bessel Wave Chamber
+- ✅ Neon Cathedral rewritten as a moving radial vault with perspective bands, caustics and breathing/oculus motion after the original static-looking version failed the art bar
 
 Visual/shader direction:
 - ✅ legacy CPU portal branch-cut seam fixed
-- ✅ shader scenes: Event Horizon, Aurora Void, Liquid Chrome, Neon Cathedral
+- ✅ shader scenes: Event Horizon, Aurora Void, Liquid Chrome, Neon Cathedral v2
+- ✅ saturated emissive / clean-black visual direction documented in `docs/ART_DIRECTION.md`
+- ⬜ projector-test all five Polar Math modes; keep only variants that are genuinely beautiful on footage
 - ⬜ per-scene art controls + preset vault
 - ⬜ shared GPU particle/feedback engine as a spatial surface layer
 - ⬜ multi-pass bloom / reaction diffusion / fluid-like fields
@@ -242,13 +252,18 @@ Implemented:
 - ✅ GPU shader instrument with seamless Journey transitions
 - ✅ curated shader performance banks
 - ✅ GPU particle stage with persistent feedback/advection
-- ✅ particle choreography banks: Orbit Reactor, Dual Comet, Cathedral Rain, Vortex Gate, Constellation Bloom
+- ✅ particle materials overhauled toward white-hot cores, saturated emissive shells, chromatic feedback, thresholded bloom and a clean black floor after hardware feedback identified a muddy/"shaded" look
+- ✅ original choreography banks: Orbit Reactor, Dual Comet, Cathedral Rain, Vortex Gate, Constellation Bloom
+- ✅ additional choreography banks: Reactor Bloom, Polar Gate, Ritual Rain, Helix Fountain, Nebula Bloom, Techno Lattice
+- ✅ heuristic section/phrase state (`breakdown/build/drop/release/steady`) and **Journey** controller can switch choreography without resetting particle state
+- ✅ optional Polar Math backdrop driven by the same `MusicalSignals`, with restrained screen-style emissive blending rather than grey haze
 - ✅ same `MusicalSignals` schema can be embedded in `PerformanceState`
 
 Next:
+- ⬜ hardware/art-tune particle material after the vividness overhaul; compare black floor, bloom and palette response on several tracks/projector footage
 - ⬜ chroma/key/harmonic-change descriptors
-- ⬜ phrase/section state machine: intro/breakdown/build/drop/release
-- ⬜ beat/bar-synchronous particle and palette morphing without state reset
+- ⬜ improve section classifier from heuristic dynamics into robust phrase/section evidence while preserving transparent baseline
+- ⬜ beat/bar-synchronous palette/particle/preset morphing without state reset
 - ⬜ live scene controls + user A/B/morph banks
 - ⬜ audio-reactive VFX-pack / generated-asset spawning on rare macro events
 - ⬜ MIDI/OSC/Ableton Link/clock
@@ -332,7 +347,9 @@ Track: [`docs/feature_tracks/performer_fx.md`](docs/feature_tracks/performer_fx.
 - ✅ particle state stored in ping-pong float textures
 - ✅ GPU fragment simulation with vector field, drag, lifetime and emitter-velocity inheritance
 - ✅ additive point-sprite rendering using GPU particle state
-- ✅ persistent feedback/advection + bloom taps + filmic post
+- ✅ persistent feedback/advection
+- ✅ vivid material pass: white-hot core / saturated shell / colored halo / velocity sparkle
+- ✅ thresholded highlight bloom + hue-preserving exponential display transform + low-energy black-floor gate
 - ✅ 8k/16k/32k/65k TUI operating points; 32k default
 - ⬜ hardware benchmark simulation/render/readback p50/p95/p99
 - ⬜ velocity-oriented sprites + true ribbon/trail geometry
@@ -358,10 +375,12 @@ Track: [`docs/feature_tracks/performer_fx.md`](docs/feature_tracks/performer_fx.
 - ✅ generation provenance/custom metadata preserved
 - ✅ secure relative-path validation + mandatory declared license
 - ✅ optional trimesh GLB/glTF -> NumPy primitive ingestion
+- ✅ GPU geometry/normals/emissive mesh renderer exists for generated external meshes
+- ✅ built-in smoke-test assets: cyber orb, energy ring, crystal, relic, drone, sigil totem, summon proxy
 - ✅ `neon_core` example pack with procedural spell assets + generated summon slot
 - ⬜ Genforge export adapter
 - ⬜ sprite-atlas GPU loader / animated VFX cards
-- ⬜ GLB/glTF GPU mesh upload, PBR/emissive materials, skins/animations
+- ⬜ PBR glTF materials/textures, skins/animations
 - ⬜ hot reload + content hashes + validation thumbnails
 
 ### PF5 — optional interoperability bridge ✅/⬜
@@ -375,8 +394,8 @@ Track: [`docs/feature_tracks/performer_fx.md`](docs/feature_tracks/performer_fx.
 - ✅ deterministic MR entity IDs/transforms/attachments/lifetimes + asset references
 - ✅ gesture-event -> portal/impact entity routing foundation
 - ✅ entities can follow semantic performer anchors
-- ⬜ GPU sprite/mesh entity renderer
-- ⬜ generated character/creature summon system
+- ✅ first mixed-reality mesh stage can attach built-in/external meshes to world/head/chest/palms and optionally add a GPU particle aura
+- ⬜ generated character/creature summon system with animation/state
 - ⬜ camera/world/projector transform chain
 - ⬜ calibrated wall/floor collisions and room-aware spell impacts
 - ⬜ depth occlusion, hit volumes, lightweight gameplay state
@@ -421,13 +440,15 @@ Evaluation:
 - ⬜ semantic anchor jitter/reacquisition/gesture precision
 - ⬜ active particle count + simulation/render/readback timings
 - ⬜ motion-to-effect and motion-to-photon latency
-- ⬜ subjective projector/recording visual-quality captures
+- ⬜ visual promotion scorecard from `docs/ART_DIRECTION.md` using projector/recorded footage
 
 Product/UX:
 - ✅ Textual control deck + modular feature fragments
 - ✅ persistent logs / copy/open / stage status
 - ✅ Song Studio GPU particle stage entry
 - ✅ Performer FX whole-body GPU entry
+- ✅ Polar Math Lab entry
+- ✅ Mixed Reality generated-asset stage entry with built-in fallback assets
 - ⬜ robust monitor enumeration
 - ⬜ live parameter IPC + preset/asset browser
 - ⬜ VFX-pack browser + generated asset hot reload
@@ -438,6 +459,8 @@ Research discipline:
 - ✅ failed visual/technical directions are recorded rather than silently erased
 - ✅ implemented vs hardware-validated claims separated
 - ✅ Performer FX PF0–PF7 umbrella has its own permanent track
+- ✅ root `MEMORY.md` exists as durable handoff context for future agents/models
+- ✅ `docs/ART_DIRECTION.md` preserves the artistic bar and lessons from successful/failed visuals
 - ⬜ pin promoted model/repository revisions
 - ⬜ save runtime/calibration/benchmark/asset-generation metadata with captures
 - ⬜ keep classical baselines beside learned paths
@@ -450,8 +473,11 @@ Research discipline:
 - rolling spectral analysis independent from capture latency
 - adaptive event gating / beat phase / bar phase / drop state
 - shader-world banks + persistent GPU particle choreography banks
+- vivid particle materials: white-hot core, saturated shell, clean black floor, thresholded bloom
+- section-aware Journey without particle-state resets
+- optional Polar Math emissive backgrounds driven by the same music state
 - smooth/balanced/punchy/chaotic + Calm<->Madness
-- chroma/key/harmonic change + phrase/section state
+- chroma/key/harmonic change + stronger phrase/section state
 - beat-synchronous palette/particle/preset morphing
 - transitions / user snapshots / DJ-VJ switching
 - MIDI/OSC/Ableton Link/clock
@@ -465,6 +491,7 @@ Research discipline:
 - GPU particles, ribbons, vector fields, feedback, SDF glyphs/portals, distortion, HDR bloom
 - charge/release/slash/shield/portal/ascension grammar
 - generated 2D sprite/atlas and 3D GLB/glTF asset packs
+- built-in relic/drone/sigil-totem/summon-proxy fixtures
 - Genforge pipeline adapter + provenance/license/content hashes
 - mixed-reality entities, room collisions, arena/gameplay experiments
 - optional OSC/Spout/TouchDesigner bridge; open renderer remains canonical
@@ -487,11 +514,14 @@ Research discipline:
 - never claim hard generative consistency guarantee
 
 ### Procedural / shader scenes
+- user-supplied casual radial shader is an **art benchmark**, not something to dismiss because it is simple
+- rose/hypotrochoid/log-spiral/phyllotaxis/Bessel families are now first-class visual research directions
 - portal architecture, infestation, cathedral, machinery, moss ruin, starfield retained as ideas
 - CPU scenes are fallback, not quality target
 - branch-cut/periodicity continuity bugs are correctness issues
 - shader worlds + particle fields should share common renderer/post infrastructure
 - future reaction diffusion, SDF/raymarching, fluid/vector fields, proper HDR bloom and transitions
+- static/generic scenes are rewritten rather than preserved for sunk-cost reasons
 
 ### Spatial / physical path
 - wall test / structured light / dense calibration
@@ -515,19 +545,21 @@ Research discipline:
 
 # Current priority queue
 
-1. **M11/PF2:** hardware-test graphics context + GPU particle engine on Linux/NVIDIA; benchmark 8k/16k/32k/65k and fix any driver/shader problems.
-2. **M11/PF1:** hardware-test RTMPose whole-body landmarks on camera footage; validate hands, confidence, smoothing, latency and reacquisition.
-3. **M11/PF3:** tune charge/release/slash/shield/portal/ascension grammar from real performer footage.
-4. **M7:** test Song Studio GPU Particle Stage across techno/house/ambient/dense tracks; tune choreography and event density.
-5. **M11/PF2:** add GPU ribbons/SDF spell geometry, HDR bloom pyramid and distortion/refraction.
-6. **M11/PF4/PF6:** Genforge VFX-pack adapter, sprite atlases, GLB renderer and first generated-asset summon/arena prototype.
-7. **M2:** remove GL -> CPU readback with a native OpenGL display/shared-texture path.
-8. **M3:** benchmark Neural Mirror 6 GB safe profile and temporal warp on RTX 4050; connect performer control maps later.
-9. **M7/M11:** route one `MusicalSignals` bus into Performer FX / Human Reactor / Room Skin.
-10. **M1:** capture real structured-light bundle.
-11. **M1/M5:** capture radiometry data and compare classical/learned compensation.
-12. **M4/M6/PF6:** calibrated Room Skin + room-plane collisions + generated entities.
-13. **M8/M9:** dynamic mapping / multi-projector after static calibration and latency metrics are solid.
+1. **M7/M11 art bring-up:** test the new vivid particle material on the RTX 4050/projector. If it still looks shaded, tune thresholded bloom/feedback floor/display transform before adding more effects.
+2. **M4:** test all five Polar Math modes. Keep/rewrite based on beauty, motion, color and projector readability—not implementation effort.
+3. **M7:** validate Song Studio `journey` choreography across techno/house/ambient/dense tracks; tune section/phrase switching and the six new banks.
+4. **M7/M4:** test `backdrop=auto` at low mix; find combinations where Polar Math adds structure without obscuring particle light.
+5. **M11/PF2:** hardware-test graphics context + GPU particle engine; benchmark 8k/16k/32k/65k and render/readback cost.
+6. **M11/PF1:** hardware-test RTMPose whole-body landmarks; validate hands, confidence, smoothing, latency and reacquisition.
+7. **M11/PF3:** tune charge/release/slash/shield/portal/ascension grammar from real performer footage.
+8. **M11/PF4/PF6:** Genforge VFX-pack adapter, sprite atlases, PBR/animated GLB rendering and first generated-asset summon/arena prototype.
+9. **M2:** remove GL -> CPU readback with a native OpenGL display/shared-texture path.
+10. **M3:** benchmark Neural Mirror 6 GB safe profile and temporal warp on RTX 4050; connect performer control maps later.
+11. **M7/M11:** route one `MusicalSignals` bus into Performer FX / Human Reactor / Room Skin.
+12. **M1:** capture real structured-light bundle.
+13. **M1/M5:** capture radiometry data and compare classical/learned compensation.
+14. **M4/M6/PF6:** calibrated Room Skin + room-plane collisions + generated entities.
+15. **M8/M9:** dynamic mapping / multi-projector after static calibration and latency metrics are solid.
 
 ---
 
@@ -549,7 +581,10 @@ Research discipline:
 - E13 -> M11 generic-point Cyber Mage SFX
 - E14 -> M4/M11 ModernGL Shader Scene Lab
 - E15 -> M7 GPU shader Audio Visual Instrument
-- E16 -> M7/M11 GPU Song Studio particle choreography
+- E16 -> M7/M11 GPU Song Studio particle choreography / section-aware journey / Polar Math backdrop
 - E17 -> M11 PF1/PF2/PF3 whole-body GPU Performer FX
+- E18 -> M2 graphics runtime / OpenGL context probe
+- E19 -> M11 PF4/PF6 mixed-reality generated/built-in 3D asset stage
+- E20 -> M4/M7 Polar Math Lab / vivid analytic radial shader research
 
 When adding an experiment, link it to a milestone **and update the corresponding feature track** so research prototypes, failures, good presets, measurements and product progress stay synchronized.
