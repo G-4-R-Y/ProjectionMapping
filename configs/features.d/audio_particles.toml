@@ -21,7 +21,7 @@ flag = "--bank"
 label = "Particle choreography"
 type = "choice"
 default = "journey"
-choices = ["journey", "orbit_reactor", "dual_comet", "cathedral_rain", "vortex_gate", "constellation_bloom", "reactor_bloom", "polar_gate", "ritual_rain", "helix_fountain", "nebula_bloom", "techno_lattice"]
+choices = ["journey", "orbit_reactor", "dual_comet", "cathedral_rain", "vortex_gate", "constellation_bloom", "reactor_bloom", "polar_gate", "ritual_rain", "helix_fountain", "nebula_bloom", "techno_lattice", "lissajous_storm", "singularity_crown", "prism_shards"]
 
 [[feature.param]]
 key = "backdrop"
