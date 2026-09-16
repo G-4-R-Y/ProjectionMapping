@@ -26,7 +26,7 @@ TouchDesigner is an **aesthetic and workflow reference**, not a required depende
 2. **Latest-frame-wins neural inference.** Never build a queue of stale camera frames.
 3. **Shared state, not feature islands.** `TrackingState`, `PerformanceState`, `MusicalSignals`, gestures and room events should be reusable across Performer FX, Human Reactor, Song Studio, Neural Mirror and Room Skin.
 4. **Generated assets are content, not motion logic.** Renderer/tracking/physics own continuity.
-5. **Do not promote debug primitives as final visuals.** OpenCV lines/circles are acceptable diagnostic scaffolding, not the art-quality target.
+5. **Prototype freely; promote selectively.** Debug primitives, ugly technical sketches and rough shaders are acceptable research scaffolding when they test a meaningful idea. They are not the art-quality target and must not silently become the default experience without an art/refinement pass.
 6. **Keep classical/deterministic baselines beside learned paths.** A research model is promoted only when it beats a simpler baseline on actual hardware or unlocks a qualitatively new effect.
 7. **Measure latency and stability.** Prefer p50/p95/p99 timings, track age/confidence, render/readback cost, VRAM headroom and temporal residuals over vague speed claims.
 8. **Hardware validation is separate from implementation.** Never claim a path is validated because code/CI exists.
@@ -67,16 +67,18 @@ The first MR asset TUI test exited in argparse because the asset field was empty
 ### ModernGL packaging warning
 Desktop packaging previously omitted the graphics extra/context package. `moderngl` + `glcontext` are now explicit; Linux context creation probes EGL first. Use `experiments/18_graphics_probe.py` when graphics availability is ambiguous.
 
-## 5. Rejected approaches — do not repeat
+## 5. Rejected promoted directions / lessons — do not repeat blindly
+
+These are not bans on experimentation. They describe implementations that failed as promoted/default experiences. A new experiment may revisit an underlying idea if it changes the failure mechanism and documents why.
 
 ### Fake semantic hands from silhouette extrema
 The first Cyber Mage treated upper-silhouette left/right extrema as hands. Gesture logic such as hands-together therefore frequently did nothing. Never build semantic gesture behavior on guessed silhouette extrema.
 
 ### Generic OpenCV Cyber Mage aesthetics
-Circles, straight lines and debug-like geometry were rejected as visually cheap. The active direction is real point/landmark tracking + GPU particles + analytic SDF/GLSL effects.
+Circles, straight lines and debug-like geometry were rejected as visually cheap as final presentation. They remain acceptable diagnostic scaffolding. The active promoted direction is real point/landmark tracking + GPU particles + analytic SDF/GLSL effects.
 
 ### Generic template shader scenes
-Several early procedural/shader scenes looked like stock demos and failed the artistic bar. In particular, the first Cathedral scene read as nearly static. Weak visual branches should be rewritten or removed rather than defended because they are technically correct.
+Several early procedural/shader scenes looked like stock demos and failed the artistic bar. In particular, the first Cathedral scene read as nearly static. The lesson is not “never make an ugly shader”; it is “do not stop at the first technically functioning shader.” If the underlying spatial/math idea has potential, keep it in research/incubation and iterate composition, palette, motion and materials. Rewrite/demote/retire only when appropriate.
 
 ### Muddy particle tone mapping
 The first GPU particle material looked as if a grey shade/film covered the vivid colors. Causes include broad low-threshold bloom, persistent low-energy feedback and per-channel Reinhard compression. Current direction: white-hot cores, saturated shells, thresholded bloom, clean black floor and hue-preserving exponential display transform.
@@ -104,6 +106,15 @@ Current visual target:
 - projection-readable macro forms with high-frequency detail layered on top;
 - no random rainbow noise merely to create complexity.
 
+### Experimental art philosophy
+Technical interest is valuable even before the art is good. Use three gates:
+
+1. **Prototype/research:** allowed to be ugly, crude or unstable if it tests a meaningful rendering, mathematical, tracking, spatial, interaction or neural idea.
+2. **Incubation/art pass:** if there is potential, invest. Improve composition, palette, material/light hierarchy, motion, transitions and post-processing. User criticism/projector feedback is iteration data.
+3. **Promotion/default:** only after the idea is visually convincing, robust and worth sustained projection/recording.
+
+Do not prematurely delete a promising experiment because its first visual pass is weak. Preserve the useful technical seed and keep pushing the art. Conversely, do not defend a mediocre promoted visual merely because the implementation is clever.
+
 Read `docs/ART_DIRECTION.md` before creating/promoting a new visual scene.
 
 ## 7. Current renderer / visual lanes
@@ -128,7 +139,7 @@ Analytic vivid radial shader branch with five equation families:
 This branch exists specifically to raise the art bar beyond generic procedural templates.
 
 ### Shader Scene Lab
-Keep as a scene-research branch, not sacred legacy. Event Horizon/Aurora/Liquid can evolve; Cathedral was rewritten once already because the original was too static. Delete/rewrite weak work aggressively.
+Keep as a scene-research branch, not sacred legacy. Event Horizon/Aurora/Liquid can evolve; Cathedral was rewritten once already because the original was too static. Promising technical ideas should be incubated and improved; weak promoted defaults should be rewritten or demoted rather than preserved out of inertia.
 
 ### Neural Mirror
 Use neural video as semantic/material skin, not as the source of exact hand/room geometry. Existing baseline flow-warps previous neural output between sparse AI keyframes and measures residuals.
@@ -191,6 +202,12 @@ Graphics probe:
 python experiments/18_graphics_probe.py
 ```
 
+High-end visual shader/material probe:
+
+```bash
+python experiments/21_visual_probe.py
+```
+
 Run tests:
 
 ```bash
@@ -209,13 +226,13 @@ Before changing a subsystem:
 6. Preserve good presets and rejected-path lessons in the track.
 7. Implement a measurable baseline before adding a research-heavy model.
 8. Update tests and registry/dependency declarations when adding a runnable artifact.
-9. Update the roadmap/track with what is **implemented**, **hardware-validated**, and **still speculative**.
-10. Prefer finishing one visually convincing vertical slice over creating many mediocre demo branches.
+9. Update the roadmap/track with what is **implemented**, **CI-tested**, and **still speculative**.
+10. Experiment broadly beneath the surface, but prefer finishing one visually convincing vertical slice at a time for the promoted/default experience.
 
 ## 13. Immediate quality priorities
 
 1. Validate the vivid particle material overhaul on the RTX 4050/projector; tune bloom/black floor from actual footage.
-2. Validate all five Polar Math modes and keep only visually strong variations.
+2. Validate all five Polar Math modes and identify which deserve deeper art investment; do not discard interesting math solely for an ugly first pass.
 3. Make Song Studio Journey reliably move between choreography banks at musically sensible boundaries.
 4. Continue improving GPU spell/SDF geometry and generated assets.
 5. Validate RTMPose hand/body anchors and performer FX latency.
@@ -223,4 +240,4 @@ Before changing a subsystem:
 7. Remove GL -> CPU readback once the visual language is worth preserving.
 8. Then integrate performer/audio/room state and neural skinning into one coherent stage system.
 
-The standard is not “works”. The standard is **worth filming and projecting**.
+The standard for promoted work is not merely “works”. The standard is **worth filming and projecting**. The standard for an early experiment is different: **does it teach us something or open a path worth refining?**
