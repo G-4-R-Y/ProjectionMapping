@@ -199,7 +199,9 @@ def _trajectory_2d(mode: str, count: int) -> np.ndarray:
             a, b, c, d = 1.4, -2.3, 2.4, -2.1
             x, y = math.sin(a * y) - math.cos(b * x), math.sin(c * x) - math.cos(d * y)
         else:
-            u = 0.918
+            # u=0.9 is a broad chaotic Ikeda regime for this seed; the previous 0.918 value
+            # converged to a fixed point and produced a physically correct but useless blank scene.
+            u = 0.9
             tt = 0.4 - 6.0 / (1.0 + x * x + y * y)
             ct, st = math.cos(tt), math.sin(tt)
             x, y = 1.0 + u * (x * ct - y * st), u * (x * st + y * ct)
