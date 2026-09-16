@@ -2,7 +2,7 @@
 id = "audio_particle_stage"
 name = "Song Studio / GPU Particle Stage"
 category = "Visual Madness"
-description = "TouchDesigner-grade direction without TouchDesigner: beat/bar-phase-aware GPU particle choreography, persistent feedback/advection, additive point sprites and musical macro events. Uses the same robust Song Studio MusicalSignals bus. F11 toggles fullscreen."
+description = "Music-driven GPU particle choreography with vivid emissive materials, phrase/section-aware Journey mode, persistent feedback/advection, and optional analytic Polar Math backdrops. Uses the shared MusicalSignals bus. F11 toggles fullscreen."
 command = ["python", "experiments/16_audio_particle_stage.py"]
 fullscreen = true
 requires_modules = ["soundcard", "moderngl"]
@@ -20,8 +20,33 @@ key = "bank"
 flag = "--bank"
 label = "Particle choreography"
 type = "choice"
-default = "orbit_reactor"
-choices = ["orbit_reactor", "dual_comet", "cathedral_rain", "vortex_gate", "constellation_bloom"]
+default = "journey"
+choices = ["journey", "orbit_reactor", "dual_comet", "cathedral_rain", "vortex_gate", "constellation_bloom", "reactor_bloom", "polar_gate", "ritual_rain", "helix_fountain", "nebula_bloom", "techno_lattice"]
+
+[[feature.param]]
+key = "backdrop"
+flag = "--backdrop"
+label = "Polar math backdrop"
+type = "choice"
+default = "none"
+choices = ["none", "auto", "rose_lattice", "hypotrochoid_engine", "log_spiral_interference", "phyllotaxis_reactor", "bessel_wave_chamber"]
+
+[[feature.param]]
+key = "backdrop_palette"
+flag = "--backdrop-palette"
+label = "Backdrop palette"
+type = "choice"
+default = "spectral"
+choices = ["spectral", "cyber", "solar", "bio", "ultraviolet"]
+
+[[feature.param]]
+key = "backdrop_intensity"
+flag = "--backdrop-intensity"
+label = "Backdrop mix"
+type = "float"
+default = 0.34
+min = 0.0
+max = 1.0
 
 [[feature.param]]
 key = "reactivity"
