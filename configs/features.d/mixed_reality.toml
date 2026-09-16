@@ -2,17 +2,18 @@
 id = "mixed_reality_asset"
 name = "Mixed Reality / Generated 3D Asset"
 category = "Visual Madness"
-description = "Load a generated GLB/glTF/mesh, attach it to a real RTMPose body anchor or world centre, render it with our ModernGL mesh shader, and optionally surround it with a GPU particle aura. First open Genforge-to-MR bridge."
+description = "Render a built-in procedural 3D summon immediately, or replace it with a generated GLB/glTF/OBJ asset. Attach it to a real RTMPose body anchor or world centre, shade it with our ModernGL material, and optionally add a GPU particle aura. No TouchDesigner required."
 command = ["python", "experiments/19_mixed_reality_asset.py"]
 fullscreen = true
-requires_modules = ["moderngl", "trimesh", "rtmlib"]
+requires_modules = ["moderngl", "rtmlib"]
 
 [[feature.param]]
 key = "asset"
 flag = "--asset"
-label = "Generated 3D asset path (GLB/glTF/etc)"
+label = "3D asset path or builtin:cyber_orb / energy_ring / crystal"
 type = "text"
-default = ""
+default = "builtin:cyber_orb"
+help = "Use builtin:cyber_orb, builtin:energy_ring, builtin:crystal, or an absolute/relative GLB/glTF/OBJ/etc path. External files require the assets3d extra."
 
 [[feature.param]]
 key = "anchor"
