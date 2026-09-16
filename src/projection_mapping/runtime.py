@@ -45,7 +45,7 @@ def run_loop(
 
 
 class FullscreenSink:
-    """OpenCV display sink with ESC-to-exit and F11 fullscreen toggle."""
+    """OpenCV display sink with ESC-to-exit, F11 fullscreen, and observable last key."""
 
     # OpenCV waitKeyEx values vary by backend. 122 is VK_F11 on Windows;
     # 65480 is XK_F11 on X11. Some builds encode the virtual key in upper bits.
@@ -59,6 +59,7 @@ class FullscreenSink:
         self.quit_key = quit_key
         self.display = int(display)
         self.fullscreen = bool(fullscreen)
+        self.last_key = -1
         cv2.namedWindow(window, cv2.WINDOW_NORMAL)
         self._apply_window_mode()
         if self.display > 0:
@@ -76,6 +77,7 @@ class FullscreenSink:
     def __call__(self, frame):
         self.cv2.imshow(self.window, frame)
         key = self.cv2.waitKeyEx(1)
+        self.last_key = key
         if key < 0:
             return True
         if (key & 0xFF) == self.quit_key:
