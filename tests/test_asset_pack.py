@@ -77,7 +77,7 @@ path = "../escape.png"
 @pytest.mark.parametrize(
     "manifest,expected",
     [
-        ("assets/packs/neon_core/manifest.toml", {"palm_sigil", "portal_ring", "summon_generated"}),
+        ("assets/packs/neon_core/manifest.toml", {"palm_sigil", "portal_ring", "summon_slot"}),
         ("assets/packs/polar_ritual/manifest.toml", {"rose_lattice", "bessel_wave_chamber"}),
         ("assets/packs/mr_summons/manifest.toml", {"relic", "drone", "summon_proxy"}),
         ("assets/packs/particle_arsenal/manifest.toml", {"plasma_motes", "comet_streaks", "shockwave_sprites"}),
