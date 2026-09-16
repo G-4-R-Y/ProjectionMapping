@@ -1,8 +1,9 @@
-"""Generated Asset Stage: attach a GLB/glTF mesh to performer/world anchors.
+"""Generated Asset Stage: attach a built-in or generated mesh to performer/world anchors.
 
-This is the first direct bridge from generated 3D content into the open realtime renderer.
-RTMPose supplies stable semantic anchors; ModernGL renders the mesh and an optional particle aura.
-No TouchDesigner/game engine is required. F11 toggles fullscreen; ESC exits.
+The stage always has a runnable procedural mesh (`builtin:cyber_orb`) so graphics/tracking can be
+validated before a Genforge/export pipeline is connected. External GLB/glTF/OBJ/etc paths are
+loaded through the optional trimesh backend. RTMPose supplies semantic anchors; our ModernGL
+renderer handles mesh + optional GPU particle aura. F11 toggles fullscreen; ESC exits.
 """
 from __future__ import annotations
 
@@ -16,6 +17,7 @@ import numpy as np
 from projection_mapping.capture import Camera
 from projection_mapping.gpu_mesh import GPUMeshRenderer
 from projection_mapping.gpu_particles import GPUParticleField, ParticleEmitter
+from projection_mapping.mesh_assets import BUILTIN_MESHES
 from projection_mapping.pose_tracking import RTMPoseWholeBodyTracker
 from projection_mapping.runtime import FullscreenSink
 
@@ -49,7 +51,14 @@ def _composite(background: np.ndarray, mesh: np.ndarray, particles: np.ndarray |
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--asset", required=True, help="Generated GLB/glTF/OBJ/etc asset path")
+    ap.add_argument(
+        "--asset",
+        default="builtin:cyber_orb",
+        help=(
+            "Generated GLB/glTF/OBJ/etc path, or a procedural test asset: "
+            + ", ".join(BUILTIN_MESHES)
+        ),
+    )
     ap.add_argument("--anchor", choices=["world", "left_palm", "right_palm", "chest", "head"], default="right_palm")
     ap.add_argument("--camera", type=int, default=0)
     ap.add_argument("--display", type=int, default=1)
@@ -68,12 +77,22 @@ def main() -> None:
     ap.add_argument("--mirror", action="store_true")
     args = ap.parse_args()
 
+    asset = str(args.asset).strip() or "builtin:cyber_orb"
     base, emissive, particle_palette = STYLES[args.style]
     tracker = None
     if args.anchor != "world":
         tracker = RTMPoseWholeBodyTracker(mode="lightweight", backend="onnxruntime", device="cpu")
     mesh_renderer = GPUMeshRenderer(args.render_width, args.render_height)
-    model = mesh_renderer.upload(args.asset)
+    try:
+        model = mesh_renderer.upload(asset)
+    except Exception as exc:
+        mesh_renderer.close()
+        choices = ", ".join(BUILTIN_MESHES)
+        raise SystemExit(
+            f"[mr-asset] could not load asset {asset!r}: {type(exc).__name__}: {exc}\n"
+            f"Use a generated mesh path, or test immediately with one of: {choices}"
+        ) from exc
+
     particle_field = (
         GPUParticleField(args.render_width, args.render_height, capacity=args.particles, palette=particle_palette)
         if args.particle_aura
@@ -82,7 +101,7 @@ def main() -> None:
     sink = FullscreenSink(window="ProjectionMapping-MixedRealityAsset", display=args.display, fullscreen=True)
 
     print(
-        f"[mr-asset] asset={args.asset!r} anchor={args.anchor} primitives={len(model.primitives)} "
+        f"[mr-asset] asset={asset!r} anchor={args.anchor} primitives={len(model.primitives)} "
         f"bounds={model.asset.bounds_min}->{model.asset.bounds_max} "
         f"gl={mesh_renderer.context_info.gl_version} renderer={mesh_renderer.context_info.renderer}",
         flush=True,
