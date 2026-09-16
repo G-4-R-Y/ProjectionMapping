@@ -124,6 +124,32 @@ def main() -> None:
         finally:
             r.close()
 
+    def reaction_diffusion() -> None:
+        from projection_mapping.reaction_diffusion import REACTION_PRESETS, ReactionDiffusionRenderer
+
+        r = ReactionDiffusionRenderer(192, 108, preset="coral", seed=11)
+        try:
+            frame = None
+            for i, preset in enumerate(REACTION_PRESETS):
+                r.reset(seed=11 + i)
+                for step in range(8):
+                    frame = r.render(
+                        t=i + step / 30.0,
+                        preset=preset,
+                        intensity=1.0,
+                        drive=0.45,
+                        steps=4,
+                    )
+                assert frame is not None and frame.shape == (108, 192, 3)
+                assert np.isfinite(frame).all()
+                print(
+                    f"[visual-probe]   reaction={preset} peak={int(frame.max())} "
+                    f"mean={float(frame.mean()):.2f}",
+                    flush=True,
+                )
+        finally:
+            r.close()
+
     def particles() -> None:
         from projection_mapping.gpu_particles import GPUParticleField, ParticleEmitter
 
@@ -160,6 +186,7 @@ def main() -> None:
     ok &= _probe("Polar Math all modes @ chaos=1.25", polar)
     ok &= _probe("Shader Scene Lab all modes + seam regression", scenes)
     ok &= _probe("Famous Math all modes", famous_math)
+    ok &= _probe("Gray-Scott reaction diffusion presets", reaction_diffusion)
     ok &= _probe("GPU particle materials", particles)
     if not ok:
         raise SystemExit(2)
