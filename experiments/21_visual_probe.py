@@ -65,22 +65,32 @@ def main() -> None:
         from projection_mapping.gpu_particles import GPUParticleField, ParticleEmitter
         field=GPUParticleField(320,180,capacity=4096,palette="cyber")
         try:
-            frame=None
-            for i in range(10):
-                t=i/60.0
-                emitters=[
-                    ParticleEmitter(.43,.50,.20,-.08,1.0,.78,.018),
-                    ParticleEmitter(.57,.50,-.20,.08,1.0,.96,.018),
-                ]
-                frame=field.render(emitters,t=t,dt=1/60,emission_rate=9000,bloom=1.2,energy=1.2)
-            assert frame is not None and frame.shape==(180,320,3)
-            print(f"[visual-probe]   particles peak={int(frame.max())} mean={float(frame.mean()):.2f}",flush=True)
+            for material in field.MATERIALS:
+                field.set_material(material)
+                frame=None
+                for i in range(12):
+                    t=i/60.0
+                    emitters=[
+                        ParticleEmitter(.43,.50,.62,-.16,1.0,.78,.018),
+                        ParticleEmitter(.57,.50,-.62,.16,1.0,.96,.018),
+                    ]
+                    frame=field.render(
+                        emitters,t=t,dt=1/60,emission_rate=10000,bloom=1.2,energy=1.2,
+                        strike=.55 if material in {"spark","shock_ring"} else .15,
+                        drop=.65 if material=="shock_ring" else 0.0,
+                    )
+                assert frame is not None and frame.shape==(180,320,3)
+                print(
+                    f"[visual-probe]   particles material={material} "
+                    f"peak={int(frame.max())} mean={float(frame.mean()):.2f}",
+                    flush=True,
+                )
         finally:
             field.close()
 
     ok &= _probe("Polar Math all modes",polar)
     ok &= _probe("Shader Scene Lab all modes",scenes)
-    ok &= _probe("GPU particle field",particles)
+    ok &= _probe("GPU particle materials",particles)
     if not ok:
         raise SystemExit(2)
     print("[visual-probe] PASS",flush=True)
