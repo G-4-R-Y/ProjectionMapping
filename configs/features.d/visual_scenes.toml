@@ -63,7 +63,7 @@ max = 2.0
 id = "shader_scene_lab"
 name = "Shader Scene Lab / ModernGL"
 category = "Visual Madness"
-description = "GPU fragment-shader scenes with continuous domains and filmic color. Legacy scene study branch; weak scenes should be rewritten aggressively rather than preserved. F11 toggles fullscreen."
+description = "GPU fragment-shader scene research with seam-safe structured chaos, vivid emissive color and continuous domains. Liquid Chrome is the current aesthetic benchmark; Event Horizon is atan-free and the new singularity family is intentionally more chaotic. F11 toggles fullscreen."
 command = ["python", "experiments/14_shader_scene_lab.py"]
 fullscreen = true
 requires_modules = ["moderngl"]
@@ -73,8 +73,17 @@ key = "scene"
 flag = "--scene"
 label = "Shader scene"
 type = "choice"
-default = "event_horizon"
-choices = ["event_horizon", "aurora_void", "liquid_chrome", "neon_cathedral"]
+default = "liquid_chrome"
+choices = ["event_horizon", "aurora_void", "liquid_chrome", "neon_cathedral", "wormhole_choir", "plasma_singularity", "vortex_crown", "collapse_flower"]
+
+[[feature.param]]
+key = "chaos"
+flag = "--chaos"
+label = "Structured chaos"
+type = "float"
+default = 1.15
+min = 0.0
+max = 2.5
 
 [[feature.param]]
 key = "display"
