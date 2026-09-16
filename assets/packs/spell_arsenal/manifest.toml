@@ -1,0 +1,73 @@
+[pack]
+id = "spell_arsenal"
+name = "Analytic SDF Spell Arsenal"
+version = "0.1.0"
+license = "MIT"
+author = "ProjectionMapping project"
+source = "procedural"
+generated_with = "ProjectionMapping SDF spell renderer"
+
+[[asset]]
+id = "charge_orb_ion"
+kind = "shader"
+binding = "right_palm"
+tags = ["spell", "charge", "orb", "ion"]
+blend = "add"
+renderer = "sdf_spell"
+shape = "charge_orb"
+palette = "cyber"
+
+[[asset]]
+id = "charge_orb_solar"
+kind = "shader"
+binding = "left_palm"
+tags = ["spell", "charge", "orb", "solar"]
+blend = "add"
+renderer = "sdf_spell"
+shape = "charge_orb"
+palette = "solar"
+
+[[asset]]
+id = "release_burst"
+kind = "shader"
+binding = "world"
+tags = ["spell", "release", "burst", "impact"]
+blend = "add"
+renderer = "sdf_spell"
+shape = "impact"
+
+[[asset]]
+id = "slash_trail"
+kind = "metadata"
+binding = "right_palm"
+tags = ["spell", "slash", "velocity", "trail"]
+blend = "add"
+renderer = "gpu_particles"
+particle_material = "comet"
+
+[[asset]]
+id = "portal_ring"
+kind = "shader"
+binding = "world"
+tags = ["spell", "portal", "ring", "sigil"]
+blend = "add"
+renderer = "sdf_spell"
+shape = "portal"
+
+[[asset]]
+id = "ascension_halo"
+kind = "shader"
+binding = "head"
+tags = ["spell", "ascension", "halo", "ritual"]
+blend = "add"
+renderer = "sdf_spell"
+shape = "ascension"
+
+[[asset]]
+id = "shield_dome"
+kind = "shader"
+binding = "chest"
+tags = ["spell", "shield", "dome", "defense"]
+blend = "add"
+renderer = "sdf_spell"
+shape = "shield"
