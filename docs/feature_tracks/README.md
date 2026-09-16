@@ -2,6 +2,11 @@
 
 This directory is the no-forgetting research ledger for ProjectionMapping. `ROADMAP.md` remains the milestone-level canonical plan; these files preserve the finer-grained path from prototype -> usable -> polished -> advanced -> ridiculous / research-grade for each feature category.
 
+Before substantial work, agents should also read:
+- [`../../MEMORY.md`](../../MEMORY.md) — durable project/hardware/rejected-path handoff memory.
+- [`../ART_DIRECTION.md`](../ART_DIRECTION.md) — visual-quality contract and promotion bar.
+- [`../../AGENTS.md`](../../AGENTS.md) — repository-level continuation protocol.
+
 Every track should keep the same sections so visual ambition, engineering debt, measurements, and good presets do not disappear between experiments:
 
 1. **North star / finished state** — what excellent looks like.
