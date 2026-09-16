@@ -1,0 +1,88 @@
+[pack]
+id = "mathematical_worlds"
+name = "Mathematical Worlds"
+version = "0.1.0"
+license = "MIT"
+author = "ProjectionMapping project"
+source = "procedural"
+generated_with = "ProjectionMapping FamousMath / ReactionDiffusion / Attractor renderers"
+
+[[asset]]
+id = "mandelbrot_julia"
+kind = "shader"
+binding = "world"
+tags = ["math", "fractal", "complex-dynamics", "mandelbrot", "julia"]
+renderer = "famous_math"
+mode = "mandelbrot_julia"
+
+[[asset]]
+id = "newton_basins"
+kind = "shader"
+binding = "world"
+tags = ["math", "fractal", "newton", "roots", "complex-dynamics"]
+renderer = "famous_math"
+mode = "newton_basins"
+
+[[asset]]
+id = "riemann_zeta"
+kind = "shader"
+binding = "world"
+tags = ["math", "complex-analysis", "zeta", "domain-coloring"]
+renderer = "famous_math"
+mode = "riemann_zeta"
+
+[[asset]]
+id = "chladni_plate"
+kind = "shader"
+binding = "surface"
+tags = ["math", "waves", "eigenmodes", "chladni", "acoustics"]
+renderer = "famous_math"
+mode = "chladni_plate"
+
+[[asset]]
+id = "quasicrystal_5fold"
+kind = "shader"
+binding = "world"
+tags = ["math", "quasicrystal", "interference", "five-fold"]
+renderer = "famous_math"
+mode = "quasicrystal_5fold"
+
+[[asset]]
+id = "logistic_bifurcation"
+kind = "shader"
+binding = "world"
+tags = ["math", "chaos", "logistic-map", "bifurcation"]
+renderer = "famous_math"
+mode = "logistic_bifurcation"
+
+[[asset]]
+id = "gielis_superformula"
+kind = "shader"
+binding = "world"
+tags = ["math", "superformula", "gielis", "morphology"]
+renderer = "famous_math"
+mode = "superformula"
+
+[[asset]]
+id = "complex_domain"
+kind = "shader"
+binding = "world"
+tags = ["math", "complex-analysis", "domain-coloring", "conformal"]
+renderer = "famous_math"
+mode = "complex_domain"
+
+[[asset]]
+id = "gray_scott_reaction_diffusion"
+kind = "shader"
+binding = "surface"
+tags = ["pde", "reaction-diffusion", "gray-scott", "turing-pattern", "stateful"]
+renderer = "reaction_diffusion"
+presets = ["coral", "mitosis", "worms", "maze", "solitons", "waves"]
+
+[[asset]]
+id = "classic_strange_attractors"
+kind = "geometry"
+binding = "world"
+tags = ["math", "chaos", "dynamical-systems", "attractor", "point-cloud"]
+renderer = "attractor_lab"
+modes = ["lorenz", "rossler", "aizawa", "thomas", "halvorsen", "clifford", "de_jong", "ikeda"]
