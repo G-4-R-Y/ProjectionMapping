@@ -192,9 +192,14 @@ def main() -> None:
                     chaos = args.backdrop_chaos * (
                         0.72 + 0.34 * s.section_energy + 0.22 * s.mids + 0.32 * s.drop
                     )
+                    tempo_norm = (
+                        float(np.clip((s.tempo_bpm - 70.0) / 100.0, 0.0, 1.0))
+                        if s.beat_confidence > 0.15 and s.tempo_bpm > 0.0
+                        else 0.35
+                    )
                     background = scene_renderer.render(
                         scene_name,
-                        t=elapsed * (0.82 + 0.24 * s.tempo_norm),
+                        t=elapsed * (0.82 + 0.24 * tempo_norm),
                         intensity=0.72 + 0.34 * s.section_energy + 0.18 * s.drop,
                         chaos=chaos,
                     )
