@@ -283,12 +283,17 @@ class AttractorRenderer:
         palette = palette or self.palette
         if palette not in ATTRACTOR_PALETTES:
             raise ValueError(palette)
+        planar = self.mode in {"clifford", "de_jong", "ikeda"}
+        # Iterated 2-D maps occupy a razor-thin plane. Give them a denser luminous material than
+        # volumetric ODE trajectories so the projector sees a sculpture rather than isolated dust.
+        point_boost = 1.85 if self.mode == "ikeda" else (1.45 if planar else 1.0)
+        energy_boost = 1.45 if self.mode == "ikeda" else (1.22 if planar else 1.0)
         p = self.point_program
         p["u_time"].value = float(t)
         p["u_zoom"].value = float(max(zoom, 0.1))
-        p["u_point_size"].value = float(np.clip(point_size, 0.5, 12.0))
+        p["u_point_size"].value = float(np.clip(point_size * point_boost, 0.5, 12.0))
         p["u_palette"].value = ATTRACTOR_PALETTES.index(palette)
-        p["u_energy"].value = float(np.clip(energy, 0.0, 4.0))
+        p["u_energy"].value = float(np.clip(energy * energy_boost, 0.0, 4.0))
         self.ctx.viewport = (0, 0, self.width, self.height)
         self.hdr_fbo.use()
         self.hdr_fbo.clear(0.0, 0.0, 0.0, 0.0)
