@@ -16,11 +16,12 @@ A performable visual instrument that responds to musical structure, not raw FFT 
 - Particle material was rewritten after hardware feedback that it looked covered by a grey shade: current target is white-hot core + saturated shell + same-hue halo + thresholded bloom + chromatic feedback + clean black floor.
 - Original choreography banks: `orbit_reactor`, `dual_comet`, `cathedral_rain`, `vortex_gate`, `constellation_bloom`.
 - Additional choreography banks: `reactor_bloom`, `polar_gate`, `ritual_rain`, `helix_fountain`, `nebula_bloom`, `techno_lattice`.
+- New structured-chaos choreography studies: `lissajous_storm`, `singularity_crown`, `prism_shards`.
 - `journey` mode chooses banks at section/phrase boundaries without resetting the particle simulation.
-- Song Studio backdrop conductor now supports **both** all five Polar Math families and all Shader Scene Lab scenes through `scene:<id>`; `backdrop=auto` chooses a structural backdrop per choreography bank.
+- Song Studio backdrop conductor supports **both** all five Polar Math families and all Shader Scene Lab scenes through `scene:<id>`; `backdrop=auto` chooses a structural backdrop per choreography bank.
 - Shader/Polar backdrop chaos is driven by macro section energy, mids and sparse drops, while backdrop mix stays deliberately restrained so particle light remains the foreground hierarchy.
 - `techno_lattice -> liquid_chrome` is deliberately included because Liquid Chrome is the current strongest user-validated Shader Scene Lab aesthetic; other auto pairings are research candidates rather than promoted presets.
-- Polar Math backdrops now expose structured chaos as analytic cross-harmonic/domain deformation rather than generic noise; Song Studio can modulate the same control without resetting the mathematical field.
+- Polar Math backdrops expose structured chaos as analytic cross-harmonic/domain deformation rather than generic noise; Song Studio can modulate the same control without resetting the mathematical field.
 - Particle bank parameters are driven by musical role: beat/bar phase sets coherent trajectories; loudness sets density; bass broadens/energizes fields; strikes create bursts; drops alter macro emission; highs are not the global animation clock.
 - Shader palettes: Neon Aurora, Solar Flare, Bioluminescent, Intelli, Mono Accent, Prismatic. Particle palettes: cyber, solar, bio, prismatic.
 - Particle sprite materials: plasma, comet, spark, mote, shock-ring.
@@ -48,6 +49,7 @@ A performable visual instrument that responds to musical structure, not raw FFT 
 10. A mathematical/shader backdrop is structural light, not wallpaper: keep its mix low enough that particles still read as the foreground instrument.
 11. “Chaos” should modulate topology/warp/interference/density, not just overall intensity. Musical drops may temporarily raise chaos; ordinary beats should not randomize the whole scene.
 12. Keep `backdrop=none` as a clean A/B baseline. A fancy backdrop that makes the particle instrument less legible is a regression.
+13. Chaotic choreography should be deterministic and phase-coherent. Lissajous/harmonic motion can look wild while remaining temporally exact; random per-frame emitter placement is not acceptable.
 
 ## Current GPU scene language
 ### Shader worlds / chaotic backdrops
@@ -72,6 +74,9 @@ A performable visual instrument that responds to musical structure, not raw FFT 
 - **Helix Fountain:** phase-opposed upward plasma/DNA-like fountain.
 - **Nebula Bloom:** low-density breakdown/ambient cloud with rare macro flareups.
 - **Techno Lattice:** symmetric beat-quantized emitter lattice for stronger dance material.
+- **Lissajous Storm:** eight phase-offset 3:2 Lissajous emitters with analytic velocity derivatives; visually chaotic but exactly periodic/phase coherent.
+- **Singularity Crown:** asymmetric eight-emitter crown with alternating implosion/explosion velocities and shock-ring drop accents.
+- **Prism Shards:** sparse rotating radial shard emitters that keep black space and explode outward on strong accents.
 
 ### Polar Math background families
 - Rose Lattice — cross-harmonic floral/mechanical contour field.
@@ -92,6 +97,9 @@ A performable visual instrument that responds to musical structure, not raw FFT 
 - Helix Fountain -> Collapse Flower
 - Nebula Bloom -> Aurora Void
 - Techno Lattice -> Liquid Chrome
+- Lissajous Storm -> Liquid Chrome
+- Singularity Crown -> Vortex Crown
+- Prism Shards -> Log Spiral Interference
 
 These mappings are **implemented experiments**, not all promoted artistic presets yet.
 
@@ -113,21 +121,23 @@ The next step is not to spawn these on every beat. Asset spawning should happen 
 - Shader/particle parameters are launch-time settings; no live hot-control/preset morphing yet.
 - Curated built-in banks exist, but user-saved named banks / A-B snapshots do not yet.
 - `backdrop=auto` still performs instantaneous backdrop identity changes when the Journey bank changes; add crossfade/morph state rather than hard visual replacement.
+- The three new chaos choreography banks are manual research banks first; only promote them into automatic Journey routing after projector tests.
 - Need real recordings of event precision and Journey transitions across multiple genres before tuning defaults further.
 
 ## Next implementation queue
 1. Projector-test the vivid particle rewrite with `backdrop=none`: black floor, saturation, bloom threshold, trail decay and white-core size.
-2. Projector-test each chaotic backdrop independently; compare against Liquid Chrome as the current internal quality benchmark.
-3. Test `journey + backdrop=auto` across techno/house/ambient/rock/breakbeat at low mix; record which pairings are additive and which become visual soup.
-4. Add beat/bar/phrase-synchronous **crossfades** between backdrop worlds and choreography banks without particle-state reset.
-5. Benchmark particle capacities 8k/16k/32k/65k and GL readback cost; preserve the lowest-latency visually dense operating point.
-6. Add chroma/key-class vector + harmonic-change descriptor; use them for palette/asset-state decisions rather than per-frame pixel motion.
-7. Add live local IPC/hot controls, user-named banks and A/B snapshots.
-8. Add audio-reactive VFX-pack / generated-asset spawning: rare macro events can summon approved sprite/GLB entities with persistent lifetimes.
-9. Add MIDI/OSC mappings and Ableton Link/clock experiment.
-10. Move display to GL-native/shared texture and remove final readback.
-11. Route `MusicalSignals` into Performer FX, Human Reactor and Room Skin as a shared state bus.
-12. Evaluate CLAP/audio embeddings only after deterministic controls are measured and stable; use embeddings for semantic/style/asset-bank state.
+2. Projector-test `lissajous_storm`, `singularity_crown`, and `prism_shards` individually; compare readability/continuity against existing banks rather than rewarding density alone.
+3. Projector-test each chaotic backdrop independently; compare against Liquid Chrome as the current internal quality benchmark.
+4. Test `journey + backdrop=auto` across techno/house/ambient/rock/breakbeat at low mix; record which pairings are additive and which become visual soup.
+5. Add beat/bar/phrase-synchronous **crossfades** between backdrop worlds and choreography banks without particle-state reset.
+6. Benchmark particle capacities 8k/16k/32k/65k and GL readback cost; preserve the lowest-latency visually dense operating point.
+7. Add chroma/key-class vector + harmonic-change descriptor; use them for palette/asset-state decisions rather than per-frame pixel motion.
+8. Add live local IPC/hot controls, user-named banks and A/B snapshots.
+9. Add audio-reactive VFX-pack / generated-asset spawning: rare macro events can summon approved sprite/GLB entities with persistent lifetimes.
+10. Add MIDI/OSC mappings and Ableton Link/clock experiment.
+11. Move display to GL-native/shared texture and remove final readback.
+12. Route `MusicalSignals` into Performer FX, Human Reactor and Room Skin as a shared state bus.
+13. Evaluate CLAP/audio embeddings only after deterministic controls are measured and stable; use embeddings for semantic/style/asset-bank state.
 
 ## Metrics
 Capture latency, feature age, bass-band stability, event precision, duplicate-event rate, BPM error/confidence, phrase transition precision, Journey switch rate, backdrop switch rate, particle simulation/render/readback p50/p95, active particle count, display FPS/p95, black-level/contrast, highlight saturation, visual jitter under steady tones and setup friction.
@@ -149,6 +159,9 @@ Capture latency, feature age, bass-band stability, event precision, duplicate-ev
 - `helix_fountain` — stable melodic/steady-state candidate.
 - `nebula_bloom` — breakdown/ambient candidate.
 - `techno_lattice` — drop/dance candidate.
+- `lissajous_storm` — structured-chaos / flowing comet candidate; projector verdict pending.
+- `singularity_crown` — implosion/explosion macro candidate; projector verdict pending.
+- `prism_shards` — sparse high-contrast accent candidate; projector verdict pending.
 - Original banks remain available as baselines.
 
 ### Backdrop candidates
