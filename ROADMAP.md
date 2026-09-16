@@ -29,7 +29,8 @@ Core runtime rules:
 - F11 fullscreen toggle / ESC returns to control deck
 - hardware-measured latency and frame-time telemetry
 - visual quality is evaluated on projector/recorded footage, not only in code
-- weak visuals are rewritten or retired; technical complexity does not excuse mediocre art direction
+- prototype freely; art-pass promising experiments before promotion
+- weak promoted visuals are rewritten or retired; technical complexity does not excuse mediocre art direction
 
 A central design rule applies across Performer FX, Human Reactor, Cyber Mage, Neural Mirror and Room Skin: **deterministic spatial ownership first; generative stylization second**.
 
@@ -165,16 +166,22 @@ Implemented:
 - ✅ model-free procedural scene experiments
 - ✅ ModernGL Shader Scene Lab baseline
 - ✅ **Polar Math Lab** with five vivid analytic radial families: Rose Lattice, Hypotrochoid Engine, Log Spiral Interference, Phyllotaxis Reactor, Bessel Wave Chamber
+- ✅ Polar Math structured-chaos control: analytic cross-harmonic/domain deformation while preserving each equation family's identity
 - ✅ Neon Cathedral rewritten as a moving radial vault with perspective bands, caustics and breathing/oculus motion after the original static-looking version failed the art bar
+- ✅ new structured-chaos shader studies: Wormhole Choir, Plasma Singularity, Vortex Crown, Collapse Flower
+- ✅ reusable shader asset manifests: `ritual_geometry`, `singularity_suite`, `holographic_overlays`
 
 Visual/shader direction:
 - ✅ legacy CPU portal branch-cut seam fixed
-- ✅ shader scenes: Event Horizon, Aurora Void, Liquid Chrome, Neon Cathedral v2
+- ✅ Shader Scene Lab scenes: Event Horizon, Aurora Void, Liquid Chrome, Neon Cathedral v2, Wormhole Choir, Plasma Singularity, Vortex Crown, Collapse Flower
+- ✅ Event Horizon raw-angle FBM branch cut removed: promoted angular field now uses unit-circle complex harmonics instead of raw `atan()` coordinates
+- ✅ `experiments/21_visual_probe.py` includes an Event Horizon seam-regression metric across the previously visible negative-X discontinuity
+- ✅ Liquid Chrome is the current user-validated in-repo aesthetic benchmark; use it as a quality floor to beat, not a ceiling
 - ✅ saturated emissive / clean-black visual direction documented in `docs/ART_DIRECTION.md`
-- ⬜ projector-test all five Polar Math modes; keep only variants that are genuinely beautiful on footage
+- ⬜ projector-test the four new chaos studies and all five revised Polar Math modes; keep/incubate/rewrite based on beauty, motion, color and projection readability
 - ⬜ per-scene art controls + preset vault
 - ⬜ shared GPU particle/feedback engine as a spatial surface layer
-- ⬜ multi-pass bloom / reaction diffusion / fluid-like fields
+- ⬜ multi-pass HDR bloom / reaction diffusion / fluid-like fields
 - ⬜ SDF/raymarched architectural primitives
 - ⬜ calibrated surface masks and projector-coordinate scene routing
 
@@ -257,10 +264,15 @@ Implemented:
 - ✅ additional choreography banks: Reactor Bloom, Polar Gate, Ritual Rain, Helix Fountain, Nebula Bloom, Techno Lattice
 - ✅ heuristic section/phrase state (`breakdown/build/drop/release/steady`) and **Journey** controller can switch choreography without resetting particle state
 - ✅ optional Polar Math backdrop driven by the same `MusicalSignals`, with restrained screen-style emissive blending rather than grey haze
+- ✅ Song Studio backdrop conductor can also run every structured-chaos Shader Scene Lab scene via `scene:<id>`
+- ✅ `backdrop=auto` maps choreography banks to complementary Polar/Shader worlds while keeping particle state continuous
+- ✅ backdrop chaos responds to section energy/mids/sparse drops rather than twitching on every FFT bin
 - ✅ same `MusicalSignals` schema can be embedded in `PerformanceState`
 
 Next:
 - ⬜ hardware/art-tune particle material after the vividness overhaul; compare black floor, bloom and palette response on several tracks/projector footage
+- ⬜ projector-test `journey + backdrop=auto` at low mix and curate/remove pairings that become visual soup
+- ⬜ crossfade/morph backdrop identity at bar/phrase boundaries instead of an instantaneous shader-family switch
 - ⬜ chroma/key/harmonic-change descriptors
 - ⬜ improve section classifier from heuristic dynamics into robust phrase/section evidence while preserving transparent baseline
 - ⬜ beat/bar-synchronous palette/particle/preset morphing without state reset
@@ -377,6 +389,7 @@ Track: [`docs/feature_tracks/performer_fx.md`](docs/feature_tracks/performer_fx.
 - ✅ optional trimesh GLB/glTF -> NumPy primitive ingestion
 - ✅ GPU geometry/normals/emissive mesh renderer exists for generated external meshes
 - ✅ built-in smoke-test assets: cyber orb, energy ring, crystal, relic, drone, sigil totem, summon proxy
+- ✅ reusable visual packs now include `particle_arsenal`, `ritual_geometry`, `singularity_suite`, `holographic_overlays`, `spell_arsenal`, `mr_summons`, `neon_core`
 - ✅ `neon_core` example pack with procedural spell assets + generated summon slot
 - ⬜ Genforge export adapter
 - ⬜ sprite-atlas GPU loader / animated VFX cards
@@ -427,6 +440,7 @@ Performance/reliability:
 - ✅ VRAM guard / cleanup
 - ✅ cross-platform CI
 - ✅ graphics dependency/context diagnostics improved; desktop graphics extra now packaged
+- ✅ Linux Mesa/EGL visual-smoke CI compiles/renders promoted Shader Scene/Polar/particle materials and runs seam regression
 - ⬜ p50/p95/p99 capture/perception/particle/render/inference/transport/scanout timings
 - ⬜ continuous GPU/CPU memory and frame-time telemetry
 - ⬜ live parameter hot-reload
@@ -440,6 +454,7 @@ Evaluation:
 - ⬜ semantic anchor jitter/reacquisition/gesture precision
 - ⬜ active particle count + simulation/render/readback timings
 - ⬜ motion-to-effect and motion-to-photon latency
+- ✅ Event Horizon branch-cut regression metric in visual probe
 - ⬜ visual promotion scorecard from `docs/ART_DIRECTION.md` using projector/recorded footage
 
 Product/UX:
@@ -447,7 +462,7 @@ Product/UX:
 - ✅ persistent logs / copy/open / stage status
 - ✅ Song Studio GPU particle stage entry
 - ✅ Performer FX whole-body GPU entry
-- ✅ Polar Math Lab entry
+- ✅ Polar Math Lab entry with structured-chaos control
 - ✅ Mixed Reality generated-asset stage entry with built-in fallback assets
 - ⬜ robust monitor enumeration
 - ⬜ live parameter IPC + preset/asset browser
@@ -475,10 +490,12 @@ Research discipline:
 - shader-world banks + persistent GPU particle choreography banks
 - vivid particle materials: white-hot core, saturated shell, clean black floor, thresholded bloom
 - section-aware Journey without particle-state resets
-- optional Polar Math emissive backgrounds driven by the same music state
+- optional Polar Math and structured-chaos Shader Scene emissive backgrounds driven by the same music state
+- `backdrop=auto` is an experiment layer; preserve `backdrop=none` as a clean A/B baseline
+- backdrop chaos should respond to macro musical state, not jitter every pixel every beat
 - smooth/balanced/punchy/chaotic + Calm<->Madness
 - chroma/key/harmonic change + stronger phrase/section state
-- beat-synchronous palette/particle/preset morphing
+- beat-synchronous palette/particle/preset/backdrop morphing
 - transitions / user snapshots / DJ-VJ switching
 - MIDI/OSC/Ableton Link/clock
 - audio-reactive generated asset spawning only on meaningful macro events
@@ -515,13 +532,17 @@ Research discipline:
 
 ### Procedural / shader scenes
 - user-supplied casual radial shader is an **art benchmark**, not something to dismiss because it is simple
-- rose/hypotrochoid/log-spiral/phyllotaxis/Bessel families are now first-class visual research directions
+- Liquid Chrome is the current in-repo Shader Scene Lab aesthetic benchmark from hardware/user feedback
+- rose/hypotrochoid/log-spiral/phyllotaxis/Bessel families are first-class visual research directions and now expose structured chaos
+- structured-chaos studies: Wormhole Choir, Plasma Singularity, Vortex Crown, Collapse Flower
+- Event Horizon raw-angle FBM branch cut was a correctness bug; unit-circle harmonics + seam regression are the retained fix pattern
 - portal architecture, infestation, cathedral, machinery, moss ruin, starfield retained as ideas
 - CPU scenes are fallback, not quality target
 - branch-cut/periodicity continuity bugs are correctness issues
 - shader worlds + particle fields should share common renderer/post infrastructure
+- reusable shader assets live in VFX packs rather than only experiment code
 - future reaction diffusion, SDF/raymarching, fluid/vector fields, proper HDR bloom and transitions
-- static/generic scenes are rewritten rather than preserved for sunk-cost reasons
+- static/generic promoted scenes are rewritten rather than preserved for sunk-cost reasons; promising ugly research sketches can remain in incubation
 
 ### Spatial / physical path
 - wall test / structured light / dense calibration
@@ -545,21 +566,24 @@ Research discipline:
 
 # Current priority queue
 
-1. **M7/M11 art bring-up:** test the new vivid particle material on the RTX 4050/projector. If it still looks shaded, tune thresholded bloom/feedback floor/display transform before adding more effects.
-2. **M4:** test all five Polar Math modes. Keep/rewrite based on beauty, motion, color and projector readability—not implementation effort.
-3. **M7:** validate Song Studio `journey` choreography across techno/house/ambient/dense tracks; tune section/phrase switching and the six new banks.
-4. **M7/M4:** test `backdrop=auto` at low mix; find combinations where Polar Math adds structure without obscuring particle light.
-5. **M11/PF2:** hardware-test graphics context + GPU particle engine; benchmark 8k/16k/32k/65k and render/readback cost.
-6. **M11/PF1:** hardware-test RTMPose whole-body landmarks; validate hands, confidence, smoothing, latency and reacquisition.
-7. **M11/PF3:** tune charge/release/slash/shield/portal/ascension grammar from real performer footage.
-8. **M11/PF4/PF6:** Genforge VFX-pack adapter, sprite atlases, PBR/animated GLB rendering and first generated-asset summon/arena prototype.
-9. **M2:** remove GL -> CPU readback with a native OpenGL display/shared-texture path.
-10. **M3:** benchmark Neural Mirror 6 GB safe profile and temporal warp on RTX 4050; connect performer control maps later.
-11. **M7/M11:** route one `MusicalSignals` bus into Performer FX / Human Reactor / Room Skin.
-12. **M1:** capture real structured-light bundle.
-13. **M1/M5:** capture radiometry data and compare classical/learned compensation.
-14. **M4/M6/PF6:** calibrated Room Skin + room-plane collisions + generated entities.
-15. **M8/M9:** dynamic mapping / multi-projector after static calibration and latency metrics are solid.
+1. **M4:** pull the new scene code and re-test Event Horizon at the exact framing that showed the horizontal seam; if any hard cut remains, capture another screenshot and treat it as correctness, not taste.
+2. **M4 art bring-up:** compare Liquid Chrome against Wormhole Choir, Plasma Singularity, Vortex Crown and Collapse Flower at chaos ~0.8–1.6; incubate promising scenes and art-pass weak ones.
+3. **M4:** test all five revised Polar Math modes with chaos ~0.8–1.4. Keep/rewrite based on beauty, motion, color and projector readability—not implementation effort.
+4. **M7/M11:** test the vivid particle material with `backdrop=none` on the RTX 4050/projector. If it still looks shaded, tune thresholded bloom/feedback floor/display transform before adding haze.
+5. **M7:** validate Song Studio `journey` choreography across techno/house/ambient/dense tracks; tune section/phrase switching.
+6. **M7/M4:** test `backdrop=auto` at low mix; preserve only pairings where shader math adds structure without obscuring particle light.
+7. **M7:** implement bar/phrase-synchronous backdrop crossfades/morphs so auto mode never hard-cuts mathematical worlds.
+8. **M11/PF2:** hardware-test graphics context + GPU particle engine; benchmark 8k/16k/32k/65k and render/readback cost.
+9. **M11/PF1:** hardware-test RTMPose whole-body landmarks; validate hands, confidence, smoothing, latency and reacquisition.
+10. **M11/PF3:** tune charge/release/slash/shield/portal/ascension grammar from real performer footage.
+11. **M11/PF4/PF6:** Genforge VFX-pack adapter, sprite atlases, PBR/animated GLB rendering and first generated-asset summon/arena prototype.
+12. **M2:** remove GL -> CPU readback with a native OpenGL display/shared-texture path.
+13. **M3:** benchmark Neural Mirror 6 GB safe profile and temporal warp on RTX 4050; connect performer control maps later.
+14. **M7/M11:** route one `MusicalSignals` bus into Performer FX / Human Reactor / Room Skin.
+15. **M1:** capture real structured-light bundle.
+16. **M1/M5:** capture radiometry data and compare classical/learned compensation.
+17. **M4/M6/PF6:** calibrated Room Skin + room-plane collisions + generated entities.
+18. **M8/M9:** dynamic mapping / multi-projector after static calibration and latency metrics are solid.
 
 ---
 
@@ -581,10 +605,11 @@ Research discipline:
 - E13 -> M11 generic-point Cyber Mage SFX
 - E14 -> M4/M11 ModernGL Shader Scene Lab
 - E15 -> M7 GPU shader Audio Visual Instrument
-- E16 -> M7/M11 GPU Song Studio particle choreography / section-aware journey / Polar Math backdrop
+- E16 -> M7/M11 GPU Song Studio particle choreography / section-aware journey / Polar+structured-chaos backdrop conductor
 - E17 -> M11 PF1/PF2/PF3 whole-body GPU Performer FX
 - E18 -> M2 graphics runtime / OpenGL context probe
 - E19 -> M11 PF4/PF6 mixed-reality generated/built-in 3D asset stage
 - E20 -> M4/M7 Polar Math Lab / vivid analytic radial shader research
+- E21 -> cross-cutting real-GL visual smoke / shader compile / Event Horizon seam regression
 
 When adding an experiment, link it to a milestone **and update the corresponding feature track** so research prototypes, failures, good presets, measurements and product progress stay synchronized.
