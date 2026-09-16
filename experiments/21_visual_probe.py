@@ -150,6 +150,26 @@ def main() -> None:
         finally:
             r.close()
 
+    def cellular() -> None:
+        from projection_mapping.cellular_worlds import CELLULAR_MODES, CellularWorldRenderer
+
+        for i, mode in enumerate(CELLULAR_MODES):
+            r = CellularWorldRenderer(160, 90, mode=mode, density=0.19, seed=31 + i)
+            try:
+                frame = None
+                for step in range(12):
+                    frame = r.render(t=i + step / 30.0, intensity=1.0, drive=0.08, steps=1)
+                assert frame is not None and frame.shape == (90, 160, 3)
+                assert np.isfinite(frame).all()
+                assert int(frame.max()) > 8, f"{mode} CA rendered suspiciously dark"
+                print(
+                    f"[visual-probe]   cellular={mode} peak={int(frame.max())} "
+                    f"mean={float(frame.mean()):.2f}",
+                    flush=True,
+                )
+            finally:
+                r.close()
+
     def attractors() -> None:
         from projection_mapping.attractor_lab import AttractorRenderer
 
@@ -211,6 +231,7 @@ def main() -> None:
     ok &= _probe("Shader Scene Lab all modes + seam regression", scenes)
     ok &= _probe("Famous Math all modes", famous_math)
     ok &= _probe("Gray-Scott reaction diffusion presets", reaction_diffusion)
+    ok &= _probe("GPU cellular automata worlds", cellular)
     ok &= _probe("Classic attractor GPU point clouds", attractors)
     ok &= _probe("GPU particle materials", particles)
     if not ok:
