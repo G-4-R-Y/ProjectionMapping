@@ -172,14 +172,25 @@ def main() -> None:
                 )
 
                 backdrop_mode = "none"
-                requested = _BACKDROP_BY_BANK.get(active_bank, "rose_lattice") if args.backdrop == "auto" else args.backdrop
+                requested = (
+                    _BACKDROP_BY_BANK.get(active_bank, "rose_lattice")
+                    if args.backdrop == "auto"
+                    else args.backdrop
+                )
                 if requested in POLAR_MODES and polar is not None:
                     backdrop_mode = requested
+                    # The same conductor that changes particle choreography now changes the
+                    # *structure* of the math field: builds/mids introduce cross-harmonic warp;
+                    # drops can briefly push it much harder without flattening it into noise.
+                    polar_chaos = args.backdrop_chaos * (
+                        0.66 + 0.30 * s.section_energy + 0.20 * s.mids + 0.34 * s.drop
+                    )
                     background = polar.render(
                         t=elapsed,
                         mode=requested,
                         palette=args.backdrop_palette,
                         intensity=0.76 + 0.42 * s.section_energy,
+                        chaos=polar_chaos,
                         signals=s,
                     )
                     amount = args.backdrop_intensity * (0.66 + 0.34 * s.section_energy)
