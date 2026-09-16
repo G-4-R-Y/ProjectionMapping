@@ -1,6 +1,6 @@
 # Art Direction / Visual Quality Bar
 
-This document is the visual design contract for ProjectionMapping. The project is technically ambitious, but technical novelty does not excuse mediocre imagery.
+This document is the visual design contract for ProjectionMapping. The project is technically ambitious, but technical novelty does not excuse mediocre imagery **once a visual is being promoted as a finished/default experience**.
 
 ## Core lesson
 
@@ -8,9 +8,26 @@ A small user-supplied ModernGL shader playground produced a more appealing resul
 
 The implication is important: **do not confuse shader complexity with artistic quality**. A 20-line equation with good color, hierarchy and motion can beat a large procedural system with weak composition.
 
+But the inverse mistake is also bad: **do not kill technically interesting experiments just because the first rendering is ugly.** Research sketches are allowed to look rough if they expose a useful mathematical, rendering, tracking, spatial, interaction, or neural idea. Promising prototypes should earn artistic iteration; only promoted/default visuals are held to the finished quality bar below.
+
+## Prototype -> incubation -> promotion
+
+Use three different gates:
+
+### 1. Prototype / research sketch
+A prototype may be ugly, unstable, sparse, overcomplicated, or visually unbalanced if it answers a meaningful question. Its job is to reveal whether an idea has technical or aesthetic potential. Preserve enough of the experiment and its findings that a future agent can reproduce the useful part.
+
+### 2. Incubation / art pass
+If the prototype has potential, invest. Improve macro composition, palette, emissive hierarchy, motion structure, materials, parameter ranges, transitions and post-processing. Hardware/projector criticism is iteration data, not an automatic rejection of the underlying concept.
+
+### 3. Promotion / default experience
+Only now apply the strict quality test. A promoted scene/preset should look intentional, survive sustained viewing, behave robustly on target hardware, and be worth projecting/recording. Weak defaults should be rewritten, demoted to research/legacy, or retired.
+
+This project should therefore be **aggressive about experimentation and aggressive about refinement**.
+
 ## Promotion test for every visual
 
-Before promoting a shader/particle preset into the normal TUI, ask:
+Before promoting a shader/particle preset into the normal TUI/default path, ask:
 
 - Does it have a strong silhouette / macro composition at projector distance?
 - Is there a clear primary motion rather than every pixel moving independently?
@@ -22,7 +39,7 @@ Before promoting a shader/particle preset into the normal TUI, ask:
 - Is the color system coherent rather than random rainbow noise?
 - Does it look better on recorded/projected footage than the simpler baseline?
 
-If not, keep it in research/legacy or rewrite it.
+If not, do **not** confuse “not ready to promote” with “worthless experiment”. Keep promising work in research/incubation and improve it; demote or retire it only when the concept itself has no useful path forward.
 
 ## Preferred visual language
 
@@ -115,7 +132,7 @@ If the output looks like there is a shade/film over it, investigate feedback flo
 
 ## Cathedral / architecture rule
 
-A scene called Cathedral must feel spatial and alive. Static repeated arches are insufficient.
+A scene called Cathedral must feel spatial and alive. Static repeated arches are insufficient for promotion.
 
 Required ingredients for a promoted cathedral-like preset:
 - moving depth/vault rhythm;
@@ -126,12 +143,22 @@ Required ingredients for a promoted cathedral-like preset:
 - a focal oculus/altar/core;
 - no generic grid wallpaper.
 
+An experimental architecture branch may begin much rougher if it is testing a novel spatial construction; move it through incubation before judging it as final art.
+
 ## Generated assets
 
 Generated 2D/3D assets should inherit the same art language. Prefer strong silhouettes and emissive material masks. Keep generation provenance so an asset can be regenerated/tuned rather than manually patched into a dead end.
 
 Built-in procedural assets are test fixtures and design sketches, not the final content ceiling.
 
-## Failure policy
+## Failure / iteration policy
 
-Do not protect weak visuals because they cost engineering time. Record the lesson in a feature track, then replace them. The visual system should evolve like a curated instrument, not accumulate every experiment forever.
+Do not protect weak **promoted visuals** merely because they cost engineering time. But also do not throw away a promising technical idea because its first art pass failed.
+
+When hardware/projector feedback is negative:
+1. identify whether the failure is the **concept** or the **current rendering/art direction**;
+2. if the concept has potential, keep it in research/incubation and iterate aggressively;
+3. record what looked bad and why so the next pass changes the right layer;
+4. retire only genuine dead ends or experiments whose useful lesson has been extracted.
+
+The visual system should evolve like a curated research instrument: broad exploration underneath, increasingly selective polish at the surface.
