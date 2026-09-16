@@ -1,0 +1,174 @@
+[[feature]]
+id = "performer_fx_gpu"
+name = "Performer FX / Whole-Body GPU"
+category = "Visual Madness"
+description = "Fully-open performer VFX path: RTMPose/RTMW whole-body landmarks -> real palm/body anchors -> semantic spell grammar -> our GPU particle engine. No TouchDesigner required. Install the performer + graphics extras. F11 toggles fullscreen."
+command = ["python", "experiments/17_performer_fx.py"]
+fullscreen = true
+requires_modules = ["moderngl", "rtmlib"]
+
+[[feature.param]]
+key = "camera"
+flag = "--camera"
+label = "Camera"
+type = "int"
+default = 0
+min = 0
+max = 16
+
+[[feature.param]]
+key = "tracker"
+flag = "--tracker"
+label = "Semantic tracker"
+type = "choice"
+default = "rtmpose"
+choices = ["rtmpose", "auto", "mediapipe"]
+
+[[feature.param]]
+key = "style"
+flag = "--style"
+label = "Particle material"
+type = "choice"
+default = "cyber"
+choices = ["cyber", "solar", "bio", "prismatic"]
+
+[[feature.param]]
+key = "particles"
+flag = "--particles"
+label = "GPU particle capacity"
+type = "choice"
+default = "32768"
+choices = ["8192", "16384", "32768", "65536"]
+
+[[feature.param]]
+key = "intensity"
+flag = "--intensity"
+label = "Emitter intensity"
+type = "float"
+default = 1.0
+min = 0.1
+max = 2.5
+
+[[feature.param]]
+key = "madness"
+flag = "--madness"
+label = "Field turbulence"
+type = "float"
+default = 0.48
+min = 0.0
+max = 1.0
+
+[[feature.param]]
+key = "feedback"
+flag = "--feedback"
+label = "Trail persistence"
+type = "float"
+default = 0.94
+min = 0.0
+max = 0.985
+
+[[feature.param]]
+key = "bloom"
+flag = "--bloom"
+label = "Glow / bloom"
+type = "float"
+default = 1.20
+min = 0.0
+max = 2.5
+
+[[feature.param]]
+key = "camera_mix"
+flag = "--camera-mix"
+label = "Camera underlay"
+type = "float"
+default = 0.06
+min = 0.0
+max = 0.8
+
+[[feature.param]]
+key = "confidence"
+flag = "--confidence"
+label = "Landmark confidence gate"
+type = "float"
+default = 0.35
+min = 0.1
+max = 0.9
+
+[[feature.param]]
+key = "smoothing"
+flag = "--smoothing"
+label = "Landmark smoothing"
+type = "float"
+default = 0.58
+min = 0.0
+max = 0.95
+
+[[feature.param]]
+key = "mirror"
+flag = "--mirror"
+label = "Mirror camera"
+type = "bool"
+default = true
+
+[[feature.param]]
+key = "display"
+flag = "--display"
+label = "Projector display"
+type = "int"
+default = 1
+min = 0
+max = 8
+
+[[feature.param]]
+key = "capture_width"
+flag = "--capture-width"
+label = "Capture width"
+type = "int"
+default = 640
+min = 320
+max = 1920
+
+[[feature.param]]
+key = "capture_height"
+flag = "--capture-height"
+label = "Capture height"
+type = "int"
+default = 360
+min = 180
+max = 1080
+
+[[feature.param]]
+key = "render_width"
+flag = "--render-width"
+label = "Particle render width"
+type = "int"
+default = 768
+min = 320
+max = 1920
+
+[[feature.param]]
+key = "render_height"
+flag = "--render-height"
+label = "Particle render height"
+type = "int"
+default = 432
+min = 180
+max = 1080
+
+[[feature.param]]
+key = "projector_width"
+flag = "--projector-width"
+label = "Projector width"
+type = "int"
+default = 1920
+min = 320
+max = 7680
+
+[[feature.param]]
+key = "projector_height"
+flag = "--projector-height"
+label = "Projector height"
+type = "int"
+default = 1080
+min = 240
+max = 4320
