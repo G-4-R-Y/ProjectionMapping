@@ -10,6 +10,10 @@ def test_every_attractor_generates_finite_normalized_points():
         assert np.isfinite(pts).all()
         assert np.max(np.abs(pts[:, :3])) <= 1.45 + 1e-6
         assert np.all((pts[:, 3] >= 0.0) & (pts[:, 3] < 1.0))
+        # A chaotic visual accidentally converging to one fixed point is technically finite but
+        # artistically blank. Keep enough spatial spread to make every registered mode meaningful.
+        spatial_std = np.std(pts[:, :3], axis=0)
+        assert float(np.max(spatial_std)) > 0.05, f"{mode} collapsed to a fixed point"
 
 
 def test_attractor_families_are_not_identical():
