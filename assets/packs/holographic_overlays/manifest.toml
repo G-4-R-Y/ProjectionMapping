@@ -1,0 +1,48 @@
+[pack]
+id = "holographic_overlays"
+name = "Holographic Overlay Studies"
+version = "0.1.0"
+license = "MIT"
+author = "ProjectionMapping project"
+source = "procedural"
+generated_with = "ProjectionMapping shader and SDF stack"
+
+[[asset]]
+id = "liquid_chrome_field"
+kind = "shader"
+binding = "screen"
+tags = ["shader", "chrome", "holographic", "domain-warp", "emissive"]
+renderer = "shader_scenes"
+scene = "liquid_chrome"
+
+[[asset]]
+id = "aurora_void_field"
+kind = "shader"
+binding = "screen"
+tags = ["shader", "aurora", "curtain", "holographic", "atmosphere"]
+renderer = "shader_scenes"
+scene = "aurora_void"
+
+[[asset]]
+id = "neon_cathedral_field"
+kind = "shader"
+binding = "screen"
+tags = ["shader", "architecture", "cathedral", "depth", "holographic"]
+renderer = "shader_scenes"
+scene = "neon_cathedral"
+
+[[asset]]
+id = "cyber_hex_overlay"
+kind = "shader"
+binding = "screen"
+tags = ["overlay", "hex", "hud", "cyber", "research"]
+renderer = "future_shader_asset"
+status = "incubation"
+
+[[asset]]
+id = "scanline_depth_overlay"
+kind = "shader"
+binding = "screen"
+tags = ["overlay", "scanline", "depth", "hud", "research"]
+renderer = "future_shader_asset"
+status = "incubation"
