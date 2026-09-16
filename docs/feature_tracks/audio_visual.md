@@ -10,16 +10,20 @@ A performable visual instrument that responds to musical structure, not raw FFT 
 - Band energy is derived from spectral power fractions, avoiding inactive-band self-normalization and the old 256-sample bass-resolution failure.
 - Spectral novelty + RMS-rise onset evidence, adaptive loudness reference, bass/mid/treble/centroid controls.
 - `MusicalEventMapper` enforces one event decision per captured audio block, robust median/MAD adaptive thresholds, refractory spacing, macro energy tracking, drop accents and a lightweight beat-period/phase estimator.
-- `MusicStructureTracker` now provides a transparent baseline `breakdown/build/drop/release/steady` section state plus phrase phase; it is explicitly a heuristic baseline, not claimed as semantic song understanding.
+- `MusicStructureTracker` provides a transparent baseline `breakdown/build/drop/release/steady` section state plus phrase phase; it is explicitly a heuristic baseline, not claimed as semantic song understanding.
 - GPU shader branch: `Audio Visual Instrument / GPU` with Aurora/Liquid/Pulse/Void/Cathedral + Journey crossfades.
 - GPU particle branch: `Song Studio / GPU Particle Stage` with persistent particle state, feedback/advection and music-aware choreography.
 - Particle material was rewritten after hardware feedback that it looked covered by a grey shade: current target is white-hot core + saturated shell + same-hue halo + thresholded bloom + chromatic feedback + clean black floor.
 - Original choreography banks: `orbit_reactor`, `dual_comet`, `cathedral_rain`, `vortex_gate`, `constellation_bloom`.
-- New choreography banks: `reactor_bloom`, `polar_gate`, `ritual_rain`, `helix_fountain`, `nebula_bloom`, `techno_lattice`.
+- Additional choreography banks: `reactor_bloom`, `polar_gate`, `ritual_rain`, `helix_fountain`, `nebula_bloom`, `techno_lattice`.
 - `journey` mode chooses banks at section/phrase boundaries without resetting the particle simulation.
-- Optional music-reactive Polar Math backdrop supports all five analytic radial equation families; screen-style blending is intentionally restrained to avoid reintroducing haze.
+- Song Studio backdrop conductor now supports **both** all five Polar Math families and all Shader Scene Lab scenes through `scene:<id>`; `backdrop=auto` chooses a structural backdrop per choreography bank.
+- Shader/Polar backdrop chaos is driven by macro section energy, mids and sparse drops, while backdrop mix stays deliberately restrained so particle light remains the foreground hierarchy.
+- `techno_lattice -> liquid_chrome` is deliberately included because Liquid Chrome is the current strongest user-validated Shader Scene Lab aesthetic; other auto pairings are research candidates rather than promoted presets.
+- Polar Math backdrops now expose structured chaos as analytic cross-harmonic/domain deformation rather than generic noise; Song Studio can modulate the same control without resetting the mathematical field.
 - Particle bank parameters are driven by musical role: beat/bar phase sets coherent trajectories; loudness sets density; bass broadens/energizes fields; strikes create bursts; drops alter macro emission; highs are not the global animation clock.
-- Shader palettes: Neon Aurora, Solar Flare, Bioluminescent, Intelli, Mono Accent, Prismatic. Particle materials: cyber, solar, bio, prismatic.
+- Shader palettes: Neon Aurora, Solar Flare, Bioluminescent, Intelli, Mono Accent, Prismatic. Particle palettes: cyber, solar, bio, prismatic.
+- Particle sprite materials: plasma, comet, spark, mote, shock-ring.
 - Smooth/Balanced/Punchy/Chaotic musical reactivity modes and Calm<->Madness macro remain available.
 - Curated shader performance banks: `journey_balanced`, `techno_pulse`, `ambient_void`, `liquid_melodic`, `cathedral_installation`, `acid_afterhours`.
 - Previous NumPy/OpenCV studio remains available as a CPU legacy fallback rather than the art-quality target.
@@ -28,7 +32,7 @@ A performable visual instrument that responds to musical structure, not raw FFT 
 - **Prototype:** audio reaches visual.
 - **Usable:** stable loopback + band-separated motion.
 - **Polished:** rolling spectral analysis, sparse adaptive events, tempo phase, persistent particle choreography, vivid emissive materials, section-aware Journey and curated launchable banks. **Implemented; projector/art validation ongoing.**
-- **Advanced:** chroma/key, stronger phrase boundaries, reliable half/double-time handling, beat-synchronous bank/palette morphing, user snapshots, live controls and MIDI/OSC/Ableton clock.
+- **Advanced:** chroma/key, stronger phrase boundaries, reliable half/double-time handling, beat-synchronous bank/palette/material/backdrop morphing, user snapshots, live controls and MIDI/OSC/Ableton clock.
 - **Ridiculous:** song structure orchestrates performer particles, generated assets, portals and calibrated room surfaces; semantic audio embeddings change scene/material/style state; neural style/LoRA state follows sections while deterministic VFX remains exact at display rate.
 
 ## Design rules learned from hardware testing
@@ -41,16 +45,20 @@ A performable visual instrument that responds to musical structure, not raw FFT 
 7. Particle emission is choreography, not confetti: persistent trajectories/fields establish visual identity and sparse musical accents modulate them.
 8. Song Studio publishes state; downstream VFX consume that state. Do not create separate FFT/event detectors in every feature.
 9. If particle output looks shaded/muddy, fix feedback floor, bloom threshold and display transform before adding more saturation or fog.
-10. A mathematical backdrop is structural light, not wallpaper: keep its mix low enough that particles still read as the foreground instrument.
+10. A mathematical/shader backdrop is structural light, not wallpaper: keep its mix low enough that particles still read as the foreground instrument.
+11. “Chaos” should modulate topology/warp/interference/density, not just overall intensity. Musical drops may temporarily raise chaos; ordinary beats should not randomize the whole scene.
+12. Keep `backdrop=none` as a clean A/B baseline. A fancy backdrop that makes the particle instrument less legible is a regression.
 
 ## Current GPU scene language
-### Shader worlds
-- **Aurora:** domain-warped luminous veils; bass broadens the field, mids move the flow, highs add fine filaments.
-- **Liquid:** chrome/caustic material response with broad musical breathing rather than twitchy pixels.
-- **Pulse:** seamless polar/tunnel geometry using integer angular harmonics.
-- **Void:** sparse star/nebula field where highs only add fine detail and drops lift the whole space.
-- **Cathedral:** architecture branch; standalone Shader Scene Lab Cathedral has been rewritten after static-looking hardware feedback.
-- **Journey:** crossfades between shader worlds using drop/max-dwell logic.
+### Shader worlds / chaotic backdrops
+- **Liquid Chrome:** current strongest in-repo Shader Scene Lab aesthetic; warped chrome/caustic ridge material and a useful benchmark for saturation/motion quality.
+- **Event Horizon:** rebuilt around unit-circle harmonics instead of a raw-angle FBM coordinate after a projector screenshot exposed a horizontal branch-cut seam.
+- **Aurora Void:** multi-stage warped luminous curtains / sparse lightning.
+- **Neon Cathedral v2:** moving architecture branch with radial vaults, perspective floor, caustics and oculus.
+- **Wormhole Choir:** log-radius multi-harmonic portal voices.
+- **Plasma Singularity:** nested domain-warp plasma web/shell field.
+- **Vortex Crown:** multiple moving attractors and local harmonic crowns.
+- **Collapse Flower:** layered radial petals/fractures collapsing toward a hot center.
 
 ### Particle choreography
 - **Orbit Reactor:** four phase-locked orbiting emitters.
@@ -66,37 +74,63 @@ A performable visual instrument that responds to musical structure, not raw FFT 
 - **Techno Lattice:** symmetric beat-quantized emitter lattice for stronger dance material.
 
 ### Polar Math background families
-- Rose Lattice
-- Hypotrochoid Engine
-- Log Spiral Interference
-- Phyllotaxis Reactor
-- Bessel Wave Chamber
+- Rose Lattice — cross-harmonic floral/mechanical contour field.
+- Hypotrochoid Engine — rolling-circle ritual machine.
+- Log Spiral Interference — three-way spiral interference/portal field.
+- Phyllotaxis Reactor — perturbed 96-point golden-angle reactor.
+- Bessel Wave Chamber — cross-harmonic radial standing-wave chamber.
+
+### `backdrop=auto` research mapping
+- Orbit Reactor -> Bessel Wave Chamber
+- Dual Comet -> Wormhole Choir
+- Cathedral Rain -> Neon Cathedral
+- Vortex Gate -> Event Horizon
+- Constellation Bloom -> Phyllotaxis Reactor
+- Reactor Bloom -> Plasma Singularity
+- Polar Gate -> Vortex Crown
+- Ritual Rain -> Rose Lattice
+- Helix Fountain -> Collapse Flower
+- Nebula Bloom -> Aurora Void
+- Techno Lattice -> Liquid Chrome
+
+These mappings are **implemented experiments**, not all promoted artistic presets yet.
+
+## Reusable visual asset packs
+Current reusable manifests now include:
+- `particle_arsenal` — plasma/comet/spark/mote/shock-ring materials.
+- `ritual_geometry` — all five Polar Math shader assets.
+- `singularity_suite` — Event Horizon + Wormhole Choir + Plasma Singularity + Vortex Crown + Collapse Flower.
+- `holographic_overlays` — Liquid Chrome/Aurora/Cathedral plus incubation slots for future hex/scanline overlays.
+- existing `spell_arsenal`, `neon_core`, and `mr_summons` remain available for performer/MR convergence.
+
+The next step is not to spawn these on every beat. Asset spawning should happen on sparse macro events/sections with persistent entity lifetimes.
 
 ## Open problems
 - Tempo tracker is intentionally lightweight; syncopated/breakbeat material can still produce half/double-time ambiguity.
 - Section tracker is a transparent dynamics heuristic; no chroma/key or learned/novelty-based robust phrase segmentation yet.
 - ModernGL particle/shader paths render offscreen then read back into the shared OpenCV sink; direct GL display/shared texture is still the target.
-- Particle material rewrite is not yet hardware-tuned after the latest visual changes.
+- Particle material rewrite still needs hardware tuning after the latest visual changes.
 - Shader/particle parameters are launch-time settings; no live hot-control/preset morphing yet.
 - Curated built-in banks exist, but user-saved named banks / A-B snapshots do not yet.
+- `backdrop=auto` still performs instantaneous backdrop identity changes when the Journey bank changes; add crossfade/morph state rather than hard visual replacement.
 - Need real recordings of event precision and Journey transitions across multiple genres before tuning defaults further.
 
 ## Next implementation queue
-1. Test the vivid material rewrite on projector footage: black floor, saturation, bloom threshold, trail decay and white-core size.
-2. Benchmark particle capacities 8k/16k/32k/65k and readback cost; preserve the lowest-latency visually dense operating point.
-3. Test `journey` across techno/house/ambient/rock/breakbeat; log section state and bank switches against perceived musical structure.
-4. Test Polar Math `backdrop=auto` at low mix and record which bank/equation combinations look intentional.
-5. Add chroma/key-class vector + harmonic-change descriptor; use them for palette/asset-state decisions rather than per-frame pixel motion.
-6. Add beat/bar-synchronous bank morphing and palette/material transitions without particle-state reset.
+1. Projector-test the vivid particle rewrite with `backdrop=none`: black floor, saturation, bloom threshold, trail decay and white-core size.
+2. Projector-test each chaotic backdrop independently; compare against Liquid Chrome as the current internal quality benchmark.
+3. Test `journey + backdrop=auto` across techno/house/ambient/rock/breakbeat at low mix; record which pairings are additive and which become visual soup.
+4. Add beat/bar/phrase-synchronous **crossfades** between backdrop worlds and choreography banks without particle-state reset.
+5. Benchmark particle capacities 8k/16k/32k/65k and GL readback cost; preserve the lowest-latency visually dense operating point.
+6. Add chroma/key-class vector + harmonic-change descriptor; use them for palette/asset-state decisions rather than per-frame pixel motion.
 7. Add live local IPC/hot controls, user-named banks and A/B snapshots.
-8. Add audio-reactive VFX-pack spawning: rare macro events can summon approved sprite/GLB assets rather than random per-beat clutter.
+8. Add audio-reactive VFX-pack / generated-asset spawning: rare macro events can summon approved sprite/GLB entities with persistent lifetimes.
 9. Add MIDI/OSC mappings and Ableton Link/clock experiment.
 10. Move display to GL-native/shared texture and remove final readback.
 11. Route `MusicalSignals` into Performer FX, Human Reactor and Room Skin as a shared state bus.
 12. Evaluate CLAP/audio embeddings only after deterministic controls are measured and stable; use embeddings for semantic/style/asset-bank state.
 
 ## Metrics
-Capture latency, feature age, bass-band stability, event precision, duplicate-event rate, BPM error/confidence, phrase transition precision, Journey switch rate, particle simulation/render/readback p50/p95, active particle count, display FPS/p95, black-level/contrast, highlight saturation, visual jitter under steady tones and setup friction.
+Capture latency, feature age, bass-band stability, event precision, duplicate-event rate, BPM error/confidence, phrase transition precision, Journey switch rate, backdrop switch rate, particle simulation/render/readback p50/p95, active particle count, display FPS/p95, black-level/contrast, highlight saturation, visual jitter under steady tones and setup friction.
 
 ## Preset vault
 ### Shader banks
@@ -108,13 +142,18 @@ Capture latency, feature age, bass-band stability, event precision, duplicate-ev
 - `acid_afterhours` — denser club material.
 
 ### Particle banks
-- `journey` — section-aware bank conductor; new default.
-- `reactor_bloom` — high-value general-purpose radial energy preset candidate.
+- `journey` — section-aware bank conductor; current default.
+- `reactor_bloom` — high-value general-purpose radial energy candidate.
 - `polar_gate` — portal/build candidate.
 - `ritual_rain` — restrained atmospheric candidate.
 - `helix_fountain` — stable melodic/steady-state candidate.
 - `nebula_bloom` — breakdown/ambient candidate.
 - `techno_lattice` — drop/dance candidate.
 - Original banks remain available as baselines.
+
+### Backdrop candidates
+- `scene:liquid_chrome` at low mix — current strongest shader benchmark.
+- `scene:wormhole_choir`, `scene:plasma_singularity`, `scene:vortex_crown`, `scene:collapse_flower` — new chaos candidates; projector verdict pending.
+- Polar Math chaos 0.8–1.4 — equation-specific art pass range; projector verdict pending.
 
 CPU legacy: Spectral Bloom / Neon Aurora / Balanced remains the low-dependency fallback.
