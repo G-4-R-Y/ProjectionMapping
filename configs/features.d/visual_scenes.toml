@@ -152,7 +152,7 @@ max = 2.5
 id = "polar_math_lab"
 name = "Polar Math Lab / Vivid GLSL"
 category = "Visual Madness"
-description = "Five vivid analytic radial studies: rose lattice, hypotrochoid engine, logarithmic spiral interference, phyllotaxis reactor, and Bessel wave chamber. Built to exceed the old template-shader aesthetic with saturated emissive contours and continuous polar motion."
+description = "Five analytic radial equation families with vivid emissive contours plus a structured-chaos layer that adds cross-harmonic/domain warping without erasing the underlying math. F11 toggles fullscreen."
 command = ["python", "experiments/20_polar_math_lab.py"]
 fullscreen = true
 requires_modules = ["moderngl"]
@@ -172,6 +172,15 @@ label = "Vivid palette"
 type = "choice"
 default = "spectral"
 choices = ["spectral", "cyber", "solar", "bio", "ultraviolet"]
+
+[[feature.param]]
+key = "chaos"
+flag = "--chaos"
+label = "Structured chaos"
+type = "float"
+default = 1.10
+min = 0.0
+max = 2.5
 
 [[feature.param]]
 key = "display"
