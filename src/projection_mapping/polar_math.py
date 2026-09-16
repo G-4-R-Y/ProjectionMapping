@@ -238,7 +238,8 @@ void main(){
     col *= .86 + .42*u_intensity;
     col *= 1.0 + .18*u_beat + .28*u_drop;
     float r=length(p);
-    col *= mix(.70,1.0,smoothstep(1.25,.12,r));
+    float vignette=1.0-smoothstep(.12,1.25,r);
+    col *= mix(.70,1.0,vignette);
     col = vec3(1.0) - exp(-max(col,vec3(0.0))*1.16);
     col = pow(col,vec3(.78));
     fragColor=vec4(clamp(col,0.0,1.0),1.0);
