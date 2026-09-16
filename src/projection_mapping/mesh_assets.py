@@ -7,7 +7,15 @@ import math
 import numpy as np
 
 
-BUILTIN_MESHES = ("builtin:cyber_orb", "builtin:energy_ring", "builtin:crystal")
+BUILTIN_MESHES = (
+    "builtin:cyber_orb",
+    "builtin:energy_ring",
+    "builtin:crystal",
+    "builtin:relic",
+    "builtin:drone",
+    "builtin:sigil_totem",
+    "builtin:summon_proxy",
+)
 
 
 @dataclass(frozen=True)
@@ -65,20 +73,44 @@ def _asset_from_primitives(name: str, primitives: list[MeshPrimitive]) -> MeshAs
     )
 
 
+def _transform_primitive(
+    primitive: MeshPrimitive,
+    *,
+    name: str | None = None,
+    scale=(1.0,1.0,1.0),
+    translate=(0.0,0.0,0.0),
+    rotate=(0.0,0.0,0.0),
+) -> MeshPrimitive:
+    v=np.asarray(primitive.vertices,dtype=np.float32).copy()
+    sx,sy,sz=(float(x) for x in scale)
+    rx,ry,rz=(float(x) for x in rotate)
+    cx,sx_=math.cos(rx),math.sin(rx)
+    cy,sy_=math.cos(ry),math.sin(ry)
+    cz,sz_=math.cos(rz),math.sin(rz)
+    Rx=np.array([[1,0,0],[0,cx,-sx_],[0,sx_,cx]],dtype=np.float32)
+    Ry=np.array([[cy,0,sy_],[0,1,0],[-sy_,0,cy]],dtype=np.float32)
+    Rz=np.array([[cz,-sz_,0],[sz_,cz,0],[0,0,1]],dtype=np.float32)
+    v=(v*np.asarray([sx,sy,sz],dtype=np.float32))@(Rz@Ry@Rx).T
+    v+=np.asarray(translate,dtype=np.float32)
+    f=np.asarray(primitive.faces,dtype=np.int32).copy()
+    n=_vertex_normals(v,f)
+    uv=None if primitive.uv is None else np.asarray(primitive.uv,dtype=np.float32).copy()
+    return MeshPrimitive(name or primitive.name,v,f,n,uv)
+
+
 def _uv_sphere(rows: int = 22, cols: int = 44) -> MeshPrimitive:
     vertices: list[tuple[float, float, float]] = []
     uv: list[tuple[float, float]] = []
     for iy in range(rows + 1):
-        v = iy / rows
-        phi = math.pi * v
+        vv = iy / rows
+        phi = math.pi * vv
         sp, cp = math.sin(phi), math.cos(phi)
         for ix in range(cols + 1):
             u = ix / cols
             theta = math.tau * u
-            # Slightly faceted/elongated silhouette reads better as a holographic summon.
             r = 1.0 + 0.055 * math.sin(theta * 6.0) * (sp**2)
             vertices.append((r * sp * math.cos(theta), cp * 1.08, r * sp * math.sin(theta)))
-            uv.append((u, v))
+            uv.append((u, vv))
     faces: list[tuple[int, int, int]] = []
     stride = cols + 1
     for iy in range(rows):
@@ -102,12 +134,12 @@ def _torus(major: float = 0.82, minor: float = 0.19, rings: int = 56, sides: int
         a = math.tau * u
         ca, sa = math.cos(a), math.sin(a)
         for j in range(sides):
-            v = j / sides
-            b = math.tau * v
+            vv = j / sides
+            b = math.tau * vv
             cb, sb = math.cos(b), math.sin(b)
             radial = major + minor * cb
             vertices.append((radial * ca, minor * sb, radial * sa))
-            uv.append((u, v))
+            uv.append((u, vv))
     faces: list[tuple[int, int, int]] = []
     for i in range(rings):
         ni = (i + 1) % rings
@@ -125,7 +157,6 @@ def _torus(major: float = 0.82, minor: float = 0.19, rings: int = 56, sides: int
 
 
 def _crystal() -> MeshPrimitive:
-    # Two staggered rings plus poles: deliberately low-poly so normals create sharp, expensive-looking facets.
     vertices = np.asarray(
         [
             (0.0, 1.35, 0.0),
@@ -153,28 +184,71 @@ def _crystal() -> MeshPrimitive:
     return MeshPrimitive("crystal", vertices, faces, _vertex_normals(vertices, faces), None)
 
 
+def _relic() -> list[MeshPrimitive]:
+    core=_transform_primitive(_crystal(),name="relic_core",scale=(.58,.72,.58))
+    ring0=_transform_primitive(_torus(.82,.07,48,12),name="relic_ring_a",rotate=(math.pi*.5,0,0))
+    ring1=_transform_primitive(_torus(.66,.055,44,10),name="relic_ring_b",rotate=(0,math.pi*.5,math.pi*.18))
+    return [core,ring0,ring1]
+
+
+def _drone() -> list[MeshPrimitive]:
+    core=_transform_primitive(_uv_sphere(14,28),name="drone_core",scale=(.42,.28,.42))
+    halo=_transform_primitive(_torus(.73,.075,44,12),name="drone_halo",rotate=(math.pi*.5,0,0))
+    halo2=_transform_primitive(_torus(.54,.045,40,10),name="drone_halo2",rotate=(0,math.pi*.36,math.pi*.23))
+    pods=[]
+    for i in range(4):
+        a=i*math.tau/4.0
+        pods.append(_transform_primitive(_uv_sphere(8,14),name=f"drone_pod_{i}",scale=(.13,.13,.13),translate=(math.cos(a)*.82,math.sin(a)*.24,math.sin(a)*.82)))
+    return [core,halo,halo2,*pods]
+
+
+def _sigil_totem() -> list[MeshPrimitive]:
+    core=_transform_primitive(_crystal(),name="totem_core",scale=(.34,.82,.34))
+    rings=[]
+    for i,(y,major) in enumerate(((-.62,.50),(0.0,.68),(.62,.50))):
+        rings.append(_transform_primitive(_torus(major,.045,42,10),name=f"totem_ring_{i}",scale=(1,.75,1),translate=(0,y,0),rotate=(math.pi*.5,0,i*.31)))
+    crown=_transform_primitive(_torus(.34,.055,36,10),name="totem_crown",translate=(0,.96,0),rotate=(0,math.pi*.5,0))
+    return [core,*rings,crown]
+
+
+def _summon_proxy() -> list[MeshPrimitive]:
+    # Abstract creature proxy: faceted torso, head, horns/wings and orbit ring. Intentionally
+    # stylized so generated character replacements can inherit the same transform/attachment path.
+    torso=_transform_primitive(_crystal(),name="summon_torso",scale=(.42,.68,.32),translate=(0,-.18,0))
+    head=_transform_primitive(_uv_sphere(10,20),name="summon_head",scale=(.28,.30,.28),translate=(0,.88,0))
+    ring=_transform_primitive(_torus(.82,.04,44,10),name="summon_orbit",translate=(0,.10,0),rotate=(math.pi*.5,0,0))
+    wing_l=_transform_primitive(_crystal(),name="summon_wing_l",scale=(.16,.52,.12),translate=(-.58,.12,0),rotate=(0,0,-.82))
+    wing_r=_transform_primitive(_crystal(),name="summon_wing_r",scale=(.16,.52,.12),translate=(.58,.12,0),rotate=(0,0,.82))
+    horn_l=_transform_primitive(_crystal(),name="summon_horn_l",scale=(.08,.24,.08),translate=(-.18,1.18,0),rotate=(0,0,-.28))
+    horn_r=_transform_primitive(_crystal(),name="summon_horn_r",scale=(.08,.24,.08),translate=(.18,1.18,0),rotate=(0,0,.28))
+    return [torso,head,ring,wing_l,wing_r,horn_l,horn_r]
+
+
 def make_builtin_mesh_asset(name: str) -> MeshAsset:
     key = str(name).strip().lower()
     if not key.startswith("builtin:"):
         key = f"builtin:{key}"
     if key == "builtin:cyber_orb":
-        primitive = _uv_sphere()
+        primitives=[_uv_sphere()]
     elif key == "builtin:energy_ring":
-        primitive = _torus()
+        primitives=[_torus()]
     elif key == "builtin:crystal":
-        primitive = _crystal()
+        primitives=[_crystal()]
+    elif key == "builtin:relic":
+        primitives=_relic()
+    elif key == "builtin:drone":
+        primitives=_drone()
+    elif key == "builtin:sigil_totem":
+        primitives=_sigil_totem()
+    elif key == "builtin:summon_proxy":
+        primitives=_summon_proxy()
     else:
         raise ValueError(f"unknown built-in mesh {name!r}; choices: {', '.join(BUILTIN_MESHES)}")
-    return _asset_from_primitives(key, [primitive])
+    return _asset_from_primitives(key, primitives)
 
 
 def load_mesh_asset(path: str | Path) -> MeshAsset:
-    """Load a built-in primitive or GLB/glTF/OBJ/etc through trimesh.
-
-    `builtin:*` assets deliberately require no external file and are useful for graphics/pose
-    validation before a generated asset pipeline is connected. Real files stay renderer-agnostic
-    arrays so future OpenGL/Vulkan/WebGPU renderers can reuse the ingestion layer.
-    """
+    """Load a built-in primitive or GLB/glTF/OBJ/etc through trimesh."""
     raw = str(path).strip()
     if raw.startswith("builtin:"):
         return make_builtin_mesh_asset(raw)
