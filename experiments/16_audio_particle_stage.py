@@ -35,6 +35,9 @@ _BACKDROP_BY_BANK = {
     "helix_fountain": "scene:collapse_flower",
     "nebula_bloom": "scene:aurora_void",
     "techno_lattice": "scene:liquid_chrome",
+    "lissajous_storm": "scene:liquid_chrome",
+    "singularity_crown": "scene:vortex_crown",
+    "prism_shards": "log_spiral_interference",
 }
 
 _BACKDROP_CHOICES = (
