@@ -20,10 +20,14 @@ def main() -> None:
     ap.add_argument("--render-height", type=int, default=540)
     ap.add_argument("--speed", type=float, default=1.0)
     ap.add_argument("--intensity", type=float, default=1.0)
+    ap.add_argument("--chaos", type=float, default=1.15)
     args = ap.parse_args()
 
     renderer = ShaderSceneRenderer(args.render_width, args.render_height)
-    print(f"[shader-lab] ModernGL backend={renderer.backend} scene={args.scene}", flush=True)
+    print(
+        f"[shader-lab] ModernGL backend={renderer.backend} scene={args.scene} chaos={args.chaos:.2f}",
+        flush=True,
+    )
     sink = FullscreenSink(window=f"ProjectionMapping-Shader-{args.scene}", display=args.display)
     t0 = time.perf_counter()
     report_t = t0
@@ -31,15 +35,24 @@ def main() -> None:
     try:
         while True:
             now = time.perf_counter()
-            rgb = renderer.render(args.scene, t=(now - t0) * args.speed, intensity=args.intensity)
-            out = cv2.resize(rgb, (args.projector_width, args.projector_height), interpolation=cv2.INTER_CUBIC)
+            rgb = renderer.render(
+                args.scene,
+                t=(now - t0) * args.speed,
+                intensity=args.intensity,
+                chaos=args.chaos,
+            )
+            out = cv2.resize(
+                rgb,
+                (args.projector_width, args.projector_height),
+                interpolation=cv2.INTER_CUBIC,
+            )
             if sink(cv2.cvtColor(out, cv2.COLOR_RGB2BGR)) is False:
                 break
             frames += 1
             if now - report_t >= 2.0:
                 print(
-                    f"[shader-lab] scene={args.scene} fps={frames / (now - report_t):.1f} "
-                    "F11=fullscreen ESC=exit",
+                    f"[shader-lab] scene={args.scene} chaos={args.chaos:.2f} "
+                    f"fps={frames / (now - report_t):.1f} F11=fullscreen ESC=exit",
                     flush=True,
                 )
                 frames = 0
