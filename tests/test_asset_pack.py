@@ -72,3 +72,20 @@ path = "../escape.png"
     )
     with pytest.raises(ValueError, match="escapes"):
         load_vfx_pack(manifest)
+
+
+@pytest.mark.parametrize(
+    "manifest,expected",
+    [
+        ("assets/packs/neon_core/manifest.toml", {"palm_sigil", "portal_ring", "summon_generated"}),
+        ("assets/packs/polar_ritual/manifest.toml", {"rose_lattice", "bessel_wave_chamber"}),
+        ("assets/packs/mr_summons/manifest.toml", {"relic", "drone", "summon_proxy"}),
+        ("assets/packs/particle_arsenal/manifest.toml", {"plasma_motes", "comet_streaks", "shockwave_sprites"}),
+        ("assets/packs/spell_arsenal/manifest.toml", {"charge_orb_ion", "portal_ring", "shield_dome"}),
+    ],
+)
+def test_shipped_procedural_asset_packs_parse(manifest: str, expected: set[str]):
+    pack=load_vfx_pack(Path(manifest))
+    ids={asset.id for asset in pack.assets}
+    assert expected <= ids
+    assert pack.license
