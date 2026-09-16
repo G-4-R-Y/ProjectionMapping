@@ -1,7 +1,7 @@
 """Song Studio vNext: musical-state-driven GPU particle choreography.
 
 The particle stage has a section-aware Journey conductor, reusable emissive particle materials,
-and optional music-reactive Polar Math or structured-chaos Shader Scene backdrops.
+and optional music-reactive Polar Math, Famous Math, or structured-chaos Shader Scene backdrops.
 F11 toggles fullscreen; ESC exits.
 """
 from __future__ import annotations
@@ -14,6 +14,7 @@ import numpy as np
 
 from projection_mapping.audio_music_features import RollingMusicFeatureExtractor
 from projection_mapping.audio_reactive import AudioFeatureStream, format_device_table, list_audio_devices
+from projection_mapping.famous_math import MATH_MODES, MATH_PALETTES, FamousMathRenderer
 from projection_mapping.gpu_particles import GPUParticleField
 from projection_mapping.music_reactivity import MusicalEventMapper
 from projection_mapping.music_structure import MusicStructureTracker, ParticleJourneyController
@@ -28,16 +29,16 @@ _BACKDROP_BY_BANK = {
     "dual_comet": "scene:wormhole_choir",
     "cathedral_rain": "scene:neon_cathedral",
     "vortex_gate": "scene:event_horizon",
-    "constellation_bloom": "phyllotaxis_reactor",
+    "constellation_bloom": "math:riemann_zeta",
     "reactor_bloom": "scene:plasma_singularity",
     "polar_gate": "scene:vortex_crown",
     "ritual_rain": "rose_lattice",
     "helix_fountain": "scene:collapse_flower",
     "nebula_bloom": "scene:aurora_void",
     "techno_lattice": "scene:liquid_chrome",
-    "lissajous_storm": "scene:liquid_chrome",
-    "singularity_crown": "scene:vortex_crown",
-    "prism_shards": "log_spiral_interference",
+    "lissajous_storm": "math:quasicrystal_5fold",
+    "singularity_crown": "math:mandelbrot_julia",
+    "prism_shards": "math:complex_domain",
 }
 
 _BACKDROP_CHOICES = (
@@ -45,6 +46,7 @@ _BACKDROP_CHOICES = (
     "auto",
     *POLAR_MODES,
     *(f"scene:{scene}" for scene in SCENE_IDS),
+    *(f"math:{mode}" for mode in MATH_MODES),
 )
 
 
@@ -66,6 +68,10 @@ def _need_scene(backdrop: str) -> bool:
     return backdrop == "auto" or backdrop.startswith("scene:")
 
 
+def _need_math(backdrop: str) -> bool:
+    return backdrop == "auto" or backdrop.startswith("math:")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--source", choices=["system", "mic"], default="system")
@@ -74,6 +80,7 @@ def main() -> None:
     ap.add_argument("--bank", choices=("journey", *BANKS), default="journey")
     ap.add_argument("--backdrop", choices=_BACKDROP_CHOICES, default="none")
     ap.add_argument("--backdrop-palette", choices=POLAR_PALETTES, default="spectral")
+    ap.add_argument("--math-palette", choices=MATH_PALETTES, default="spectral")
     ap.add_argument("--backdrop-intensity", type=float, default=0.28)
     ap.add_argument("--backdrop-chaos", type=float, default=1.20)
     ap.add_argument("--reactivity", choices=["smooth", "balanced", "punchy", "chaotic"], default="balanced")
@@ -110,6 +117,16 @@ def main() -> None:
     scene_renderer = (
         ShaderSceneRenderer(args.render_width, args.render_height)
         if _need_scene(args.backdrop)
+        else None
+    )
+    math_renderer = (
+        FamousMathRenderer(
+            args.render_width,
+            args.render_height,
+            mode="mandelbrot_julia",
+            palette=args.math_palette,
+        )
+        if _need_math(args.backdrop)
         else None
     )
     sink = FullscreenSink(window="ProjectionMapping-AudioParticles", display=args.display, fullscreen=True)
@@ -182,9 +199,6 @@ def main() -> None:
                 )
                 if requested in POLAR_MODES and polar is not None:
                     backdrop_mode = requested
-                    # The same conductor that changes particle choreography now changes the
-                    # *structure* of the math field: builds/mids introduce cross-harmonic warp;
-                    # drops can briefly push it much harder without flattening it into noise.
                     polar_chaos = args.backdrop_chaos * (
                         0.66 + 0.30 * s.section_energy + 0.20 * s.mids + 0.34 * s.drop
                     )
@@ -201,8 +215,6 @@ def main() -> None:
                 elif requested.startswith("scene:") and scene_renderer is not None:
                     scene_name = requested.split(":", 1)[1]
                     backdrop_mode = requested
-                    # Keep the scene subordinate to particles, but make drops/builds increase
-                    # structural instability rather than merely brighten the whole frame.
                     chaos = args.backdrop_chaos * (
                         0.72 + 0.34 * s.section_energy + 0.22 * s.mids + 0.32 * s.drop
                     )
@@ -218,6 +230,27 @@ def main() -> None:
                         chaos=chaos,
                     )
                     amount = args.backdrop_intensity * (0.58 + 0.42 * s.section_energy)
+                    small = _screen_blend(small, background, amount)
+                elif requested.startswith("math:") and math_renderer is not None:
+                    mode = requested.split(":", 1)[1]
+                    backdrop_mode = requested
+                    chaos = args.backdrop_chaos * (
+                        0.64 + 0.28 * s.section_energy + 0.18 * s.mids + 0.30 * s.drop
+                    )
+                    tempo_norm = (
+                        float(np.clip((s.tempo_bpm - 70.0) / 100.0, 0.0, 1.0))
+                        if s.beat_confidence > 0.15 and s.tempo_bpm > 0.0
+                        else 0.35
+                    )
+                    background = math_renderer.render(
+                        t=elapsed * (0.80 + 0.22 * tempo_norm),
+                        mode=mode,
+                        palette=args.math_palette,
+                        intensity=0.70 + 0.34 * s.section_energy,
+                        chaos=chaos,
+                        signals=s,
+                    )
+                    amount = args.backdrop_intensity * (0.54 + 0.38 * s.section_energy)
                     small = _screen_blend(small, background, amount)
 
                 out = cv2.resize(
@@ -241,6 +274,8 @@ def main() -> None:
                     report = now
                     frames = 0
     finally:
+        if math_renderer is not None:
+            math_renderer.close()
         if scene_renderer is not None:
             scene_renderer.close()
         if polar is not None:
