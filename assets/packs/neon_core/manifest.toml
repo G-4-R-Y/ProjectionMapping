@@ -1,0 +1,56 @@
+[pack]
+id = "neon_core"
+name = "Neon Core Procedural VFX"
+version = "0.1.0"
+license = "MIT"
+author = "ProjectionMapping project"
+source = "procedural"
+generated_with = "GLSL / ProjectionMapping"
+
+[[asset]]
+id = "palm_sigil"
+kind = "shader"
+binding = "left_palm"
+tags = ["sdf", "sigil", "emissive", "cyber"]
+scale = 1.0
+emissive = 2.0
+blend = "add"
+shader = "sdf_sigil"
+
+[[asset]]
+id = "portal_ring"
+kind = "shader"
+binding = "world"
+tags = ["portal", "sdf", "ring", "emissive"]
+scale = 1.0
+emissive = 2.4
+blend = "add"
+shader = "portal_ring"
+
+[[asset]]
+id = "slash_particles"
+kind = "shader"
+binding = "right_palm"
+tags = ["particle", "slash", "trail"]
+scale = 1.0
+emissive = 1.8
+blend = "add"
+shader = "particle_field"
+
+[[asset]]
+id = "shield_dome"
+kind = "shader"
+binding = "chest"
+tags = ["shield", "dome", "refraction", "sdf"]
+scale = 1.0
+emissive = 1.4
+blend = "screen"
+shader = "shield_dome"
+
+[[asset]]
+id = "summon_slot"
+kind = "metadata"
+binding = "world"
+tags = ["generated", "gltf", "summon", "slot"]
+blend = "opaque"
+description = "Replace/extend this entry with a Genforge-generated GLB or glTF asset."
