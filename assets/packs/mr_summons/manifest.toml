@@ -1,0 +1,45 @@
+[pack]
+id = "mr_summons"
+name = "Mixed Reality Summon Prototypes"
+version = "0.1.0"
+license = "MIT"
+author = "ProjectionMapping project"
+source = "procedural"
+generated_with = "ProjectionMapping built-in mesh generator"
+
+[[asset]]
+id = "relic"
+kind = "metadata"
+binding = "chest"
+tags = ["builtin-mesh", "relic", "summon", "cyber"]
+blend = "opaque"
+mesh = "builtin:relic"
+style = "cyber"
+
+[[asset]]
+id = "drone"
+kind = "metadata"
+binding = "right_palm"
+tags = ["builtin-mesh", "drone", "companion", "cyber"]
+blend = "opaque"
+mesh = "builtin:drone"
+style = "cyber"
+
+[[asset]]
+id = "sigil_totem"
+kind = "metadata"
+binding = "world"
+tags = ["builtin-mesh", "totem", "sigil", "installation"]
+blend = "opaque"
+mesh = "builtin:sigil_totem"
+style = "prismatic"
+
+[[asset]]
+id = "summon_proxy"
+kind = "metadata"
+binding = "world"
+tags = ["builtin-mesh", "creature", "summon", "placeholder", "gameplay"]
+blend = "opaque"
+mesh = "builtin:summon_proxy"
+style = "bio"
+description = "Abstract procedural creature placeholder. Replace with generated GLB while preserving entity/attachment logic."
