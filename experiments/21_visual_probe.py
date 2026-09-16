@@ -64,7 +64,12 @@ def main() -> None:
         r = PolarMathRenderer(320, 180)
         try:
             for i, mode in enumerate(POLAR_MODES):
-                frame = r.render(t=0.37 + i * 0.11, mode=mode, intensity=1.0)
+                frame = r.render(
+                    t=0.37 + i * 0.11,
+                    mode=mode,
+                    intensity=1.0,
+                    chaos=1.25,
+                )
                 assert frame.shape == (180, 320, 3)
                 assert np.isfinite(frame).all()
                 print(
@@ -137,7 +142,7 @@ def main() -> None:
         finally:
             field.close()
 
-    ok &= _probe("Polar Math all modes", polar)
+    ok &= _probe("Polar Math all modes @ chaos=1.25", polar)
     ok &= _probe("Shader Scene Lab all modes + seam regression", scenes)
     ok &= _probe("GPU particle materials", particles)
     if not ok:
