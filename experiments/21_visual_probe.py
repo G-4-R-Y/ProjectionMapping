@@ -28,13 +28,7 @@ def _probe(name: str, fn) -> bool:
 
 
 def _event_horizon_seam_metric(frame: np.ndarray) -> tuple[float, float]:
-    """Return mean/p95 two-pixel jump across the old negative-X atan branch cut.
-
-    Event Horizon is deliberately rendered at an odd height for this check, so the rows around the
-    horizontal centerline straddle the place where atan(y, x) used to jump from -pi to +pi. The
-    metric excludes the singularity itself and outer vignette. It is not an aesthetic score; it is
-    a regression sensor for the very visible hard seam observed on the projector.
-    """
+    """Return mean/p95 two-pixel jump across the old negative-X atan branch cut."""
     h, w, _ = frame.shape
     mid_y = h // 2
     mid_x = w // 2
@@ -101,11 +95,32 @@ def main() -> None:
                         f"seam_p95={seam_p95:.2f}",
                         flush=True,
                     )
-                    # A real branch cut is a large step across much of the negative X axis.
-                    # Keep thresholds intentionally loose so natural turbulent detail is allowed.
                     assert seam_mean < 38.0 and seam_p95 < 96.0, (
                         f"Event Horizon seam regression: mean={seam_mean:.2f}, p95={seam_p95:.2f}"
                     )
+        finally:
+            r.close()
+
+    def famous_math() -> None:
+        from projection_mapping.famous_math import MATH_MODES, FamousMathRenderer
+
+        r = FamousMathRenderer(240, 135)
+        try:
+            for i, mode in enumerate(MATH_MODES):
+                frame = r.render(
+                    t=0.29 + i * 0.17,
+                    mode=mode,
+                    intensity=1.0,
+                    chaos=1.15,
+                )
+                assert frame.shape == (135, 240, 3)
+                assert np.isfinite(frame).all()
+                assert int(frame.max()) > 16, f"{mode} rendered suspiciously dark"
+                print(
+                    f"[visual-probe]   famous_math={mode} peak={int(frame.max())} "
+                    f"mean={float(frame.mean()):.2f}",
+                    flush=True,
+                )
         finally:
             r.close()
 
@@ -144,6 +159,7 @@ def main() -> None:
 
     ok &= _probe("Polar Math all modes @ chaos=1.25", polar)
     ok &= _probe("Shader Scene Lab all modes + seam regression", scenes)
+    ok &= _probe("Famous Math all modes", famous_math)
     ok &= _probe("GPU particle materials", particles)
     if not ok:
         raise SystemExit(2)
