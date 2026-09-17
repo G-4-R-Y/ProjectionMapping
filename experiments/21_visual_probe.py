@@ -124,6 +124,29 @@ def main() -> None:
         finally:
             r.close()
 
+    def wave_optics() -> None:
+        from projection_mapping.wave_optics import OPTICS_MODES, WaveOpticsRenderer
+
+        r = WaveOpticsRenderer(240, 135)
+        try:
+            for i, mode in enumerate(OPTICS_MODES):
+                frame = r.render(
+                    t=0.41 + i * 0.19,
+                    mode=mode,
+                    intensity=1.0,
+                    chaos=1.1,
+                )
+                assert frame.shape == (135, 240, 3)
+                assert np.isfinite(frame).all()
+                assert int(frame.max()) > 12, f"{mode} optics scene rendered suspiciously dark"
+                print(
+                    f"[visual-probe]   wave_optics={mode} peak={int(frame.max())} "
+                    f"mean={float(frame.mean()):.2f}",
+                    flush=True,
+                )
+        finally:
+            r.close()
+
     def reaction_diffusion() -> None:
         from projection_mapping.reaction_diffusion import REACTION_PRESETS, ReactionDiffusionRenderer
 
@@ -230,6 +253,7 @@ def main() -> None:
     ok &= _probe("Polar Math all modes @ chaos=1.25", polar)
     ok &= _probe("Shader Scene Lab all modes + seam regression", scenes)
     ok &= _probe("Famous Math all modes", famous_math)
+    ok &= _probe("Wave Optics all modes", wave_optics)
     ok &= _probe("Gray-Scott reaction diffusion presets", reaction_diffusion)
     ok &= _probe("GPU cellular automata worlds", cellular)
     ok &= _probe("Classic attractor GPU point clouds", attractors)
