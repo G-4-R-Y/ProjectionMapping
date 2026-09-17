@@ -2,7 +2,7 @@
 id = "audio_particle_stage"
 name = "Song Studio / GPU Particle Stage"
 category = "Visual Madness"
-description = "Music-driven GPU particle choreography with vivid emissive materials, phrase/section-aware Journey mode, persistent feedback/advection, and optional Polar Math, Famous Math, or structured-chaos shader backdrops. Uses the shared MusicalSignals bus. F11 toggles fullscreen."
+description = "Music-driven GPU particle choreography with vivid emissive materials, phrase/section-aware Journey mode, persistent feedback/advection, and optional Polar Math, Famous Math, wave-optics, hyperbolic, geometry, topology, or structured-chaos backdrops. Uses the shared MusicalSignals bus. F11 toggles fullscreen."
 command = ["python", "experiments/16_audio_particle_stage.py"]
 fullscreen = true
 requires_modules = ["soundcard", "moderngl"]
@@ -14,115 +14,16 @@ label = "Audio source"
 type = "choice"
 default = "system"
 choices = ["system", "mic"]
+group = "System & Input"
+help = "Use system loopback for songs playing on the machine, or mic for room/live input."
 
 [[feature.param]]
-key = "bank"
-flag = "--bank"
-label = "Particle choreography"
-type = "choice"
-default = "journey"
-choices = ["journey", "orbit_reactor", "dual_comet", "cathedral_rain", "vortex_gate", "constellation_bloom", "reactor_bloom", "polar_gate", "ritual_rain", "helix_fountain", "nebula_bloom", "techno_lattice", "lissajous_storm", "singularity_crown", "prism_shards"]
-
-[[feature.param]]
-key = "backdrop"
-flag = "--backdrop"
-label = "Backdrop / conductor layer"
-type = "choice"
-default = "none"
-choices = ["none", "auto", "rose_lattice", "hypotrochoid_engine", "log_spiral_interference", "phyllotaxis_reactor", "bessel_wave_chamber", "scene:event_horizon", "scene:aurora_void", "scene:liquid_chrome", "scene:neon_cathedral", "scene:wormhole_choir", "scene:plasma_singularity", "scene:vortex_crown", "scene:collapse_flower", "math:mandelbrot_julia", "math:newton_basins", "math:riemann_zeta", "math:chladni_plate", "math:quasicrystal_5fold", "math:logistic_bifurcation", "math:superformula", "math:complex_domain"]
-
-[[feature.param]]
-key = "backdrop_palette"
-flag = "--backdrop-palette"
-label = "Polar backdrop palette"
-type = "choice"
-default = "spectral"
-choices = ["spectral", "cyber", "solar", "bio", "ultraviolet"]
-
-[[feature.param]]
-key = "math_palette"
-flag = "--math-palette"
-label = "Famous Math palette"
-type = "choice"
-default = "spectral"
-choices = ["spectral", "electric", "solar", "bio", "ultraviolet", "icefire"]
-
-[[feature.param]]
-key = "backdrop_intensity"
-flag = "--backdrop-intensity"
-label = "Backdrop mix"
-type = "float"
-default = 0.28
-min = 0.0
-max = 1.0
-
-[[feature.param]]
-key = "backdrop_chaos"
-flag = "--backdrop-chaos"
-label = "Backdrop structured chaos"
-type = "float"
-default = 1.20
-min = 0.0
-max = 2.5
-
-[[feature.param]]
-key = "reactivity"
-flag = "--reactivity"
-label = "Musical reactivity"
-type = "choice"
-default = "balanced"
-choices = ["smooth", "balanced", "punchy", "chaotic"]
-
-[[feature.param]]
-key = "madness"
-flag = "--madness"
-label = "Calm to madness"
-type = "float"
-default = 0.45
-min = 0.0
-max = 1.0
-
-[[feature.param]]
-key = "event_threshold"
-flag = "--event-threshold"
-label = "Strong onset gate"
-type = "float"
-default = 0.64
-min = 0.30
-max = 0.95
-
-[[feature.param]]
-key = "beat_threshold"
-flag = "--beat-threshold"
-label = "Beat / kick gate"
-type = "float"
-default = 0.50
-min = 0.25
-max = 0.90
-
-[[feature.param]]
-key = "capacity"
-flag = "--capacity"
-label = "GPU particle capacity"
-type = "choice"
-default = "32768"
-choices = ["8192", "16384", "32768", "65536"]
-
-[[feature.param]]
-key = "analysis_size"
-flag = "--analysis-size"
-label = "Spectral analysis window"
-type = "choice"
-default = "2048"
-choices = ["1024", "2048", "4096"]
-
-[[feature.param]]
-key = "blocksize"
-flag = "--blocksize"
-label = "Capture block"
-type = "choice"
-default = "256"
-choices = ["128", "256", "512"]
+key = "device"
+flag = "--device"
+label = "Audio device name/id (optional)"
+type = "text"
+default = ""
+group = "System & Input"
 
 [[feature.param]]
 key = "sensitivity"
@@ -132,6 +33,129 @@ type = "float"
 default = 1.20
 min = 0.25
 max = 3.0
+group = "System & Input"
+
+[[feature.param]]
+key = "bank"
+flag = "--bank"
+label = "Particle choreography"
+type = "choice"
+default = "journey"
+choices = ["journey", "orbit_reactor", "dual_comet", "cathedral_rain", "vortex_gate", "constellation_bloom", "reactor_bloom", "polar_gate", "ritual_rain", "helix_fountain", "nebula_bloom", "techno_lattice", "lissajous_storm", "singularity_crown", "prism_shards"]
+group = "Design Customization"
+
+[[feature.param]]
+key = "backdrop"
+flag = "--backdrop"
+label = "Backdrop / conductor layer"
+type = "choice"
+default = "none"
+choices = ["none", "auto", "rose_lattice", "hypotrochoid_engine", "log_spiral_interference", "phyllotaxis_reactor", "bessel_wave_chamber", "scene:event_horizon", "scene:aurora_void", "scene:liquid_chrome", "scene:neon_cathedral", "scene:wormhole_choir", "scene:plasma_singularity", "scene:vortex_crown", "scene:collapse_flower", "math:mandelbrot_julia", "math:newton_basins", "math:riemann_zeta", "math:chladni_plate", "math:quasicrystal_5fold", "math:logistic_bifurcation", "math:superformula", "math:complex_domain", "optics:young_double_slit", "optics:fresnel_zone_plate", "optics:airy_diffraction", "optics:multi_source_interference", "optics:moire_gratings", "optics:cusp_catastrophe", "hyper:poincare_orbifold", "hyper:hyperbolic_geodesics", "hyper:mobius_lattice", "hyper:schottky_inversions", "hyper:klein_chords", "hyper:modular_domain", "geo:voronoi_flow", "geo:power_diagram", "geo:lloyd_relaxation", "geo:delaunay_ridges", "geo:apollonian_gasket", "geo:penrose_interference", "topo:torus_knot", "topo:hopf_link_field", "topo:gyroid", "topo:schwarz_p", "topo:helicoid", "topo:mobius_ribbon"]
+group = "Design Customization"
+
+[[feature.param]]
+key = "backdrop_palette"
+flag = "--backdrop-palette"
+label = "Polar backdrop palette"
+type = "choice"
+default = "spectral"
+choices = ["spectral", "cyber", "solar", "bio", "ultraviolet"]
+group = "Design Customization"
+
+[[feature.param]]
+key = "math_palette"
+flag = "--math-palette"
+label = "Math/world palette"
+type = "choice"
+default = "spectral"
+choices = ["spectral", "electric", "solar", "bio", "ultraviolet", "icefire"]
+group = "Design Customization"
+
+[[feature.param]]
+key = "backdrop_intensity"
+flag = "--backdrop-intensity"
+label = "Backdrop mix"
+type = "float"
+default = 0.28
+min = 0.0
+max = 1.0
+group = "Design Customization"
+
+[[feature.param]]
+key = "backdrop_chaos"
+flag = "--backdrop-chaos"
+label = "Backdrop structured chaos"
+type = "float"
+default = 1.20
+min = 0.0
+max = 2.5
+group = "Design Customization"
+
+[[feature.param]]
+key = "reactivity"
+flag = "--reactivity"
+label = "Musical reactivity"
+type = "choice"
+default = "balanced"
+choices = ["smooth", "balanced", "punchy", "chaotic"]
+group = "Behavior & Reactivity"
+
+[[feature.param]]
+key = "madness"
+flag = "--madness"
+label = "Calm to madness"
+type = "float"
+default = 0.45
+min = 0.0
+max = 1.0
+group = "Behavior & Reactivity"
+
+[[feature.param]]
+key = "event_threshold"
+flag = "--event-threshold"
+label = "Strong onset gate"
+type = "float"
+default = 0.64
+min = 0.30
+max = 0.95
+group = "Behavior & Reactivity"
+
+[[feature.param]]
+key = "beat_threshold"
+flag = "--beat-threshold"
+label = "Beat / kick gate"
+type = "float"
+default = 0.50
+min = 0.25
+max = 0.90
+group = "Behavior & Reactivity"
+
+[[feature.param]]
+key = "capacity"
+flag = "--capacity"
+label = "GPU particle capacity"
+type = "choice"
+default = "32768"
+choices = ["8192", "16384", "32768", "65536"]
+group = "Performance & Advanced"
+
+[[feature.param]]
+key = "analysis_size"
+flag = "--analysis-size"
+label = "Spectral analysis window"
+type = "choice"
+default = "2048"
+choices = ["1024", "2048", "4096"]
+group = "Performance & Advanced"
+
+[[feature.param]]
+key = "blocksize"
+flag = "--blocksize"
+label = "Capture block"
+type = "choice"
+default = "256"
+choices = ["128", "256", "512"]
+group = "Performance & Advanced"
 
 [[feature.param]]
 key = "display"
@@ -141,6 +165,7 @@ type = "int"
 default = 1
 min = 0
 max = 8
+group = "Output & Resolution"
 
 [[feature.param]]
 key = "render_width"
@@ -150,6 +175,7 @@ type = "int"
 default = 768
 min = 320
 max = 1920
+group = "Output & Resolution"
 
 [[feature.param]]
 key = "render_height"
@@ -159,6 +185,7 @@ type = "int"
 default = 432
 min = 180
 max = 1080
+group = "Output & Resolution"
 
 [[feature.param]]
 key = "projector_width"
@@ -168,6 +195,7 @@ type = "int"
 default = 1920
 min = 320
 max = 7680
+group = "Output & Resolution"
 
 [[feature.param]]
 key = "projector_height"
@@ -177,10 +205,4 @@ type = "int"
 default = 1080
 min = 240
 max = 4320
-
-[[feature.param]]
-key = "device"
-flag = "--device"
-label = "Audio device name/id (optional)"
-type = "text"
-default = ""
+group = "Output & Resolution"
