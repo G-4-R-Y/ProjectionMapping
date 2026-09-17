@@ -272,7 +272,8 @@ Implemented:
 Next:
 - ⬜ hardware/art-tune particle material after the vividness overhaul; compare black floor, bloom and palette response on several tracks/projector footage
 - ⬜ projector-test `journey + backdrop=auto` at low mix and curate/remove pairings that become visual soup
-- ⬜ crossfade/morph backdrop identity at bar/phrase boundaries instead of an instantaneous shader-family switch
+- 🟡 crossfade/morph backdrop identity and choreography at accepted Journey phrase/drop boundaries;
+  implemented without particle-state reset, projector/art tuning pending
 - ⬜ chroma/key/harmonic-change descriptors
 - ⬜ improve section classifier from heuristic dynamics into robust phrase/section evidence while preserving transparent baseline
 - ⬜ beat/bar-synchronous palette/particle/preset morphing without state reset

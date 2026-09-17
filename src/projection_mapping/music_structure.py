@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import math
 from collections import deque
 from dataclasses import dataclass
-import math
+from typing import ClassVar
 
 import numpy as np
 
@@ -106,7 +107,7 @@ class MusicStructureTracker:
 class ParticleJourneyController:
     """Select choreography at section/phrase boundaries without resetting particle state."""
 
-    _SECTION_BANK = {
+    _SECTION_BANK: ClassVar[dict[str, str]] = {
         "breakdown": "nebula_bloom",
         "build": "polar_gate",
         "drop": "techno_lattice",
@@ -125,11 +126,73 @@ class ParticleJourneyController:
         phrase_edge = structure.phrase_phase < 0.06 or structure.phrase_phase > 0.94
         if desired != self.bank and (
             urgent
-            or (now - self._last_switch >= self.minimum_dwell and phrase_edge and structure.confidence >= 0.48)
+            or (
+                now - self._last_switch >= self.minimum_dwell
+                and phrase_edge
+                and structure.confidence >= 0.48
+            )
         ):
             self.bank = desired
             self._last_switch = float(now)
         return self.bank
 
 
-__all__ = ["MusicStructure", "MusicStructureTracker", "ParticleJourneyController"]
+@dataclass(frozen=True)
+class JourneyTransition:
+    """A smooth, deterministic transition between two Journey bank identities."""
+
+    source_bank: str
+    target_bank: str
+    mix: float
+
+    @property
+    def active(self) -> bool:
+        return self.source_bank != self.target_bank and self.mix < 1.0
+
+
+class ParticleJourneyCrossfade:
+    """Turn discrete Journey bank changes into a time-based smoothstep transition.
+
+    The Journey controller already decides *when* a musical change is allowed. This class only
+    shapes that accepted change, so phrase/drop timing remains owned by ``ParticleJourneyController``.
+    """
+
+    def __init__(self, *, initial: str, duration: float = 2.4) -> None:
+        self.source_bank = initial
+        self.target_bank = initial
+        self.duration = float(max(duration, 0.05))
+        self._transition_start: float | None = None
+
+    def update(self, bank: str, now: float) -> JourneyTransition:
+        now = float(now)
+        if bank != self.target_bank:
+            # Journey changes are normally sparse. If a new change arrives mid-transition, retain
+            # whichever endpoint currently dominates rather than jumping back to stale state.
+            if self._transition_start is not None:
+                raw = float(np.clip((now - self._transition_start) / self.duration, 0.0, 1.0))
+                dominant = self.target_bank if raw >= 0.5 else self.source_bank
+            else:
+                dominant = self.target_bank
+            self.source_bank = dominant
+            self.target_bank = bank
+            self._transition_start = now
+
+        if self._transition_start is None or self.source_bank == self.target_bank:
+            return JourneyTransition(self.target_bank, self.target_bank, 1.0)
+
+        raw = float(np.clip((now - self._transition_start) / self.duration, 0.0, 1.0))
+        mix = raw * raw * (3.0 - 2.0 * raw)
+        if raw >= 1.0:
+            self.source_bank = self.target_bank
+            self._transition_start = None
+            return JourneyTransition(self.target_bank, self.target_bank, 1.0)
+        return JourneyTransition(self.source_bank, self.target_bank, mix)
+
+
+__all__ = [
+    "JourneyTransition",
+    "MusicStructure",
+    "MusicStructureTracker",
+    "ParticleJourneyController",
+    "ParticleJourneyCrossfade",
+]

@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
 
 import numpy as np
 
 from .gpu_particles import ParticleEmitter
 from .music_reactivity import MusicalSignals
-
 
 BANKS = (
     "orbit_reactor",
@@ -37,6 +36,65 @@ class ParticleChoreography:
     bloom: float
     palette: str
     material: str = "plasma"
+
+
+def _lerp(a: float, b: float, mix: float) -> float:
+    return a + (b - a) * mix
+
+
+def _blend_hue(a: float, b: float, mix: float) -> float:
+    delta = (b - a + 0.5) % 1.0 - 0.5
+    return (a + delta * mix) % 1.0
+
+
+def blend_choreographies(
+    source: ParticleChoreography,
+    target: ParticleChoreography,
+    mix: float,
+) -> ParticleChoreography:
+    """Morph two banks without resetting the persistent GPU particle simulation.
+
+    The particle shader supports eight emitters, so emitters are paired by stable index. Missing
+    endpoints fade in/out in place instead of concatenating two banks and silently truncating one.
+    """
+
+    m = float(np.clip(mix, 0.0, 1.0))
+    if m <= 0.0:
+        return source
+    if m >= 1.0:
+        return target
+    count = min(max(len(source.emitters), len(target.emitters)), 8)
+    emitters: list[ParticleEmitter] = []
+    for index in range(count):
+        a = source.emitters[index] if index < len(source.emitters) else target.emitters[index]
+        b = target.emitters[index] if index < len(target.emitters) else source.emitters[index]
+        a_energy = a.energy if index < len(source.emitters) else 0.0
+        b_energy = b.energy if index < len(target.emitters) else 0.0
+        emitters.append(
+            ParticleEmitter(
+                _lerp(a.x, b.x, m),
+                _lerp(a.y, b.y, m),
+                _lerp(a.vx, b.vx, m),
+                _lerp(a.vy, b.vy, m),
+                _lerp(a_energy, b_energy, m),
+                _blend_hue(a.hue, b.hue, m),
+                _lerp(a.radius, b.radius, m),
+            )
+        )
+
+    # Palette/material are global shader state, not per-emitter attributes. Switch them at the
+    # midpoint while geometry, energy and the persistent feedback field continue to morph.
+    style = target if m >= 0.5 else source
+    return ParticleChoreography(
+        tuple(emitters),
+        _lerp(source.emission_rate, target.emission_rate, m),
+        _lerp(source.turbulence, target.turbulence, m),
+        _lerp(source.drag, target.drag, m),
+        _lerp(source.feedback, target.feedback, m),
+        _lerp(source.bloom, target.bloom, m),
+        style.palette,
+        style.material,
+    )
 
 
 def _phase_angle(s: MusicalSignals, t: float, multiplier: float = 1.0) -> float:
@@ -515,4 +573,4 @@ def choreography(
     )
 
 
-__all__ = ["BANKS", "ParticleChoreography", "choreography"]
+__all__ = ["BANKS", "ParticleChoreography", "blend_choreographies", "choreography"]

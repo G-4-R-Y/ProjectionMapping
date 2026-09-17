@@ -18,6 +18,9 @@ A performable visual instrument that responds to musical structure, not raw FFT 
 - Additional choreography banks: `reactor_bloom`, `polar_gate`, `ritual_rain`, `helix_fountain`, `nebula_bloom`, `techno_lattice`.
 - New structured-chaos choreography studies: `lissajous_storm`, `singularity_crown`, `prism_shards`.
 - `journey` mode chooses banks at section/phrase boundaries without resetting the particle simulation.
+- Journey bank changes now smoothstep-morph emitter position/velocity/energy and continuous field
+  parameters; `backdrop=auto` crossfades the old/new mathematical worlds over the same transition.
+  The existing persistent GPU particle state is not reset. Projector/art validation is pending.
 - Song Studio backdrop conductor supports **both** all five Polar Math families and all Shader Scene Lab scenes through `scene:<id>`; `backdrop=auto` chooses a structural backdrop per choreography bank.
 - Shader/Polar backdrop chaos is driven by macro section energy, mids and sparse drops, while backdrop mix stays deliberately restrained so particle light remains the foreground hierarchy.
 - `techno_lattice -> liquid_chrome` is deliberately included because Liquid Chrome is the current strongest user-validated Shader Scene Lab aesthetic; other auto pairings are research candidates rather than promoted presets.
@@ -120,7 +123,8 @@ The next step is not to spawn these on every beat. Asset spawning should happen 
 - Particle material rewrite still needs hardware tuning after the latest visual changes.
 - Shader/particle parameters are launch-time settings; no live hot-control/preset morphing yet.
 - Curated built-in banks exist, but user-saved named banks / A-B snapshots do not yet.
-- `backdrop=auto` still performs instantaneous backdrop identity changes when the Journey bank changes; add crossfade/morph state rather than hard visual replacement.
+- Transition duration and auto-pairing still need projector tuning; palette/material are global particle
+  shader state and currently switch at the morph midpoint rather than being dual-rendered.
 - The three new chaos choreography banks are manual research banks first; only promote them into automatic Journey routing after projector tests.
 - Need real recordings of event precision and Journey transitions across multiple genres before tuning defaults further.
 
@@ -129,7 +133,8 @@ The next step is not to spawn these on every beat. Asset spawning should happen 
 2. Projector-test `lissajous_storm`, `singularity_crown`, and `prism_shards` individually; compare readability/continuity against existing banks rather than rewarding density alone.
 3. Projector-test each chaotic backdrop independently; compare against Liquid Chrome as the current internal quality benchmark.
 4. Test `journey + backdrop=auto` across techno/house/ambient/rock/breakbeat at low mix; record which pairings are additive and which become visual soup.
-5. Add beat/bar/phrase-synchronous **crossfades** between backdrop worlds and choreography banks without particle-state reset.
+5. 🟡 Projector-tune the implemented phrase/drop-synchronous backdrop crossfade and choreography
+   morph; evaluate transition duration and the midpoint palette/material switch.
 6. Benchmark particle capacities 8k/16k/32k/65k and GL readback cost; preserve the lowest-latency visually dense operating point.
 7. Add chroma/key-class vector + harmonic-change descriptor; use them for palette/asset-state decisions rather than per-frame pixel motion.
 8. Add live local IPC/hot controls, user-named banks and A/B snapshots.
