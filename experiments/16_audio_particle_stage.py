@@ -1,8 +1,8 @@
 """Song Studio vNext: musical-state-driven GPU particle choreography.
 
 The particle stage has a section-aware Journey conductor, reusable emissive particle materials,
-and optional music-reactive Polar Math, Famous Math, or structured-chaos Shader Scene backdrops.
-F11 toggles fullscreen; ESC exits.
+and optional music-reactive Polar Math, Famous Math, wave-optics, hyperbolic, geometry-field,
+topology, or structured-chaos Shader Scene backdrops. F11 toggles fullscreen; ESC exits.
 """
 from __future__ import annotations
 
@@ -15,13 +15,17 @@ import numpy as np
 from projection_mapping.audio_music_features import RollingMusicFeatureExtractor
 from projection_mapping.audio_reactive import AudioFeatureStream, format_device_table, list_audio_devices
 from projection_mapping.famous_math import MATH_MODES, MATH_PALETTES, FamousMathRenderer
+from projection_mapping.geometry_fields import GEOMETRY_MODES, GeometryFieldRenderer
 from projection_mapping.gpu_particles import GPUParticleField
+from projection_mapping.hyperbolic_geometry import HYPERBOLIC_MODES, HyperbolicGeometryRenderer
 from projection_mapping.music_reactivity import MusicalEventMapper
 from projection_mapping.music_structure import MusicStructureTracker, ParticleJourneyController
 from projection_mapping.particle_choreography import BANKS, choreography
 from projection_mapping.polar_math import POLAR_MODES, POLAR_PALETTES, PolarMathRenderer
 from projection_mapping.runtime import FullscreenSink
 from projection_mapping.shader_scenes import SCENE_IDS, ShaderSceneRenderer
+from projection_mapping.topology_worlds import TOPOLOGY_MODES, TopologyWorldRenderer
+from projection_mapping.wave_optics import OPTICS_MODES, WaveOpticsRenderer
 
 
 _BACKDROP_BY_BANK = {
@@ -29,16 +33,16 @@ _BACKDROP_BY_BANK = {
     "dual_comet": "scene:wormhole_choir",
     "cathedral_rain": "scene:neon_cathedral",
     "vortex_gate": "scene:event_horizon",
-    "constellation_bloom": "math:riemann_zeta",
+    "constellation_bloom": "hyper:schottky_inversions",
     "reactor_bloom": "scene:plasma_singularity",
-    "polar_gate": "scene:vortex_crown",
-    "ritual_rain": "rose_lattice",
-    "helix_fountain": "scene:collapse_flower",
-    "nebula_bloom": "scene:aurora_void",
+    "polar_gate": "hyper:poincare_orbifold",
+    "ritual_rain": "optics:multi_source_interference",
+    "helix_fountain": "topo:helicoid",
+    "nebula_bloom": "math:riemann_zeta",
     "techno_lattice": "scene:liquid_chrome",
-    "lissajous_storm": "math:quasicrystal_5fold",
+    "lissajous_storm": "geo:penrose_interference",
     "singularity_crown": "math:mandelbrot_julia",
-    "prism_shards": "math:complex_domain",
+    "prism_shards": "optics:moire_gratings",
 }
 
 _BACKDROP_CHOICES = (
@@ -47,6 +51,10 @@ _BACKDROP_CHOICES = (
     *POLAR_MODES,
     *(f"scene:{scene}" for scene in SCENE_IDS),
     *(f"math:{mode}" for mode in MATH_MODES),
+    *(f"optics:{mode}" for mode in OPTICS_MODES),
+    *(f"hyper:{mode}" for mode in HYPERBOLIC_MODES),
+    *(f"geo:{mode}" for mode in GEOMETRY_MODES),
+    *(f"topo:{mode}" for mode in TOPOLOGY_MODES),
 )
 
 
@@ -60,16 +68,10 @@ def _screen_blend(fg: np.ndarray, bg: np.ndarray, amount: float) -> np.ndarray:
     return np.clip(out * 255.0, 0, 255).astype(np.uint8)
 
 
-def _need_polar(backdrop: str) -> bool:
-    return backdrop == "auto" or backdrop in POLAR_MODES
-
-
-def _need_scene(backdrop: str) -> bool:
-    return backdrop == "auto" or backdrop.startswith("scene:")
-
-
-def _need_math(backdrop: str) -> bool:
-    return backdrop == "auto" or backdrop.startswith("math:")
+def _tempo_norm(signals) -> float:
+    if signals.beat_confidence > 0.15 and signals.tempo_bpm > 0.0:
+        return float(np.clip((signals.tempo_bpm - 70.0) / 100.0, 0.0, 1.0))
+    return 0.35
 
 
 def main() -> None:
@@ -104,31 +106,30 @@ def main() -> None:
         return
 
     field = GPUParticleField(args.render_width, args.render_height, capacity=args.capacity)
-    polar = (
-        PolarMathRenderer(
-            args.render_width,
-            args.render_height,
-            mode="rose_lattice",
-            palette=args.backdrop_palette,
-        )
-        if _need_polar(args.backdrop)
-        else None
-    )
-    scene_renderer = (
-        ShaderSceneRenderer(args.render_width, args.render_height)
-        if _need_scene(args.backdrop)
-        else None
-    )
-    math_renderer = (
-        FamousMathRenderer(
-            args.render_width,
-            args.render_height,
-            mode="mandelbrot_julia",
-            palette=args.math_palette,
-        )
-        if _need_math(args.backdrop)
-        else None
-    )
+    renderers: dict[str, object] = {}
+
+    def get_renderer(kind: str):
+        if kind in renderers:
+            return renderers[kind]
+        if kind == "polar":
+            renderer = PolarMathRenderer(args.render_width, args.render_height, mode="rose_lattice", palette=args.backdrop_palette)
+        elif kind == "scene":
+            renderer = ShaderSceneRenderer(args.render_width, args.render_height)
+        elif kind == "math":
+            renderer = FamousMathRenderer(args.render_width, args.render_height, mode="mandelbrot_julia", palette=args.math_palette)
+        elif kind == "optics":
+            renderer = WaveOpticsRenderer(args.render_width, args.render_height, mode="multi_source_interference", palette=args.math_palette)
+        elif kind == "hyper":
+            renderer = HyperbolicGeometryRenderer(args.render_width, args.render_height, mode="poincare_orbifold", palette=args.math_palette)
+        elif kind == "geo":
+            renderer = GeometryFieldRenderer(args.render_width, args.render_height, mode="voronoi_flow", palette=args.math_palette, site_count=18)
+        elif kind == "topo":
+            renderer = TopologyWorldRenderer(args.render_width, args.render_height, mode="torus_knot", palette=args.math_palette)
+        else:
+            raise ValueError(kind)
+        renderers[kind] = renderer
+        return renderer
+
     sink = FullscreenSink(window="ProjectionMapping-AudioParticles", display=args.display, fullscreen=True)
     mapper = MusicalEventMapper(
         mode=args.reactivity,
@@ -192,72 +193,87 @@ def main() -> None:
                 )
 
                 backdrop_mode = "none"
-                requested = (
-                    _BACKDROP_BY_BANK.get(active_bank, "rose_lattice")
-                    if args.backdrop == "auto"
-                    else args.backdrop
-                )
-                if requested in POLAR_MODES and polar is not None:
+                requested = _BACKDROP_BY_BANK.get(active_bank, "rose_lattice") if args.backdrop == "auto" else args.backdrop
+                chaos = args.backdrop_chaos * (0.66 + 0.30 * s.section_energy + 0.20 * s.mids + 0.34 * s.drop)
+                intensity = 0.70 + 0.34 * s.section_energy + 0.16 * s.drop
+                speed = 0.80 + 0.24 * _tempo_norm(s)
+                amount = args.backdrop_intensity * (0.56 + 0.42 * s.section_energy)
+                background = None
+
+                if requested in POLAR_MODES:
                     backdrop_mode = requested
-                    polar_chaos = args.backdrop_chaos * (
-                        0.66 + 0.30 * s.section_energy + 0.20 * s.mids + 0.34 * s.drop
-                    )
-                    background = polar.render(
-                        t=elapsed,
+                    background = get_renderer("polar").render(
+                        t=elapsed * speed,
                         mode=requested,
                         palette=args.backdrop_palette,
-                        intensity=0.76 + 0.42 * s.section_energy,
-                        chaos=polar_chaos,
+                        intensity=intensity,
+                        chaos=chaos,
                         signals=s,
                     )
-                    amount = args.backdrop_intensity * (0.66 + 0.34 * s.section_energy)
-                    small = _screen_blend(small, background, amount)
-                elif requested.startswith("scene:") and scene_renderer is not None:
-                    scene_name = requested.split(":", 1)[1]
+                elif requested.startswith("scene:"):
                     backdrop_mode = requested
-                    chaos = args.backdrop_chaos * (
-                        0.72 + 0.34 * s.section_energy + 0.22 * s.mids + 0.32 * s.drop
-                    )
-                    tempo_norm = (
-                        float(np.clip((s.tempo_bpm - 70.0) / 100.0, 0.0, 1.0))
-                        if s.beat_confidence > 0.15 and s.tempo_bpm > 0.0
-                        else 0.35
-                    )
-                    background = scene_renderer.render(
-                        scene_name,
-                        t=elapsed * (0.82 + 0.24 * tempo_norm),
-                        intensity=0.72 + 0.34 * s.section_energy + 0.18 * s.drop,
+                    background = get_renderer("scene").render(
+                        requested.split(":", 1)[1],
+                        t=elapsed * speed,
+                        intensity=intensity,
                         chaos=chaos,
                     )
-                    amount = args.backdrop_intensity * (0.58 + 0.42 * s.section_energy)
-                    small = _screen_blend(small, background, amount)
-                elif requested.startswith("math:") and math_renderer is not None:
-                    mode = requested.split(":", 1)[1]
+                elif requested.startswith("math:"):
                     backdrop_mode = requested
-                    chaos = args.backdrop_chaos * (
-                        0.64 + 0.28 * s.section_energy + 0.18 * s.mids + 0.30 * s.drop
-                    )
-                    tempo_norm = (
-                        float(np.clip((s.tempo_bpm - 70.0) / 100.0, 0.0, 1.0))
-                        if s.beat_confidence > 0.15 and s.tempo_bpm > 0.0
-                        else 0.35
-                    )
-                    background = math_renderer.render(
-                        t=elapsed * (0.80 + 0.22 * tempo_norm),
-                        mode=mode,
+                    background = get_renderer("math").render(
+                        t=elapsed * speed,
+                        mode=requested.split(":", 1)[1],
                         palette=args.math_palette,
-                        intensity=0.70 + 0.34 * s.section_energy,
+                        intensity=intensity,
                         chaos=chaos,
                         signals=s,
                     )
-                    amount = args.backdrop_intensity * (0.54 + 0.38 * s.section_energy)
+                elif requested.startswith("optics:"):
+                    backdrop_mode = requested
+                    background = get_renderer("optics").render(
+                        t=elapsed * speed,
+                        mode=requested.split(":", 1)[1],
+                        palette=args.math_palette,
+                        intensity=intensity,
+                        chaos=chaos,
+                    )
+                elif requested.startswith("hyper:"):
+                    backdrop_mode = requested
+                    background = get_renderer("hyper").render(
+                        t=elapsed * speed,
+                        mode=requested.split(":", 1)[1],
+                        palette=args.math_palette,
+                        intensity=intensity,
+                        chaos=chaos,
+                    )
+                elif requested.startswith("geo:"):
+                    backdrop_mode = requested
+                    background = get_renderer("geo").render(
+                        t=elapsed * speed,
+                        mode=requested.split(":", 1)[1],
+                        palette=args.math_palette,
+                        intensity=intensity,
+                        chaos=chaos,
+                        scale=0.88 + 0.28 * s.bass,
+                        relax_strength=0.40 + 0.35 * s.section_energy,
+                    )
+                elif requested.startswith("topo:"):
+                    backdrop_mode = requested
+                    background = get_renderer("topo").render(
+                        t=elapsed * speed,
+                        mode=requested.split(":", 1)[1],
+                        palette=args.math_palette,
+                        intensity=intensity,
+                        chaos=chaos,
+                        scale=0.92 + 0.18 * s.bass,
+                        param_a=0.20 + 0.68 * s.bass,
+                        param_b=0.20 + 0.68 * s.highs,
+                    )
+
+                if background is not None:
                     small = _screen_blend(small, background, amount)
 
-                out = cv2.resize(
-                    small,
-                    (args.projector_width, args.projector_height),
-                    interpolation=cv2.INTER_CUBIC,
-                )
+                out = cv2.resize(small, (args.projector_width, args.projector_height), interpolation=cv2.INTER_CUBIC)
                 if sink(cv2.cvtColor(out, cv2.COLOR_RGB2BGR)) is False:
                     break
                 frames += 1
@@ -274,12 +290,10 @@ def main() -> None:
                     report = now
                     frames = 0
     finally:
-        if math_renderer is not None:
-            math_renderer.close()
-        if scene_renderer is not None:
-            scene_renderer.close()
-        if polar is not None:
-            polar.close()
+        for renderer in renderers.values():
+            close = getattr(renderer, "close", None)
+            if close is not None:
+                close()
         field.close()
         sink.close()
         cv2.destroyAllWindows()
