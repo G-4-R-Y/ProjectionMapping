@@ -72,9 +72,12 @@ Screen { background: #090a0f; color: #e7e7ee; }
 .status-running { color: #8cffbd; text-style: bold; }
 .status-idle { color: #9a9aae; }
 .status-error { color: #ff7777; text-style: bold; }
+.param-group { height: auto; border: round #34364b; padding: 0 1 1 1; margin-bottom: 1; }
+.param-group-title { color: #aeb3ff; text-style: bold; margin: 0 0 1 0; }
 .param-row { height: auto; margin-bottom: 1; }
-.param-label { width: 26; padding-top: 1; }
+.param-label { width: 28; padding-top: 1; }
 .param-control { width: 1fr; }
+.param-help { color: #74778d; margin: 0 0 1 28; }
 #launch { margin-top: 1; width: 1fr; }
 #stop { margin-top: 1; width: 1fr; }
 #log-actions { height: auto; margin-top: 1; }
@@ -100,6 +103,14 @@ class ConfigScreen(Screen):
         super().__init__()
         self.feature = feature
 
+    def _param_control(self, param: FeatureParam):
+        if param.type == "bool":
+            return Checkbox(value=bool(param.default), id=_control_id(param), classes="param-control")
+        if param.type == "choice":
+            options = [(choice, choice) for choice in param.choices]
+            return Select(options, value=str(param.default), id=_control_id(param), classes="param-control")
+        return Input(value=str(param.default), id=_control_id(param), classes="param-control")
+
     def compose(self):
         yield Header(show_clock=True)
         with VerticalScroll(id="detail"):
@@ -107,16 +118,17 @@ class ConfigScreen(Screen):
             yield Static(self.feature.description, classes="feature-description")
             if not self.feature.available():
                 yield Static(self.feature.availability_hint(), classes="unsupported")
-            for param in self.feature.params:
-                with Horizontal(classes="param-row"):
-                    yield Label(param.label, classes="param-label")
-                    if param.type == "bool":
-                        yield Checkbox(value=bool(param.default), id=_control_id(param), classes="param-control")
-                    elif param.type == "choice":
-                        options = [(choice, choice) for choice in param.choices]
-                        yield Select(options, value=str(param.default), id=_control_id(param), classes="param-control")
-                    else:
-                        yield Input(value=str(param.default), id=_control_id(param), classes="param-control")
+
+            for group_name, params in self.feature.grouped_params():
+                with Vertical(classes="param-group"):
+                    yield Static(group_name.upper(), classes="param-group-title")
+                    for param in params:
+                        with Horizontal(classes="param-row"):
+                            yield Label(param.label, classes="param-label")
+                            yield self._param_control(param)
+                        if param.help:
+                            yield Static(param.help, classes="param-help")
+
             yield Button(
                 "LAUNCH FULLSCREEN" if self.feature.available() else "UNAVAILABLE",
                 id="launch",
@@ -124,8 +136,9 @@ class ConfigScreen(Screen):
                 disabled=not self.feature.available(),
             )
             yield Static(
-                "ESC in the projector window exits the visual and reveals this console again. "
-                "If the terminal has focus, ESC stops the complete child process tree.",
+                "Controls are grouped by intent: system/input, output resolution, design, behavior, "
+                "and performance. ESC in the projector window exits the visual and reveals this "
+                "console again. If the terminal has focus, ESC stops the complete child process tree.",
                 classes="hint",
             )
         yield Footer()
