@@ -15,6 +15,15 @@ except ModuleNotFoundError:  # Python 3.10 compatibility
 from .app_runtime import bundle_root, is_frozen
 
 
+PARAM_GROUP_ORDER = (
+    "System & Input",
+    "Output & Resolution",
+    "Design Customization",
+    "Behavior & Reactivity",
+    "Performance & Advanced",
+)
+
+
 def current_platform() -> str:
     """Return the stable platform names used by configs/features.toml."""
     if sys.platform.startswith("win"):
@@ -48,6 +57,82 @@ def _module_install_hint(modules: tuple[str, ...]) -> str:
     return f"; install with `python -m pip install -e '.[{extras}]'`"
 
 
+def infer_param_group(key: str, flag: str = "") -> str:
+    """Infer a stable UI box for old configs that do not yet declare a group.
+
+    New feature TOML may set ``group = ...`` explicitly. The inference keeps the
+    whole existing registry organized immediately instead of requiring every old
+    experiment to be edited in lockstep.
+    """
+    name = f"{key} {flag}".lower().replace("-", "_")
+
+    system_tokens = (
+        "source",
+        "device",
+        "audio",
+        "microphone",
+        "camera",
+        "capture_",
+        "input_",
+        "loopback",
+        "backend",
+        "model_path",
+    )
+    if any(token in name for token in system_tokens):
+        return "System & Input"
+
+    output_tokens = (
+        "display",
+        "render_width",
+        "render_height",
+        "projector_width",
+        "projector_height",
+        "output_width",
+        "output_height",
+        "fullscreen",
+    )
+    if any(token in name for token in output_tokens):
+        return "Output & Resolution"
+
+    behavior_tokens = (
+        "reactivity",
+        "madness",
+        "threshold",
+        "sensitivity",
+        "smoothing",
+        "blend",
+        "trail",
+        "feedback",
+        "charge",
+        "cooldown",
+        "decay",
+        "drive",
+    )
+    if any(token in name for token in behavior_tokens):
+        return "Behavior & Reactivity"
+
+    performance_tokens = (
+        "capacity",
+        "particles",
+        "particle_count",
+        "analysis_size",
+        "analysis_window",
+        "blocksize",
+        "steps",
+        "iterations",
+        "point_count",
+        "points",
+        "fps",
+        "reserve",
+        "acceleration",
+        "precision",
+    )
+    if any(token in name for token in performance_tokens):
+        return "Performance & Advanced"
+
+    return "Design Customization"
+
+
 @dataclass(frozen=True)
 class FeatureParam:
     key: str
@@ -59,6 +144,11 @@ class FeatureParam:
     min: float | int | None = None
     max: float | int | None = None
     help: str = ""
+    group: str = ""
+
+    @property
+    def ui_group(self) -> str:
+        return self.group.strip() or infer_param_group(self.key, self.flag)
 
     def coerce(self, value: Any) -> Any:
         if self.type == "bool":
@@ -95,6 +185,14 @@ class Feature:
 
     def defaults(self) -> dict[str, Any]:
         return {p.key: p.default for p in self.params}
+
+    def grouped_params(self) -> tuple[tuple[str, tuple[FeatureParam, ...]], ...]:
+        buckets: dict[str, list[FeatureParam]] = {}
+        for param in self.params:
+            buckets.setdefault(param.ui_group, []).append(param)
+        order = {name: i for i, name in enumerate(PARAM_GROUP_ORDER)}
+        names = sorted(buckets, key=lambda name: (order.get(name, 999), name))
+        return tuple((name, tuple(buckets[name])) for name in names)
 
     def supported_on(self, platform: str | None = None) -> bool:
         platform = platform or current_platform()
@@ -236,6 +334,7 @@ def load_registry(path: str | Path | None = None) -> FeatureRegistry:
                 min=p.get("min"),
                 max=p.get("max"),
                 help=p.get("help", ""),
+                group=p.get("group", ""),
             )
             for p in raw.get("param", [])
         )
