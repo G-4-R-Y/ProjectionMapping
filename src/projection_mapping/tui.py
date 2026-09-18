@@ -95,21 +95,25 @@ def _control_id(param: FeatureParam) -> str:
 
 class ConfigScreen(Screen):
     BINDINGS = [
-        Binding("escape", "back", "Back"),
+        Binding("escape", "back", "Stop / Back"),
         Binding("ctrl+r", "launch", "Launch"),
     ]
 
-    def __init__(self, feature: Feature):
+    def __init__(self, feature: Feature, values: dict[str, Any] | None = None):
         super().__init__()
         self.feature = feature
+        self.values = feature.defaults()
+        if values:
+            self.values.update(values)
 
     def _param_control(self, param: FeatureParam):
+        value = self.values.get(param.key, param.default)
         if param.type == "bool":
-            return Checkbox(value=bool(param.default), id=_control_id(param), classes="param-control")
+            return Checkbox(value=bool(value), id=_control_id(param), classes="param-control")
         if param.type == "choice":
             options = [(choice, choice) for choice in param.choices]
-            return Select(options, value=str(param.default), id=_control_id(param), classes="param-control")
-        return Input(value=str(param.default), id=_control_id(param), classes="param-control")
+            return Select(options, value=str(value), id=_control_id(param), classes="param-control")
+        return Input(value=str(value), id=_control_id(param), classes="param-control")
 
     def compose(self):
         yield Header(show_clock=True)
@@ -137,8 +141,9 @@ class ConfigScreen(Screen):
             )
             yield Static(
                 "Controls are grouped by intent: system/input, output resolution, design, behavior, "
-                "and performance. ESC in the projector window exits the visual and reveals this "
-                "console again. If the terminal has focus, ESC stops the complete child process tree.",
+                "and performance. Launching keeps this exact configuration screen alive. ESC in the "
+                "projector exits the visual and returns here with every value preserved; terminal ESC "
+                "stops the child tree and also keeps these settings.",
                 classes="hint",
             )
         yield Footer()
@@ -156,6 +161,12 @@ class ConfigScreen(Screen):
         return values
 
     def action_back(self) -> None:
+        # ESC while a visual runs stops the child but deliberately leaves this configuration
+        # screen mounted. Projector-window ESC exits the child directly, revealing the same form.
+        if self.app.launcher.poll().running:
+            self.app.stop_active()
+            return
+        self.app.remember_feature_values(self.feature, self._values())
         self.app.pop_screen()
 
     def action_launch(self) -> None:
@@ -169,8 +180,8 @@ class ConfigScreen(Screen):
         try:
             values = self._values()
             self.feature.build_argv(values)
+            self.app.remember_feature_values(self.feature, values)
             self.app.launch_feature(self.feature, values)
-            self.app.pop_screen()
         except Exception as exc:
             self.notify(str(exc), title="Cannot launch", severity="error", timeout=8)
 
@@ -192,6 +203,9 @@ class ProjectionMappingApp(App):
         self.registry = load_registry(registry_path)
         self.feature_by_item_id: dict[str, Feature] = {}
         self.launcher = FeatureLauncher()
+        self._feature_values: dict[str, dict[str, Any]] = {
+            feature.id: feature.defaults() for feature in self.registry.features
+        }
         self._last_state_text = ""
         self._last_log_text = ""
 
@@ -250,7 +264,7 @@ class ProjectionMappingApp(App):
             return
         feature = self.feature_by_item_id.get(event.item.id)
         if feature is not None:
-            self.push_screen(ConfigScreen(feature))
+            self.push_screen(ConfigScreen(feature, self._feature_values.get(feature.id)))
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "stop":
@@ -260,7 +274,11 @@ class ProjectionMappingApp(App):
         elif event.button.id == "open-log":
             self.action_open_log()
 
+    def remember_feature_values(self, feature: Feature, values: dict[str, Any]) -> None:
+        self._feature_values[feature.id] = dict(values)
+
     def launch_feature(self, feature: Feature, values: dict[str, Any]) -> None:
+        self.remember_feature_values(feature, values)
         state = self.launcher.launch(feature, values)
         self.notify(
             f"Started {feature.name} (PID {state.pid}). Live output is shown in the log panel.",
