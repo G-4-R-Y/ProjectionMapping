@@ -51,6 +51,11 @@ _BACKDROP_BY_BANK = {
     "lissajous_storm": "geo:penrose_interference",
     "singularity_crown": "math:mandelbrot_julia",
     "prism_shards": "optics:moire_gratings",
+    "cosmic_roam": "scene:aurora_void",
+    "binary_star": "optics:airy_diffraction",
+    "event_horizon_drift": "scene:event_horizon",
+    "accretion_storm": "scene:liquid_chrome",
+    "supernova_nebula": "math:quasicrystal_5fold",
 }
 
 _BACKDROP_CHOICES = (
@@ -94,6 +99,10 @@ def main() -> None:
     ap.add_argument("--device", default=None)
     ap.add_argument("--list-devices", action="store_true")
     ap.add_argument("--bank", choices=("journey", *BANKS), default="journey")
+    ap.add_argument("--field", choices=("bank_default", *GPUParticleField.FIELD_MODES), default="bank_default")
+    ap.add_argument("--field-strength", type=float, default=1.0)
+    ap.add_argument("--gravity", type=float, default=1.0)
+    ap.add_argument("--nebula-mix", type=float, default=1.0)
     ap.add_argument("--backdrop", choices=_BACKDROP_CHOICES, default="none")
     ap.add_argument("--backdrop-palette", choices=POLAR_PALETTES, default="spectral")
     ap.add_argument("--math-palette", choices=MATH_PALETTES, default="spectral")
@@ -277,7 +286,7 @@ def main() -> None:
     )
 
     print(
-        f"[audio-particles] bank={args.bank} particles={field.capacity} backdrop={args.backdrop} "
+        f"[audio-particles] bank={args.bank} particles={field.capacity} field={args.field} backdrop={args.backdrop} "
         f"gl={field.context_info.gl_version} renderer={field.context_info.renderer} backend={field.backend}",
         flush=True,
     )
@@ -306,6 +315,17 @@ def main() -> None:
                 c = blend_choreographies(source_c, target_c, transition.mix)
                 field.palette = field.PALETTES[c.palette]
                 field.set_material(c.material)
+                field_mode = c.field_mode if args.field == "bank_default" else args.field
+                field_strength = c.field_strength * args.field_strength * (
+                    0.72 + 0.34 * s.section_energy + 0.34 * s.bass + 0.24 * s.drop
+                )
+                field_spin = c.field_spin * (0.76 + 0.42 * s.mids + 0.16 * s.highs)
+                well_strength = c.well_strength * args.gravity * (
+                    0.62 + 0.82 * s.bass + 0.52 * s.drop
+                )
+                nebula_mix = c.nebula_mix * args.nebula_mix * (
+                    0.66 + 0.62 * s.mids + 0.22 * s.highs
+                )
                 small = field.render(
                     list(c.emitters),
                     t=elapsed,
@@ -319,6 +339,12 @@ def main() -> None:
                     bass=s.bass,
                     strike=s.strike,
                     drop=s.drop,
+                    field_mode=field_mode,
+                    field_strength=field_strength,
+                    field_scale=c.field_scale,
+                    field_spin=field_spin,
+                    well_strength=well_strength,
+                    nebula_mix=nebula_mix,
                 )
 
                 backdrop_mode = "none"
@@ -390,6 +416,7 @@ def main() -> None:
                     print(
                         f"[audio-particles] fps={frames / (now - report):.1f} bank={active_bank} material={c.material} "
                         f"section={structure.section} phrase={structure.phrase_phase:.2f} backdrop={backdrop_mode} "
+                        f"field={field_mode} field_force={field_strength:.2f} gravity={well_strength:.2f} "
                         f"emit={c.emission_rate:.0f}/s bass={s.bass:.2f} beat={s.beat:.2f} "
                         f"strike={s.strike:.2f} drop={s.drop:.2f} tempo={tempo} "
                         f"conf={s.beat_confidence:.2f} phase={s.beat_phase:.2f}",
