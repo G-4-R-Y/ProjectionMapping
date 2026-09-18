@@ -51,7 +51,7 @@ Implemented:
 - ✅ Textual control deck / modular feature registry
 
 Next:
-- ⬜ real monitor enumeration instead of fixed pixel-offset assumptions
+- 🟡 real GLFW monitor enumeration in the GPU-mapped scene path; migrate remaining OpenCV paths
 - ⬜ projector capability report: native resolution/refresh/overscan/HDR/color mode
 - ⬜ camera/projector timing flash test
 
@@ -74,7 +74,8 @@ Geometry:
 - ⬜ confidence-aware dense correspondence
 - ⬜ inverse camera->projector map with holes/validity masks
 - ⬜ phase refinement / reprojection QA
-- ⬜ route promoted GPU scenes through saved profiles without GPU->CPU readback
+- ✅ route promoted Shader Scene Lab content through saved profiles without GPU->CPU readback
+- ⬜ generalize the GPU surface compositor input contract to particles/math/video textures
 
 Camera/photometric:
 - ✅ cross-platform camera abstraction with Linux V4L2 path
@@ -106,9 +107,11 @@ Implemented:
 - ✅ conservative CUDA VRAM guard
 - ✅ explicit ModernGL/glcontext graphics extra and desktop packaging path
 - ✅ centralized standalone OpenGL context probe with EGL-first Linux diagnostics
+- ✅ native GLFW OpenGL window + real monitor enumeration for the GPU-mapped scene path
+- ✅ first zero-readback scene-to-surface-profile-to-swapchain vertical slice
 
 Next:
-- ⬜ direct OpenGL swapchain / fullscreen path so particle/shader scenes do not read back to CPU
+- 🟡 expand the direct OpenGL swapchain path from Shader Scene Lab to particles/math/video sources
 - ⬜ direct PyTorch/CUDA -> shared texture path
 - ⬜ real Spout validation on Windows; TouchDesigner may be used only as one test consumer
 - ⬜ MadMapper handoff

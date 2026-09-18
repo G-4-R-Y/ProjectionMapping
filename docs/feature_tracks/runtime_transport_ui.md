@@ -13,6 +13,9 @@ A reliable visual-performance appliance: one persistent control deck, clean chil
 - Latest-frame-wins async worker.
 - Spout abstraction/diagnostics on Windows; fullscreen fallback elsewhere.
 - PyInstaller onedir builds and CI packaging; native installer polish incomplete.
+- GLFW-backed native OpenGL window for **GPU-Mapped Shader Scene**, including real monitor indexing, VSync, F11 toggling and ESC child exit.
+- First zero-readback presentation slice: Shader Scene Lab texture and surface-profile compositor share the window context and render directly to the swapchain.
+- Synchronized 960x540 offscreen sanity probe on Mesa llvmpipe: 12.81 ms for one mapped surface and 16.02 ms for four, with no framebuffer readback. Native-window/RTX/projector timings remain pending.
 
 ## Quality ladder
 - **Prototype:** launch Python scripts manually.
@@ -24,7 +27,7 @@ A reliable visual-performance appliance: one persistent control deck, clean chil
 
 ## Next queue
 1. Hardware-run the 20-cycle launch/stop soak test and record RAM/VRAM return-to-baseline measurements.
-2. Replace `display * 1920` assumptions with real monitor enumeration/geometry.
+2. Migrate remaining OpenCV fullscreen paths from `display * 1920` assumptions to the validated GLFW monitor/window layer.
 3. Add live IPC for parameter changes without renderer restart.
 4. Add preset save/load/A-B/morph and performance banks shared by features.
 5. Add structured stage/status protocol so both control decks show model download/load/warmup/runtime progress consistently.

@@ -102,6 +102,8 @@ Known palette controls include an inline color-ramp preview. The Strange Attract
 
 For spatial setup, launch **Surface Mapper / Corner Pin**. It maps the built-in animated calibration plate—or an image/video—onto multiple draggable quadrilateral surfaces, applies polygon masks and edge feathering, and autosaves normalized geometry to `calibration_data/surface_map.json`. Press `G` to hide the editor guides for clean output.
 
+After saving a profile, **GPU-Mapped Shader Scene** plays Shader Scene Lab content through that geometry without framebuffer readback: scene rendering, homography, masking, feathering and native fullscreen presentation remain in one OpenGL context. This path uses real GLFW monitor indices and preserves F11/ESC behavior.
+
 The UI is **registry-driven** by [`configs/features.toml`](configs/features.toml): new effects declare their command, supported OSs, and typed parameters there, and both browser and Textual control decks render their controls automatically. Registry commands use a portable `python` token that is replaced with the exact active interpreter, avoiding virtualenv/conda/path mismatches across OSs.
 
 See [`docs/CONSOLE_UI.md`](docs/CONSOLE_UI.md) for the full operator and extension guide.

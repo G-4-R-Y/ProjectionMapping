@@ -82,9 +82,18 @@ The first operator-usable spatial mapping slice is `experiments/33_surface_mappe
 **Surface Mapper / Corner Pin**. It supports multiple draggable projector-space quads, normalized
 source UVs, polygon masks, opacity, distance-based feathering and autosaved JSON profiles. The
 reusable `SurfaceMapProcessor` is the CPU reference path for other frame pipelines. This is manual
-planar registration and has CI coverage; it is not projector-validated dense calibration, lens
-correction, or a final GPU-native compositor. The next valuable integration is routing one promoted
-GPU scene through the same profile entirely on GPU, then checking the profile on a real room surface.
+planar registration and has CI coverage; it is not projector-validated dense calibration or lens
+correction. Keep it as the geometry editor and CPU reference for the GPU playback path below.
+
+### GPU-native mapped-scene vertical slice
+`experiments/34_gpu_mapped_scene.py` consumes the same surface-map JSON profile and renders a
+promoted Shader Scene Lab world into a GPU texture, then applies per-surface homography, convex mask,
+opacity and pixel-consistent feathering in a second shader before presenting directly through a
+GLFW-owned swapchain. The frame loop performs no framebuffer readback or OpenCV resize. This path
+also uses actual GLFW monitor enumeration instead of the legacy `display * 1920` heuristic. Shader
+compilation/offscreen composition is CI-tested on available OpenGL; the native window, monitor
+selection, VSync behavior and projector result still require physical-machine validation. Keep the
+CPU Surface Mapper as the editor/reference until GPU-side live editing is implemented.
 
 ## 5. Rejected promoted directions / lessons — do not repeat blindly
 

@@ -46,6 +46,8 @@ def main() -> None:
         "moderngl",
         "--collect-all",
         "glcontext",
+        "--collect-all",
+        "glfw",
         "--hidden-import",
         "cv2",
         "--add-data",

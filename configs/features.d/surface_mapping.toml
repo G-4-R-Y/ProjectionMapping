@@ -94,3 +94,116 @@ type = "int"
 default = 1080
 min = 240
 max = 4320
+
+[[feature]]
+id = "gpu_mapped_scene"
+name = "GPU-Mapped Shader Scene"
+category = "Projection Mapping"
+description = "Render a promoted procedural scene into a saved multi-surface profile entirely on GPU, then present it through a native monitor-aware OpenGL window with zero framebuffer readbacks. F11 toggles fullscreen; ESC returns to the deck."
+command = ["python", "experiments/34_gpu_mapped_scene.py"]
+fullscreen = true
+requires_modules = ["moderngl", "glfw"]
+
+[[feature.param]]
+key = "profile"
+flag = "--profile"
+label = "Mapping profile"
+type = "text"
+default = "calibration_data/surface_map.json"
+help = "Create or edit this profile first with Surface Mapper / Corner Pin. A full-frame surface is used if the file does not exist."
+
+[[feature.param]]
+key = "scene"
+flag = "--scene"
+label = "Shader scene"
+type = "choice"
+default = "liquid_chrome"
+choices = ["event_horizon", "aurora_void", "liquid_chrome", "neon_cathedral", "wormhole_choir", "plasma_singularity", "vortex_crown", "collapse_flower"]
+
+[[feature.param]]
+key = "chaos"
+flag = "--chaos"
+label = "Structured chaos"
+type = "float"
+default = 1.15
+min = 0.0
+max = 2.5
+
+[[feature.param]]
+key = "speed"
+flag = "--speed"
+label = "Speed"
+type = "float"
+default = 1.0
+min = 0.05
+max = 5.0
+
+[[feature.param]]
+key = "intensity"
+flag = "--intensity"
+label = "Intensity"
+type = "float"
+default = 1.0
+min = 0.0
+max = 2.5
+
+[[feature.param]]
+key = "display"
+flag = "--display"
+label = "Projector display index"
+type = "int"
+default = 1
+min = 0
+max = 16
+help = "Uses real GLFW monitor enumeration; 0 is the primary display."
+
+[[feature.param]]
+key = "render_width"
+flag = "--render-width"
+label = "Scene texture width"
+type = "int"
+default = 960
+min = 320
+max = 3840
+
+[[feature.param]]
+key = "render_height"
+flag = "--render-height"
+label = "Scene texture height"
+type = "int"
+default = 540
+min = 180
+max = 2160
+
+[[feature.param]]
+key = "window_width"
+flag = "--window-width"
+label = "Windowed width"
+type = "int"
+default = 1280
+min = 320
+max = 7680
+
+[[feature.param]]
+key = "window_height"
+flag = "--window-height"
+label = "Windowed height"
+type = "int"
+default = 720
+min = 240
+max = 4320
+
+[[feature.param]]
+key = "windowed"
+flag = "--windowed"
+label = "Start windowed"
+type = "bool"
+default = false
+
+[[feature.param]]
+key = "no_vsync"
+flag = "--no-vsync"
+label = "Disable VSync"
+type = "bool"
+default = false
+help = "Useful only for throughput benchmarking; keep VSync enabled for projection."

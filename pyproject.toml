@@ -26,7 +26,7 @@ ml = ["torch>=2.2", "torchvision>=0.17"]
 ui = ["textual>=0.70"]
 audio = ["SoundCard>=0.4.6"]
 # ModernGL 5.12 is the current stable line; glcontext owns platform context creation.
-graphics = ["moderngl>=5.12,<6", "glcontext>=3,<4"]
+graphics = ["moderngl>=5.12,<6", "glcontext>=3,<4", "glfw>=2.7,<3"]
 # Fully-open performer tracking path. RTMLib exposes RTMPose/RTMW whole-body models
 # without the full MMDetection/MMCV stack. ONNX Runtime is intentionally explicit.
 performer = ["rtmlib>=0.0.16,<0.1", "onnxruntime>=1.20"]

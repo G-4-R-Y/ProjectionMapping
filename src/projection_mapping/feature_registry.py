@@ -39,7 +39,7 @@ def _module_install_hint(modules: tuple[str, ...]) -> str:
     """Return the most useful project extra for common optional runtime groups."""
     names = set(modules)
     hints: list[str] = []
-    if names & {"moderngl", "glcontext"}:
+    if names & {"moderngl", "glcontext", "glfw"}:
         hints.append("graphics")
     if names & {"rtmlib", "onnxruntime"}:
         hints.append("performer")
