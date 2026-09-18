@@ -236,8 +236,10 @@ def main() -> None:
 
         field = GPUParticleField(320, 180, capacity=4096, palette="cyber")
         try:
-            for material in field.MATERIALS:
+            field_modes = tuple(field.FIELD_MODES)
+            for material_index, material in enumerate(field.MATERIALS):
                 field.set_material(material)
+                field_mode = field_modes[material_index % len(field_modes)]
                 frame = None
                 for i in range(12):
                     t = i / 60.0
@@ -254,10 +256,16 @@ def main() -> None:
                         energy=1.2,
                         strike=0.55 if material in {"spark", "shock_ring"} else 0.15,
                         drop=0.65 if material == "shock_ring" else 0.0,
+                        field_mode=field_mode,
+                        field_strength=1.2,
+                        field_scale=1.35,
+                        field_spin=1.0,
+                        well_strength=1.1,
+                        nebula_mix=1.0,
                     )
                 assert frame is not None
                 _assert_frame(frame, (180, 320, 3), material, 4)
-                print(f"[visual-probe]   particles material={material} peak={int(frame.max())} mean={float(frame.mean()):.2f}", flush=True)
+                print(f"[visual-probe]   particles material={material} field={field_mode} peak={int(frame.max())} mean={float(frame.mean()):.2f}", flush=True)
         finally:
             field.close()
 
