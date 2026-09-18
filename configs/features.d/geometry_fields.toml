@@ -1,0 +1,137 @@
+[[feature]]
+id = "geometry_fields_lab"
+name = "Geometric Fields / Voronoi + Lloyd"
+category = "Visual Madness"
+description = "Projector-native geometry worlds: Voronoi, weighted power diagrams, true approximate Lloyd relaxation, Delaunay-like ridges, Apollonian inversion fields, and Penrose/quasicrystal interference. F11 toggles fullscreen."
+command = ["python", "experiments/28_geometry_fields_lab.py"]
+fullscreen = true
+requires_modules = ["moderngl"]
+
+[[feature.param]]
+key = "mode"
+flag = "--mode"
+label = "Geometry algorithm"
+type = "choice"
+default = "voronoi_flow"
+choices = ["voronoi_flow", "power_diagram", "lloyd_relaxation", "delaunay_ridges", "apollonian_gasket", "penrose_interference"]
+group = "Design Customization"
+
+[[feature.param]]
+key = "palette"
+flag = "--palette"
+label = "Palette"
+type = "choice"
+default = "spectral"
+choices = ["spectral", "electric", "solar", "bio", "ultraviolet", "icefire"]
+group = "Design Customization"
+
+[[feature.param]]
+key = "site_count"
+flag = "--site-count"
+label = "Voronoi site count"
+type = "int"
+default = 18
+min = 4
+max = 32
+group = "Design Customization"
+help = "Controls geometric density for Voronoi/power/Lloyd modes."
+
+[[feature.param]]
+key = "scale"
+flag = "--scale"
+label = "Equation scale"
+type = "float"
+default = 1.0
+min = 0.15
+max = 4.0
+group = "Design Customization"
+
+[[feature.param]]
+key = "relax_strength"
+flag = "--relax-strength"
+label = "Lloyd relaxation strength"
+type = "float"
+default = 0.52
+min = 0.0
+max = 1.0
+group = "Behavior & Reactivity"
+
+[[feature.param]]
+key = "chaos"
+flag = "--chaos"
+label = "Structured chaos"
+type = "float"
+default = 1.0
+min = 0.0
+max = 2.5
+group = "Design Customization"
+
+[[feature.param]]
+key = "speed"
+flag = "--speed"
+label = "Animation speed"
+type = "float"
+default = 1.0
+min = 0.05
+max = 5.0
+group = "Behavior & Reactivity"
+
+[[feature.param]]
+key = "intensity"
+flag = "--intensity"
+label = "Emissive intensity"
+type = "float"
+default = 1.0
+min = 0.1
+max = 3.0
+group = "Design Customization"
+
+[[feature.param]]
+key = "display"
+flag = "--display"
+label = "Projector display"
+type = "int"
+default = 1
+min = 0
+max = 8
+group = "Output & Resolution"
+
+[[feature.param]]
+key = "render_width"
+flag = "--render-width"
+label = "Render width"
+type = "int"
+default = 960
+min = 320
+max = 1920
+group = "Output & Resolution"
+
+[[feature.param]]
+key = "render_height"
+flag = "--render-height"
+label = "Render height"
+type = "int"
+default = 540
+min = 180
+max = 1080
+group = "Output & Resolution"
+
+[[feature.param]]
+key = "projector_width"
+flag = "--projector-width"
+label = "Projector width"
+type = "int"
+default = 1920
+min = 320
+max = 7680
+group = "Output & Resolution"
+
+[[feature.param]]
+key = "projector_height"
+flag = "--projector-height"
+label = "Projector height"
+type = "int"
+default = 1080
+min = 240
+max = 4320
+group = "Output & Resolution"

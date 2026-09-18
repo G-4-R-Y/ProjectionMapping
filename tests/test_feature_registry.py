@@ -3,7 +3,13 @@ import sys
 
 import pytest
 
-from projection_mapping.feature_registry import Feature, FeatureParam, current_platform, load_registry
+from projection_mapping.feature_registry import (
+    Feature,
+    FeatureParam,
+    current_platform,
+    infer_param_group,
+    load_registry,
+)
 
 
 def test_registry_loads_project_features():
@@ -119,3 +125,51 @@ def test_external_command_requirement_satisfied(monkeypatch):
     assert feature.missing_commands() == ()
     assert feature.available()
     assert feature.build_argv() == ["imaginary-tool"]
+
+
+def test_param_group_inference_matches_console_personalization_contract():
+    assert infer_param_group("source", "--source") == "System & Input"
+    assert infer_param_group("device", "--device") == "System & Input"
+    assert infer_param_group("render_width", "--render-width") == "Output & Resolution"
+    assert infer_param_group("projector_height", "--projector-height") == "Output & Resolution"
+    assert infer_param_group("mode", "--mode") == "Design Customization"
+    assert infer_param_group("palette", "--palette") == "Design Customization"
+    assert infer_param_group("madness", "--madness") == "Behavior & Reactivity"
+    assert infer_param_group("capacity", "--capacity") == "Performance & Advanced"
+
+
+def test_explicit_param_group_overrides_inference():
+    param = FeatureParam(
+        "mode",
+        "--mode",
+        "Equation",
+        type="choice",
+        default="lorenz",
+        choices=("lorenz",),
+        group="My Custom Box",
+    )
+    assert param.ui_group == "My Custom Box"
+
+
+def test_feature_grouped_params_have_stable_intent_order():
+    feature = Feature(
+        "demo",
+        "Demo",
+        "Test",
+        "",
+        ("python", "demo.py"),
+        params=(
+            FeatureParam("mode", "--mode", "Mode"),
+            FeatureParam("display", "--display", "Display"),
+            FeatureParam("source", "--source", "Source"),
+            FeatureParam("capacity", "--capacity", "Capacity"),
+            FeatureParam("feedback", "--feedback", "Feedback"),
+        ),
+    )
+    assert [name for name, _ in feature.grouped_params()] == [
+        "System & Input",
+        "Output & Resolution",
+        "Design Customization",
+        "Behavior & Reactivity",
+        "Performance & Advanced",
+    ]

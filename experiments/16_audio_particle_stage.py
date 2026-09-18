@@ -1,9 +1,10 @@
 """Song Studio vNext: musical-state-driven GPU particle choreography.
 
 The particle stage has a section-aware Journey conductor, reusable emissive particle materials,
-and optional music-reactive Polar Math or structured-chaos Shader Scene backdrops.
-F11 toggles fullscreen; ESC exits.
+and optional music-reactive Polar Math, Famous Math, wave-optics, hyperbolic, geometry-field,
+topology, or structured-chaos Shader Scene backdrops. F11 toggles fullscreen; ESC exits.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -13,31 +14,48 @@ import cv2
 import numpy as np
 
 from projection_mapping.audio_music_features import RollingMusicFeatureExtractor
-from projection_mapping.audio_reactive import AudioFeatureStream, format_device_table, list_audio_devices
+from projection_mapping.audio_reactive import (
+    AudioFeatureStream,
+    format_device_table,
+    list_audio_devices,
+)
+from projection_mapping.famous_math import MATH_MODES, MATH_PALETTES, FamousMathRenderer
+from projection_mapping.geometry_fields import GEOMETRY_MODES, GeometryFieldRenderer
 from projection_mapping.gpu_particles import GPUParticleField
+from projection_mapping.hyperbolic_geometry import HYPERBOLIC_MODES, HyperbolicGeometryRenderer
 from projection_mapping.music_reactivity import MusicalEventMapper
-from projection_mapping.music_structure import MusicStructureTracker, ParticleJourneyController
-from projection_mapping.particle_choreography import BANKS, choreography
+from projection_mapping.music_structure import (
+    MusicStructureTracker,
+    ParticleJourneyController,
+    ParticleJourneyCrossfade,
+)
+from projection_mapping.particle_choreography import BANKS, blend_choreographies, choreography
 from projection_mapping.polar_math import POLAR_MODES, POLAR_PALETTES, PolarMathRenderer
 from projection_mapping.runtime import FullscreenSink
 from projection_mapping.shader_scenes import SCENE_IDS, ShaderSceneRenderer
-
+from projection_mapping.topology_worlds import TOPOLOGY_MODES, TopologyWorldRenderer
+from projection_mapping.wave_optics import OPTICS_MODES, WaveOpticsRenderer
 
 _BACKDROP_BY_BANK = {
     "orbit_reactor": "bessel_wave_chamber",
     "dual_comet": "scene:wormhole_choir",
     "cathedral_rain": "scene:neon_cathedral",
     "vortex_gate": "scene:event_horizon",
-    "constellation_bloom": "phyllotaxis_reactor",
+    "constellation_bloom": "hyper:schottky_inversions",
     "reactor_bloom": "scene:plasma_singularity",
-    "polar_gate": "scene:vortex_crown",
-    "ritual_rain": "rose_lattice",
-    "helix_fountain": "scene:collapse_flower",
-    "nebula_bloom": "scene:aurora_void",
+    "polar_gate": "hyper:poincare_orbifold",
+    "ritual_rain": "optics:multi_source_interference",
+    "helix_fountain": "topo:helicoid",
+    "nebula_bloom": "math:riemann_zeta",
     "techno_lattice": "scene:liquid_chrome",
-    "lissajous_storm": "scene:liquid_chrome",
-    "singularity_crown": "scene:vortex_crown",
-    "prism_shards": "log_spiral_interference",
+    "lissajous_storm": "geo:penrose_interference",
+    "singularity_crown": "math:mandelbrot_julia",
+    "prism_shards": "optics:moire_gratings",
+    "cosmic_roam": "scene:aurora_void",
+    "binary_star": "optics:airy_diffraction",
+    "event_horizon_drift": "scene:event_horizon",
+    "accretion_storm": "scene:liquid_chrome",
+    "supernova_nebula": "math:quasicrystal_5fold",
 }
 
 _BACKDROP_CHOICES = (
@@ -45,6 +63,11 @@ _BACKDROP_CHOICES = (
     "auto",
     *POLAR_MODES,
     *(f"scene:{scene}" for scene in SCENE_IDS),
+    *(f"math:{mode}" for mode in MATH_MODES),
+    *(f"optics:{mode}" for mode in OPTICS_MODES),
+    *(f"hyper:{mode}" for mode in HYPERBOLIC_MODES),
+    *(f"geo:{mode}" for mode in GEOMETRY_MODES),
+    *(f"topo:{mode}" for mode in TOPOLOGY_MODES),
 )
 
 
@@ -58,12 +81,16 @@ def _screen_blend(fg: np.ndarray, bg: np.ndarray, amount: float) -> np.ndarray:
     return np.clip(out * 255.0, 0, 255).astype(np.uint8)
 
 
-def _need_polar(backdrop: str) -> bool:
-    return backdrop == "auto" or backdrop in POLAR_MODES
+def _frame_crossfade(source: np.ndarray, target: np.ndarray, mix: float) -> np.ndarray:
+    m = float(np.clip(mix, 0.0, 1.0))
+    out = source.astype(np.float32) * (1.0 - m) + target.astype(np.float32) * m
+    return np.clip(out, 0, 255).astype(np.uint8)
 
 
-def _need_scene(backdrop: str) -> bool:
-    return backdrop == "auto" or backdrop.startswith("scene:")
+def _tempo_norm(signals) -> float:
+    if signals.beat_confidence > 0.15 and signals.tempo_bpm > 0.0:
+        return float(np.clip((signals.tempo_bpm - 70.0) / 100.0, 0.0, 1.0))
+    return 0.35
 
 
 def main() -> None:
@@ -72,11 +99,19 @@ def main() -> None:
     ap.add_argument("--device", default=None)
     ap.add_argument("--list-devices", action="store_true")
     ap.add_argument("--bank", choices=("journey", *BANKS), default="journey")
+    ap.add_argument("--field", choices=("bank_default", *GPUParticleField.FIELD_MODES), default="bank_default")
+    ap.add_argument("--field-strength", type=float, default=1.0)
+    ap.add_argument("--gravity", type=float, default=1.0)
+    ap.add_argument("--nebula-mix", type=float, default=1.0)
     ap.add_argument("--backdrop", choices=_BACKDROP_CHOICES, default="none")
     ap.add_argument("--backdrop-palette", choices=POLAR_PALETTES, default="spectral")
+    ap.add_argument("--math-palette", choices=MATH_PALETTES, default="spectral")
     ap.add_argument("--backdrop-intensity", type=float, default=0.28)
     ap.add_argument("--backdrop-chaos", type=float, default=1.20)
-    ap.add_argument("--reactivity", choices=["smooth", "balanced", "punchy", "chaotic"], default="balanced")
+    ap.add_argument("--transition-seconds", type=float, default=2.4)
+    ap.add_argument(
+        "--reactivity", choices=["smooth", "balanced", "punchy", "chaotic"], default="balanced"
+    )
     ap.add_argument("--madness", type=float, default=0.45)
     ap.add_argument("--event-threshold", type=float, default=0.64)
     ap.add_argument("--beat-threshold", type=float, default=0.50)
@@ -97,22 +132,134 @@ def main() -> None:
         return
 
     field = GPUParticleField(args.render_width, args.render_height, capacity=args.capacity)
-    polar = (
-        PolarMathRenderer(
-            args.render_width,
-            args.render_height,
-            mode="rose_lattice",
-            palette=args.backdrop_palette,
-        )
-        if _need_polar(args.backdrop)
-        else None
+    renderers: dict[str, object] = {}
+
+    def get_renderer(kind: str):
+        if kind in renderers:
+            return renderers[kind]
+        if kind == "polar":
+            renderer = PolarMathRenderer(
+                args.render_width,
+                args.render_height,
+                mode="rose_lattice",
+                palette=args.backdrop_palette,
+            )
+        elif kind == "scene":
+            renderer = ShaderSceneRenderer(args.render_width, args.render_height)
+        elif kind == "math":
+            renderer = FamousMathRenderer(
+                args.render_width,
+                args.render_height,
+                mode="mandelbrot_julia",
+                palette=args.math_palette,
+            )
+        elif kind == "optics":
+            renderer = WaveOpticsRenderer(
+                args.render_width,
+                args.render_height,
+                mode="multi_source_interference",
+                palette=args.math_palette,
+            )
+        elif kind == "hyper":
+            renderer = HyperbolicGeometryRenderer(
+                args.render_width,
+                args.render_height,
+                mode="poincare_orbifold",
+                palette=args.math_palette,
+            )
+        elif kind == "geo":
+            renderer = GeometryFieldRenderer(
+                args.render_width,
+                args.render_height,
+                mode="voronoi_flow",
+                palette=args.math_palette,
+                site_count=18,
+            )
+        elif kind == "topo":
+            renderer = TopologyWorldRenderer(
+                args.render_width, args.render_height, mode="torus_knot", palette=args.math_palette
+            )
+        else:
+            raise ValueError(kind)
+        renderers[kind] = renderer
+        return renderer
+
+    def render_backdrop(
+        backdrop: str,
+        *,
+        t: float,
+        speed: float,
+        intensity: float,
+        chaos: float,
+        signals,
+    ):
+        if backdrop in POLAR_MODES:
+            return get_renderer("polar").render(
+                t=t * speed,
+                mode=backdrop,
+                palette=args.backdrop_palette,
+                intensity=intensity,
+                chaos=chaos,
+                signals=signals,
+            )
+        if backdrop.startswith("scene:"):
+            return get_renderer("scene").render(
+                backdrop.split(":", 1)[1],
+                t=t * speed,
+                intensity=intensity,
+                chaos=chaos,
+            )
+        if backdrop.startswith("math:"):
+            return get_renderer("math").render(
+                t=t * speed,
+                mode=backdrop.split(":", 1)[1],
+                palette=args.math_palette,
+                intensity=intensity,
+                chaos=chaos,
+                signals=signals,
+            )
+        if backdrop.startswith("optics:"):
+            return get_renderer("optics").render(
+                t=t * speed,
+                mode=backdrop.split(":", 1)[1],
+                palette=args.math_palette,
+                intensity=intensity,
+                chaos=chaos,
+            )
+        if backdrop.startswith("hyper:"):
+            return get_renderer("hyper").render(
+                t=t * speed,
+                mode=backdrop.split(":", 1)[1],
+                palette=args.math_palette,
+                intensity=intensity,
+                chaos=chaos,
+            )
+        if backdrop.startswith("geo:"):
+            return get_renderer("geo").render(
+                t=t * speed,
+                mode=backdrop.split(":", 1)[1],
+                palette=args.math_palette,
+                intensity=intensity,
+                chaos=chaos,
+                scale=0.88 + 0.28 * signals.bass,
+                relax_strength=0.40 + 0.35 * signals.section_energy,
+            )
+        if backdrop.startswith("topo:"):
+            return get_renderer("topo").render(
+                t=t * speed,
+                mode=backdrop.split(":", 1)[1],
+                palette=args.math_palette,
+                intensity=intensity,
+                chaos=chaos,
+                scale=0.92 + 0.18 * signals.bass,
+                param_a=0.20 + 0.68 * signals.bass,
+                param_b=0.20 + 0.68 * signals.highs,
+            )
+        return None
+
+    sink = FullscreenSink(
+        window="ProjectionMapping-AudioParticles", display=args.display, fullscreen=True
     )
-    scene_renderer = (
-        ShaderSceneRenderer(args.render_width, args.render_height)
-        if _need_scene(args.backdrop)
-        else None
-    )
-    sink = FullscreenSink(window="ProjectionMapping-AudioParticles", display=args.display, fullscreen=True)
     mapper = MusicalEventMapper(
         mode=args.reactivity,
         event_threshold=args.event_threshold,
@@ -121,6 +268,10 @@ def main() -> None:
     )
     structure_tracker = MusicStructureTracker()
     journey = ParticleJourneyController()
+    journey_crossfade = ParticleJourneyCrossfade(
+        initial=journey.bank if args.bank == "journey" else args.bank,
+        duration=args.transition_seconds,
+    )
     audio = AudioFeatureStream(
         source=args.source,
         device=args.device or None,
@@ -135,7 +286,7 @@ def main() -> None:
     )
 
     print(
-        f"[audio-particles] bank={args.bank} particles={field.capacity} backdrop={args.backdrop} "
+        f"[audio-particles] bank={args.bank} particles={field.capacity} field={args.field} backdrop={args.backdrop} "
         f"gl={field.context_info.gl_version} renderer={field.context_info.renderer} backend={field.backend}",
         flush=True,
     )
@@ -155,10 +306,26 @@ def main() -> None:
                 f = audio.latest
                 s = mapper.update(f, now)
                 structure = structure_tracker.update(s, now)
-                active_bank = journey.update(structure, now) if args.bank == "journey" else args.bank
-                c = choreography(active_bank, s, elapsed, args.madness)
+                active_bank = (
+                    journey.update(structure, now) if args.bank == "journey" else args.bank
+                )
+                transition = journey_crossfade.update(active_bank, now)
+                source_c = choreography(transition.source_bank, s, elapsed, args.madness)
+                target_c = choreography(transition.target_bank, s, elapsed, args.madness)
+                c = blend_choreographies(source_c, target_c, transition.mix)
                 field.palette = field.PALETTES[c.palette]
                 field.set_material(c.material)
+                field_mode = c.field_mode if args.field == "bank_default" else args.field
+                field_strength = c.field_strength * args.field_strength * (
+                    0.72 + 0.34 * s.section_energy + 0.34 * s.bass + 0.24 * s.drop
+                )
+                field_spin = c.field_spin * (0.76 + 0.42 * s.mids + 0.16 * s.highs)
+                well_strength = c.well_strength * args.gravity * (
+                    0.62 + 0.82 * s.bass + 0.52 * s.drop
+                )
+                nebula_mix = c.nebula_mix * args.nebula_mix * (
+                    0.66 + 0.62 * s.mids + 0.22 * s.highs
+                )
                 small = field.render(
                     list(c.emitters),
                     t=elapsed,
@@ -172,6 +339,12 @@ def main() -> None:
                     bass=s.bass,
                     strike=s.strike,
                     drop=s.drop,
+                    field_mode=field_mode,
+                    field_strength=field_strength,
+                    field_scale=c.field_scale,
+                    field_spin=field_spin,
+                    well_strength=well_strength,
+                    nebula_mix=nebula_mix,
                 )
 
                 backdrop_mode = "none"
@@ -180,44 +353,54 @@ def main() -> None:
                     if args.backdrop == "auto"
                     else args.backdrop
                 )
-                if requested in POLAR_MODES and polar is not None:
+                chaos = args.backdrop_chaos * (
+                    0.66 + 0.30 * s.section_energy + 0.20 * s.mids + 0.34 * s.drop
+                )
+                intensity = 0.70 + 0.34 * s.section_energy + 0.16 * s.drop
+                speed = 0.80 + 0.24 * _tempo_norm(s)
+                amount = args.backdrop_intensity * (0.56 + 0.42 * s.section_energy)
+                background = None
+                if requested != "none":
                     backdrop_mode = requested
-                    # The same conductor that changes particle choreography now changes the
-                    # *structure* of the math field: builds/mids introduce cross-harmonic warp;
-                    # drops can briefly push it much harder without flattening it into noise.
-                    polar_chaos = args.backdrop_chaos * (
-                        0.66 + 0.30 * s.section_energy + 0.20 * s.mids + 0.34 * s.drop
-                    )
-                    background = polar.render(
-                        t=elapsed,
-                        mode=requested,
-                        palette=args.backdrop_palette,
-                        intensity=0.76 + 0.42 * s.section_energy,
-                        chaos=polar_chaos,
-                        signals=s,
-                    )
-                    amount = args.backdrop_intensity * (0.66 + 0.34 * s.section_energy)
-                    small = _screen_blend(small, background, amount)
-                elif requested.startswith("scene:") and scene_renderer is not None:
-                    scene_name = requested.split(":", 1)[1]
-                    backdrop_mode = requested
-                    # Keep the scene subordinate to particles, but make drops/builds increase
-                    # structural instability rather than merely brighten the whole frame.
-                    chaos = args.backdrop_chaos * (
-                        0.72 + 0.34 * s.section_energy + 0.22 * s.mids + 0.32 * s.drop
-                    )
-                    tempo_norm = (
-                        float(np.clip((s.tempo_bpm - 70.0) / 100.0, 0.0, 1.0))
-                        if s.beat_confidence > 0.15 and s.tempo_bpm > 0.0
-                        else 0.35
-                    )
-                    background = scene_renderer.render(
-                        scene_name,
-                        t=elapsed * (0.82 + 0.24 * tempo_norm),
-                        intensity=0.72 + 0.34 * s.section_energy + 0.18 * s.drop,
-                        chaos=chaos,
-                    )
-                    amount = args.backdrop_intensity * (0.58 + 0.42 * s.section_energy)
+                    if args.backdrop == "auto" and transition.active:
+                        source_backdrop = _BACKDROP_BY_BANK.get(
+                            transition.source_bank, "rose_lattice"
+                        )
+                        target_backdrop = _BACKDROP_BY_BANK.get(
+                            transition.target_bank, "rose_lattice"
+                        )
+                        source_frame = render_backdrop(
+                            source_backdrop,
+                            t=elapsed,
+                            speed=speed,
+                            intensity=intensity,
+                            chaos=chaos,
+                            signals=s,
+                        )
+                        target_frame = render_backdrop(
+                            target_backdrop,
+                            t=elapsed,
+                            speed=speed,
+                            intensity=intensity,
+                            chaos=chaos,
+                            signals=s,
+                        )
+                        if source_frame is not None and target_frame is not None:
+                            background = _frame_crossfade(
+                                source_frame, target_frame, transition.mix
+                            )
+                            backdrop_mode = f"{source_backdrop}->{target_backdrop}"
+                    else:
+                        background = render_backdrop(
+                            requested,
+                            t=elapsed,
+                            speed=speed,
+                            intensity=intensity,
+                            chaos=chaos,
+                            signals=s,
+                        )
+
+                if background is not None:
                     small = _screen_blend(small, background, amount)
 
                 out = cv2.resize(
@@ -231,8 +414,9 @@ def main() -> None:
                 if now - report >= 2.0:
                     tempo = f"{s.tempo_bpm:.1f}" if s.beat_confidence > 0.15 else "--"
                     print(
-                        f"[audio-particles] fps={frames/(now-report):.1f} bank={active_bank} material={c.material} "
+                        f"[audio-particles] fps={frames / (now - report):.1f} bank={active_bank} material={c.material} "
                         f"section={structure.section} phrase={structure.phrase_phase:.2f} backdrop={backdrop_mode} "
+                        f"field={field_mode} field_force={field_strength:.2f} gravity={well_strength:.2f} "
                         f"emit={c.emission_rate:.0f}/s bass={s.bass:.2f} beat={s.beat:.2f} "
                         f"strike={s.strike:.2f} drop={s.drop:.2f} tempo={tempo} "
                         f"conf={s.beat_confidence:.2f} phase={s.beat_phase:.2f}",
@@ -241,10 +425,10 @@ def main() -> None:
                     report = now
                     frames = 0
     finally:
-        if scene_renderer is not None:
-            scene_renderer.close()
-        if polar is not None:
-            polar.close()
+        for renderer in renderers.values():
+            close = getattr(renderer, "close", None)
+            if close is not None:
+                close()
         field.close()
         sink.close()
         cv2.destroyAllWindows()

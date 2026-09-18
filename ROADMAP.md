@@ -259,6 +259,8 @@ Implemented:
 - ✅ GPU shader instrument with seamless Journey transitions
 - ✅ curated shader performance banks
 - ✅ GPU particle stage with persistent feedback/advection
+- ✅ authored GPU vector-field families: flow, nebula advection, binary-star gravity, event-horizon collapse and wandering multi-well cosmic flow
+- ✅ cosmic Song Studio banks: Cosmic Roam, Binary Star, Event Horizon Drift, Accretion Storm and Supernova Nebula
 - ✅ particle materials overhauled toward white-hot cores, saturated emissive shells, chromatic feedback, thresholded bloom and a clean black floor after hardware feedback identified a muddy/"shaded" look
 - ✅ original choreography banks: Orbit Reactor, Dual Comet, Cathedral Rain, Vortex Gate, Constellation Bloom
 - ✅ additional choreography banks: Reactor Bloom, Polar Gate, Ritual Rain, Helix Fountain, Nebula Bloom, Techno Lattice
@@ -272,7 +274,8 @@ Implemented:
 Next:
 - ⬜ hardware/art-tune particle material after the vividness overhaul; compare black floor, bloom and palette response on several tracks/projector footage
 - ⬜ projector-test `journey + backdrop=auto` at low mix and curate/remove pairings that become visual soup
-- ⬜ crossfade/morph backdrop identity at bar/phrase boundaries instead of an instantaneous shader-family switch
+- 🟡 crossfade/morph backdrop identity and choreography at accepted Journey phrase/drop boundaries;
+  implemented without particle-state reset, projector/art tuning pending
 - ⬜ chroma/key/harmonic-change descriptors
 - ⬜ improve section classifier from heuristic dynamics into robust phrase/section evidence while preserving transparent baseline
 - ⬜ beat/bar-synchronous palette/particle/preset morphing without state reset
@@ -459,6 +462,7 @@ Evaluation:
 
 Product/UX:
 - ✅ Textual control deck + modular feature fragments
+- ✅ launching/ESC preserves the active feature configuration screen and session values instead of dumping the operator back to defaults
 - ✅ persistent logs / copy/open / stage status
 - ✅ Song Studio GPU particle stage entry
 - ✅ Performer FX whole-body GPU entry
@@ -488,6 +492,7 @@ Research discipline:
 - rolling spectral analysis independent from capture latency
 - adaptive event gating / beat phase / bar phase / drop state
 - shader-world banks + persistent GPU particle choreography banks
+- cosmic vector-field families and gravity-well choreography; bass/mids/highs/drop modulate physical-looking field behavior rather than only emission rate
 - vivid particle materials: white-hot core, saturated shell, clean black floor, thresholded bloom
 - section-aware Journey without particle-state resets
 - optional Polar Math and structured-chaos Shader Scene emissive backgrounds driven by the same music state

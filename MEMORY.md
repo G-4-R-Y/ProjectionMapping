@@ -30,7 +30,7 @@ TouchDesigner is an **aesthetic and workflow reference**, not a required depende
 6. **Keep classical/deterministic baselines beside learned paths.** A research model is promoted only when it beats a simpler baseline on actual hardware or unlocks a qualitatively new effect.
 7. **Measure latency and stability.** Prefer p50/p95/p99 timings, track age/confidence, render/readback cost, VRAM headroom and temporal residuals over vague speed claims.
 8. **Hardware validation is separate from implementation.** Never claim a path is validated because code/CI exists.
-9. **F11 toggles fullscreen; ESC exits only the child visual and returns to the control deck.** Preserve this interaction.
+9. **F11 toggles fullscreen; ESC exits only the child visual and returns to the same feature configuration with the same session values.** Launching must not pop/reset the configuration screen; testing a visual must never force the operator to re-enter settings.
 10. **Keep the feature tracks updated.** Major work is incomplete until the appropriate `docs/feature_tracks/*.md` file and `ROADMAP.md` are updated.
 
 ## 3. Current hardware targets
@@ -120,7 +120,7 @@ Read `docs/ART_DIRECTION.md` before creating/promoting a new visual scene.
 ## 7. Current renderer / visual lanes
 
 ### Song Studio
-The highest-potential branch. Musical analysis produces `MusicalSignals`; a GPU particle stage turns them into persistent choreography. Current direction includes section/phrase-aware Journey control and analytic Polar Math backdrops. Music should conduct a scene, not twitch every pixel.
+The highest-potential branch. Musical analysis produces `MusicalSignals`; a GPU particle stage turns them into persistent choreography. Current direction includes section/phrase-aware Journey control, analytic/math backdrops, and authored cosmic vector fields (nebula advection, binary-star gravity, event-horizon collapse, wandering multi-well flow). Music should conduct a scene, not twitch every pixel.
 
 ### Performer FX
 Preferred open performer-effects path:

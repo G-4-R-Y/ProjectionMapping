@@ -1,0 +1,114 @@
+[[feature]]
+id = "reaction_diffusion_lab"
+name = "Reaction-Diffusion / Gray-Scott GPU"
+category = "Visual Madness"
+description = "Stateful GPU Gray-Scott reaction-diffusion worlds with persistent chemistry, projector-friendly emissive rendering, multiple morphology presets, structured drive, and live reseeding. F11 toggles fullscreen, R reseeds."
+command = ["python", "experiments/23_reaction_diffusion_lab.py"]
+fullscreen = true
+requires_modules = ["moderngl"]
+
+[[feature.param]]
+key = "preset"
+flag = "--preset"
+label = "Reaction morphology"
+type = "choice"
+default = "coral"
+choices = ["coral", "mitosis", "worms", "maze", "solitons", "waves"]
+
+[[feature.param]]
+key = "palette"
+flag = "--palette"
+label = "Palette"
+type = "choice"
+default = "ultraviolet"
+choices = ["ultraviolet", "bio", "solar", "electric", "mono"]
+
+[[feature.param]]
+key = "steps"
+flag = "--steps"
+label = "Simulation steps / frame"
+type = "int"
+default = 8
+min = 1
+max = 24
+
+[[feature.param]]
+key = "dt"
+flag = "--dt"
+label = "Simulation dt"
+type = "float"
+default = 1.0
+min = 0.1
+max = 1.5
+
+[[feature.param]]
+key = "drive"
+flag = "--drive"
+label = "Structured perturbation"
+type = "float"
+default = 0.35
+min = 0.0
+max = 2.5
+
+[[feature.param]]
+key = "intensity"
+flag = "--intensity"
+label = "Emissive intensity"
+type = "float"
+default = 1.0
+min = 0.1
+max = 3.0
+
+[[feature.param]]
+key = "seed"
+flag = "--seed"
+label = "Initial seed"
+type = "int"
+default = 7
+min = 0
+max = 999999
+
+[[feature.param]]
+key = "display"
+flag = "--display"
+label = "Projector display"
+type = "int"
+default = 1
+min = 0
+max = 8
+
+[[feature.param]]
+key = "render_width"
+flag = "--render-width"
+label = "Simulation width"
+type = "int"
+default = 640
+min = 256
+max = 1920
+
+[[feature.param]]
+key = "render_height"
+flag = "--render-height"
+label = "Simulation height"
+type = "int"
+default = 360
+min = 144
+max = 1080
+
+[[feature.param]]
+key = "projector_width"
+flag = "--projector-width"
+label = "Projector width"
+type = "int"
+default = 1920
+min = 320
+max = 7680
+
+[[feature.param]]
+key = "projector_height"
+flag = "--projector-height"
+label = "Projector height"
+type = "int"
+default = 1080
+min = 240
+max = 4320

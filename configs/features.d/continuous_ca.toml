@@ -1,0 +1,157 @@
+[[feature]]
+id = "continuous_ca_lab"
+name = "Continuous CA / Lenia-inspired GPU"
+category = "Visual Madness"
+description = "Stateful continuous cellular automata with a realtime Lenia ring-kernel approximation, SmoothLife, continuous Life, cyclic Lenia, excitable media, and Orbium-oriented studies. F11 toggles fullscreen."
+command = ["python", "experiments/30_continuous_ca_lab.py"]
+fullscreen = true
+requires_modules = ["moderngl"]
+
+[[feature.param]]
+key = "mode"
+flag = "--mode"
+label = "Continuous CA family"
+type = "choice"
+default = "lenia_ring"
+choices = ["lenia_ring", "smoothlife", "continuous_life", "cyclic_lenia", "excitable_garden", "orbium_study"]
+group = "Design Customization"
+
+[[feature.param]]
+key = "palette"
+flag = "--palette"
+label = "Palette"
+type = "choice"
+default = "bio"
+choices = ["spectral", "electric", "solar", "bio", "ultraviolet", "icefire"]
+group = "Design Customization"
+
+[[feature.param]]
+key = "growth_center"
+flag = "--growth-center"
+label = "Growth center μ"
+type = "float"
+default = 0.28
+min = 0.02
+max = 0.95
+group = "Design Customization"
+help = "Lenia-style preferred neighborhood mass."
+
+[[feature.param]]
+key = "growth_width"
+flag = "--growth-width"
+label = "Growth width σ"
+type = "float"
+default = 0.055
+min = 0.008
+max = 0.30
+group = "Design Customization"
+
+[[feature.param]]
+key = "kernel_radius"
+flag = "--kernel-radius"
+label = "Ring-kernel radius"
+type = "float"
+default = 6.0
+min = 1.0
+max = 18.0
+group = "Design Customization"
+
+[[feature.param]]
+key = "dt"
+flag = "--dt"
+label = "Evolution step dt"
+type = "float"
+default = 0.10
+min = 0.005
+max = 0.35
+group = "Behavior & Reactivity"
+
+[[feature.param]]
+key = "drive"
+flag = "--drive"
+label = "Moving seed / external drive"
+type = "float"
+default = 0.10
+min = 0.0
+max = 1.5
+group = "Behavior & Reactivity"
+
+[[feature.param]]
+key = "steps"
+flag = "--steps"
+label = "Simulation steps / frame"
+type = "int"
+default = 2
+min = 1
+max = 12
+group = "Performance & Advanced"
+
+[[feature.param]]
+key = "speed"
+flag = "--speed"
+label = "Drive animation speed"
+type = "float"
+default = 1.0
+min = 0.05
+max = 5.0
+group = "Behavior & Reactivity"
+
+[[feature.param]]
+key = "intensity"
+flag = "--intensity"
+label = "Emissive intensity"
+type = "float"
+default = 1.0
+min = 0.1
+max = 3.0
+group = "Design Customization"
+
+[[feature.param]]
+key = "display"
+flag = "--display"
+label = "Projector display"
+type = "int"
+default = 1
+min = 0
+max = 8
+group = "Output & Resolution"
+
+[[feature.param]]
+key = "render_width"
+flag = "--render-width"
+label = "Simulation/render width"
+type = "int"
+default = 480
+min = 120
+max = 1280
+group = "Output & Resolution"
+
+[[feature.param]]
+key = "render_height"
+flag = "--render-height"
+label = "Simulation/render height"
+type = "int"
+default = 270
+min = 68
+max = 720
+group = "Output & Resolution"
+
+[[feature.param]]
+key = "projector_width"
+flag = "--projector-width"
+label = "Projector width"
+type = "int"
+default = 1920
+min = 320
+max = 7680
+group = "Output & Resolution"
+
+[[feature.param]]
+key = "projector_height"
+flag = "--projector-height"
+label = "Projector height"
+type = "int"
+default = 1080
+min = 240
+max = 4320
+group = "Output & Resolution"

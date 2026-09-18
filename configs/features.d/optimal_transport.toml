@@ -1,0 +1,137 @@
+[[feature]]
+id = "optimal_transport_lab"
+name = "Optimal Transport / Sinkhorn Morphs"
+category = "Visual Madness"
+description = "Entropic Sinkhorn transport morphs between circles, spirals, grids, discs, roses, Lissajous figures, phyllotaxis and constellation fields. Coherent point choreography instead of random particle teleportation. F11 toggles fullscreen."
+command = ["python", "experiments/32_optimal_transport_lab.py"]
+fullscreen = true
+requires_modules = ["moderngl"]
+
+[[feature.param]]
+key = "mode"
+flag = "--mode"
+label = "Source → target geometry"
+type = "choice"
+default = "rose_to_lissajous"
+choices = ["circle_to_spiral", "grid_to_disc", "rose_to_lissajous", "phyllotaxis_to_rose", "constellation_swap"]
+group = "Design Customization"
+
+[[feature.param]]
+key = "palette"
+flag = "--palette"
+label = "Palette"
+type = "choice"
+default = "spectral"
+choices = ["spectral", "electric", "solar", "bio", "ultraviolet", "icefire"]
+group = "Design Customization"
+
+[[feature.param]]
+key = "epsilon"
+flag = "--epsilon"
+label = "Sinkhorn entropy ε"
+type = "float"
+default = 0.08
+min = 0.005
+max = 0.5
+group = "Design Customization"
+help = "Lower ε gives sharper transport assignments; higher ε gives smoother barycentric morphs."
+
+[[feature.param]]
+key = "arc"
+flag = "--arc"
+label = "Transport arc / flourish"
+type = "float"
+default = 0.18
+min = 0.0
+max = 0.75
+group = "Design Customization"
+
+[[feature.param]]
+key = "cycles"
+flag = "--cycles"
+label = "Morph cycle speed"
+type = "float"
+default = 0.18
+min = 0.02
+max = 2.0
+group = "Behavior & Reactivity"
+
+[[feature.param]]
+key = "point_size"
+flag = "--point-size"
+label = "Point sprite size"
+type = "float"
+default = 7.0
+min = 1.0
+max = 32.0
+group = "Design Customization"
+
+[[feature.param]]
+key = "points"
+flag = "--points"
+label = "Transport points"
+type = "int"
+default = 384
+min = 32
+max = 2048
+group = "Performance & Advanced"
+
+[[feature.param]]
+key = "intensity"
+flag = "--intensity"
+label = "Emissive intensity"
+type = "float"
+default = 1.0
+min = 0.1
+max = 3.0
+group = "Design Customization"
+
+[[feature.param]]
+key = "display"
+flag = "--display"
+label = "Projector display"
+type = "int"
+default = 1
+min = 0
+max = 8
+group = "Output & Resolution"
+
+[[feature.param]]
+key = "render_width"
+flag = "--render-width"
+label = "Render width"
+type = "int"
+default = 960
+min = 320
+max = 1920
+group = "Output & Resolution"
+
+[[feature.param]]
+key = "render_height"
+flag = "--render-height"
+label = "Render height"
+type = "int"
+default = 540
+min = 180
+max = 1080
+group = "Output & Resolution"
+
+[[feature.param]]
+key = "projector_width"
+flag = "--projector-width"
+label = "Projector width"
+type = "int"
+default = 1920
+min = 320
+max = 7680
+group = "Output & Resolution"
+
+[[feature.param]]
+key = "projector_height"
+flag = "--projector-height"
+label = "Projector height"
+type = "int"
+default = 1080
+min = 240
+max = 4320
+group = "Output & Resolution"

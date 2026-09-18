@@ -26,6 +26,7 @@ Every track should keep the same sections so visual ambition, engineering debt, 
 - [`human_reactor.md`](human_reactor.md) — dance/performance silhouette rendering, recording, pose-aware extensions.
 - [`cyber_mage.md`](cyber_mage.md) — generic tracked-point SFX research plus semantic performer effects now converging into Performer FX.
 - [`procedural_scenes.md`](procedural_scenes.md) — projector-native procedural worlds, shaders, particles, feedback and stable high-rate visual layers.
+- [`mathematical_worlds.md`](mathematical_worlds.md) — famous equations, complex dynamics, chaos/attractors, reaction-diffusion/PDEs, cellular systems, topology, tilings and differentiable algorithmic-art research.
 - [`neural_mirror.md`](neural_mirror.md) — StreamDiffusion, lightweight GPU profiles, temporal consistency, control maps.
 - [`room_skin.md`](room_skin.md) — spatially locked material hallucination and geometry-aware generation.
 - [`calibration_mapping.md`](calibration_mapping.md) — structured light, projector/camera geometry, dynamic/multi-projector mapping.
