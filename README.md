@@ -100,6 +100,8 @@ The local control server stays alive while each visual runs as an isolated child
 
 Known palette controls include an inline color-ramp preview. The Strange Attractor Lab adds six projector-tuned palettes and `comet`, `pulse_train`, and `full` trajectory animation modes, so its internal motion remains visible even when the camera orbit is subtle.
 
+For spatial setup, launch **Surface Mapper / Corner Pin**. It maps the built-in animated calibration plate—or an image/video—onto multiple draggable quadrilateral surfaces, applies polygon masks and edge feathering, and autosaves normalized geometry to `calibration_data/surface_map.json`. Press `G` to hide the editor guides for clean output.
+
 The UI is **registry-driven** by [`configs/features.toml`](configs/features.toml): new effects declare their command, supported OSs, and typed parameters there, and both browser and Textual control decks render their controls automatically. Registry commands use a portable `python` token that is replaced with the exact active interpreter, avoiding virtualenv/conda/path mismatches across OSs.
 
 See [`docs/CONSOLE_UI.md`](docs/CONSOLE_UI.md) for the full operator and extension guide.

@@ -1,0 +1,96 @@
+[[feature]]
+id = "surface_mapper"
+name = "Surface Mapper / Corner Pin"
+category = "Projection Mapping"
+description = "Map an animated calibration plate, image, or video onto one or more physical quadrilateral surfaces. Drag projector-space corners, feather edges, and autosave a resolution-independent JSON profile. F11 toggles fullscreen; ESC returns to the deck."
+command = ["python", "experiments/33_surface_mapper.py"]
+fullscreen = true
+requires_modules = ["cv2"]
+
+[[feature.param]]
+key = "profile"
+flag = "--profile"
+label = "Mapping profile"
+type = "text"
+default = "calibration_data/surface_map.json"
+help = "JSON file loaded at launch and autosaved after corner or surface edits."
+
+[[feature.param]]
+key = "source"
+flag = "--source"
+label = "Image / video source"
+type = "text"
+default = "builtin:calibration"
+help = "Use builtin:calibration or a local image/video path."
+
+[[feature.param]]
+key = "clean_output"
+flag = "--clean-output"
+label = "Start without edit guides"
+type = "bool"
+default = false
+help = "Press G in the projector window to show or hide guides at any time."
+
+[[feature.param]]
+key = "display"
+flag = "--display"
+label = "Projector display"
+type = "int"
+default = 1
+min = 0
+max = 8
+
+[[feature.param]]
+key = "content_width"
+flag = "--content-width"
+label = "Content width"
+type = "int"
+default = 960
+min = 160
+max = 3840
+
+[[feature.param]]
+key = "content_height"
+flag = "--content-height"
+label = "Content height"
+type = "int"
+default = 540
+min = 90
+max = 2160
+
+[[feature.param]]
+key = "render_width"
+flag = "--render-width"
+label = "Mapping render width"
+type = "int"
+default = 960
+min = 320
+max = 3840
+help = "CPU mapping workspace; the final frame is scaled to the projector resolution."
+
+[[feature.param]]
+key = "render_height"
+flag = "--render-height"
+label = "Mapping render height"
+type = "int"
+default = 540
+min = 180
+max = 2160
+
+[[feature.param]]
+key = "projector_width"
+flag = "--projector-width"
+label = "Projector width"
+type = "int"
+default = 1920
+min = 320
+max = 7680
+
+[[feature.param]]
+key = "projector_height"
+flag = "--projector-height"
+label = "Projector height"
+type = "int"
+default = 1080
+min = 240
+max = 4320

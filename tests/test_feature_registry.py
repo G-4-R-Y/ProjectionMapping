@@ -18,6 +18,7 @@ def test_registry_loads_project_features():
     assert "room_skin" in ids
     assert "streamdiffusion_live" in ids
     assert "graycode_capture" in ids
+    assert "surface_mapper" in ids
     assert "benchmark_streamdiffusion" in ids
     assert registry.by_id("spout_diagnostics").platforms == ("windows",)
 

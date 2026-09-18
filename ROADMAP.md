@@ -68,10 +68,13 @@ Geometry:
 - ✅ homography estimation + warp
 - ✅ structured-light capture tooling
 - ✅ calibration-bundle serialization + metadata
+- ✅ interactive multi-surface corner-pin editor + reusable CPU mapping processor
+- ✅ normalized JSON surface profiles with masks, UV crops, opacity and edge feathering
 - 🟡 black/white + Gray-code + phase-shift capture path; real-room validation pending
 - ⬜ confidence-aware dense correspondence
 - ⬜ inverse camera->projector map with holes/validity masks
 - ⬜ phase refinement / reprojection QA
+- ⬜ route promoted GPU scenes through saved profiles without GPU->CPU readback
 
 Camera/photometric:
 - ✅ cross-platform camera abstraction with Linux V4L2 path

@@ -77,6 +77,15 @@ renderer parent exited normally. The launcher now retains and sweeps the dedicat
 normal exit, Stop, replacement launch and shutdown. CI has an automated 20-cycle no-survivor test;
 actual RTX RAM/VRAM return-to-baseline still requires hardware measurement.
 
+### Manual surface-mapping baseline
+The first operator-usable spatial mapping slice is `experiments/33_surface_mapper.py`, exposed as
+**Surface Mapper / Corner Pin**. It supports multiple draggable projector-space quads, normalized
+source UVs, polygon masks, opacity, distance-based feathering and autosaved JSON profiles. The
+reusable `SurfaceMapProcessor` is the CPU reference path for other frame pipelines. This is manual
+planar registration and has CI coverage; it is not projector-validated dense calibration, lens
+correction, or a final GPU-native compositor. The next valuable integration is routing one promoted
+GPU scene through the same profile entirely on GPU, then checking the profile on a real room surface.
+
 ## 5. Rejected promoted directions / lessons — do not repeat blindly
 
 These are not bans on experimentation. They describe implementations that failed as promoted/default experiences. A new experiment may revisit an underlying idea if it changes the failure mechanism and documents why.
