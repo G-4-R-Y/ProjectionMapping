@@ -17,6 +17,11 @@ A performable visual instrument that responds to musical structure, not raw FFT 
 - Original choreography banks: `orbit_reactor`, `dual_comet`, `cathedral_rain`, `vortex_gate`, `constellation_bloom`.
 - Additional choreography banks: `reactor_bloom`, `polar_gate`, `ritual_rain`, `helix_fountain`, `nebula_bloom`, `techno_lattice`.
 - New structured-chaos choreography studies: `lissajous_storm`, `singularity_crown`, `prism_shards`.
+- New **cosmic vector-field particle worlds**: `cosmic_roam`, `binary_star`, `event_horizon_drift`,
+  `accretion_storm`, and `supernova_nebula`. GPU particles can now inhabit authored flow
+  families (`flow / nebula / binary_star / event_horizon / cosmic_roam`) instead of every bank
+  sharing one generic curl field. Bass controls gravitational collapse, mids/highs shape
+  curl/nebula motion, and sparse drops can drive singularity/supernova events.
 - `journey` mode chooses banks at section/phrase boundaries without resetting the particle simulation.
 - Journey bank changes now smoothstep-morph emitter position/velocity/energy and continuous field
   parameters; `backdrop=auto` crossfades the old/new mathematical worlds over the same transition.
@@ -121,6 +126,8 @@ The next step is not to spawn these on every beat. Asset spawning should happen 
 - Section tracker is a transparent dynamics heuristic; no chroma/key or learned/novelty-based robust phrase segmentation yet.
 - ModernGL particle/shader paths render offscreen then read back into the shared OpenCV sink; direct GL display/shared texture is still the target.
 - Particle material rewrite still needs hardware tuning after the latest visual changes.
+- Cosmic vector fields are implemented and GL-smoke-covered but still need RTX/projector art tuning:
+  tune gravity, advection and density so they read as astronomical motion rather than particle soup.
 - Shader/particle parameters are launch-time settings; no live hot-control/preset morphing yet.
 - Curated built-in banks exist, but user-saved named banks / A-B snapshots do not yet.
 - Transition duration and auto-pairing still need projector tuning; palette/material are global particle
