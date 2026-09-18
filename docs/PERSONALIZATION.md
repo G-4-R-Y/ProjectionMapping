@@ -214,3 +214,18 @@ The goal is that a performer can find creative controls immediately while a tech
 - automatic capture of a preset when the user marks a visual as worth keeping
 
 The control deck should eventually feel like a synthesizer and VJ console whose oscillators happen to include PDEs, complex analysis, geometry, particles, neural generation and calibrated room surfaces.
+
+
+## Navigation and return-state contract
+
+The control deck is part of the instrument. Launching a visual must **not destroy the artist's current working state**.
+
+Required behavior:
+- launching a child visual leaves the current feature configuration screen mounted;
+- ESC in the projector window exits only the child and reveals the same feature screen with the same values;
+- ESC in the terminal while a child is running stops the child process tree and also keeps the same screen/values;
+- manually backing out of a feature stores its current values for the rest of the console session;
+- re-opening that feature restores the session values instead of TOML defaults;
+- resetting to defaults must eventually be an explicit action, never an accidental consequence of ESC.
+
+Future persistence should extend this from session memory to named presets/hardware profiles, but the immediate UX rule is simple: **testing a visual must never make the operator retype the setup**.
