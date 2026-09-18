@@ -213,9 +213,17 @@ def main() -> None:
         for i, mode in enumerate(("lorenz", "clifford", "ikeda")):
             r = AttractorRenderer(192, 108, mode=mode, points=7000)
             try:
-                frame = r.render(t=0.31 + i * 0.27, intensity=1.0, zoom=1.35, point_size=2.0, bloom=1.0)
+                t = 0.31 + i * 0.27
+                frame = r.render(t=t, intensity=1.0, zoom=1.35, point_size=2.0, bloom=1.0)
+                moved = r.render(t=t + 0.9, intensity=1.0, zoom=1.35, point_size=2.0, bloom=1.0)
                 _assert_frame(frame, (108, 192, 3), mode, 6)
-                print(f"[visual-probe]   attractor={mode} peak={int(frame.max())} mean={float(frame.mean()):.2f}", flush=True)
+                motion = float(np.mean(np.abs(moved.astype(np.float32) - frame.astype(np.float32))))
+                assert motion > 0.5, f"{mode} trace animation appears static ({motion:.3f})"
+                print(
+                    f"[visual-probe]   attractor={mode} peak={int(frame.max())} "
+                    f"mean={float(frame.mean()):.2f} motion={motion:.2f}",
+                    flush=True,
+                )
             finally:
                 r.close()
 

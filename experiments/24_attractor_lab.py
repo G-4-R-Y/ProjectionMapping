@@ -11,14 +11,22 @@ import time
 
 import cv2
 
-from projection_mapping.attractor_lab import ATTRACTOR_MODES, ATTRACTOR_PALETTES, AttractorRenderer
+from projection_mapping.attractor_lab import (
+    ATTRACTOR_MODES,
+    ATTRACTOR_PALETTES,
+    ATTRACTOR_TRACE_MODES,
+    AttractorRenderer,
+)
 from projection_mapping.runtime import FullscreenSink
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", choices=ATTRACTOR_MODES, default="lorenz")
-    ap.add_argument("--palette", choices=ATTRACTOR_PALETTES, default="spectral")
+    ap.add_argument("--palette", choices=ATTRACTOR_PALETTES, default="aurora_ice")
+    ap.add_argument("--trace-mode", choices=ATTRACTOR_TRACE_MODES, default="comet")
+    ap.add_argument("--trace-length", type=float, default=0.16)
+    ap.add_argument("--trace-speed", type=float, default=0.09)
     ap.add_argument("--points", type=int, default=50000)
     ap.add_argument("--display", type=int, default=1)
     ap.add_argument("--render-width", type=int, default=960)
@@ -62,6 +70,9 @@ def main() -> None:
                 zoom=args.zoom,
                 point_size=args.point_size,
                 bloom=args.bloom,
+                trace_mode=args.trace_mode,
+                trace_length=args.trace_length,
+                trace_speed=args.trace_speed,
             )
             out = cv2.resize(
                 rgb,

@@ -67,6 +67,16 @@ The first MR asset TUI test exited in argparse because the asset field was empty
 ### ModernGL packaging warning
 Desktop packaging previously omitted the graphics extra/context package. `moderngl` + `glcontext` are now explicit; Linux context creation probes EGL first. Use `experiments/18_graphics_probe.py` when graphics availability is ambiguous.
 
+### Control-deck lag and child cleanup
+The original Textual deck reread the complete growing log multiple times per 350 ms tick and repainted
+the hidden dashboard while an operator scrolled a configuration screen. Long sessions therefore became
+progressively laggy. Log reads are now incremental/bounded and hidden-screen repaint is suppressed.
+The primary operator surface is now the localhost browser deck (`projection-ui`); Textual remains the
+`projection-tui` fallback. A separate lifecycle bug allowed POSIX helpers to survive when the direct
+renderer parent exited normally. The launcher now retains and sweeps the dedicated process group on
+normal exit, Stop, replacement launch and shutdown. CI has an automated 20-cycle no-survivor test;
+actual RTX RAM/VRAM return-to-baseline still requires hardware measurement.
+
 ## 5. Rejected promoted directions / lessons — do not repeat blindly
 
 These are not bans on experimentation. They describe implementations that failed as promoted/default experiences. A new experiment may revisit an underlying idea if it changes the failure mechanism and documents why.

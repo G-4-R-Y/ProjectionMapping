@@ -462,7 +462,10 @@ Evaluation:
 
 Product/UX:
 - ✅ Textual control deck + modular feature fragments
+- ✅ responsive localhost browser control deck; Textual retained as a fallback
 - ✅ launching/ESC preserves the active feature configuration screen and session values instead of dumping the operator back to defaults
+- ✅ bounded incremental log streaming and hidden-screen repaint suppression remove growing-log/config-scroll TUI stalls
+- 🟡 POSIX child-session sweep + automated 20-cycle no-survivor soak test implemented; real RTX RAM/VRAM return-to-baseline measurement pending
 - ✅ persistent logs / copy/open / stage status
 - ✅ Song Studio GPU particle stage entry
 - ✅ Performer FX whole-body GPU entry

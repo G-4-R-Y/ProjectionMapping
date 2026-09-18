@@ -1,15 +1,16 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import datetime
-from pathlib import Path
 import os
 import platform
 import shutil
 import signal
 import subprocess
 import sys
-from typing import Any, IO
+import time
+from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import IO, Any
 
 from .app_runtime import bundle_root, is_frozen, runtime_root
 from .feature_registry import Feature
@@ -52,11 +53,13 @@ class FeatureLauncher:
         self.runtime_dir = runtime_root()
         self.runtime_dir.mkdir(parents=True, exist_ok=True)
         self.process: subprocess.Popen[str] | None = None
+        self._posix_pgid: int | None = None
         self._log_handle: IO[str] | None = None
         self.state = LaunchState()
 
     def launch(self, feature: Feature, values: dict[str, Any]) -> LaunchState:
-        if self.process is not None and self.process.poll() is None:
+        # ``stop`` also sweeps descendants when the direct parent already exited.
+        if self.process is not None:
             self.stop()
 
         argv = feature.build_argv(values)
@@ -88,6 +91,7 @@ class FeatureLauncher:
                 creationflags=creationflags,
                 start_new_session=start_new_session,
             )
+            self._posix_pgid = self.process.pid if start_new_session else None
         except Exception:
             import traceback
 
@@ -173,8 +177,15 @@ class FeatureLauncher:
         if rc is not None and self.state.returncode is None:
             self.state.returncode = rc
             self._log(f"[launcher] child exited returncode={rc}")
+            # A renderer can exit while leaving ffmpeg/audio/model helpers alive. Because POSIX
+            # children inherit the renderer's dedicated session, sweep that group even after its
+            # leader has gone away. Process exit remains the hard CUDA/RAM cleanup boundary.
+            if os.name != "nt":
+                self._stop_posix_group(self.process, timeout=0.35)
             self._write_gpu_snapshot("after exit")
             self._close_log()
+            self.process = None
+            self._posix_pgid = None
         return self.state
 
     def stop(self, graceful_timeout: float = 3.0) -> LaunchState:
@@ -186,40 +197,88 @@ class FeatureLauncher:
 
         if process.poll() is None:
             self._log("[launcher] stop requested; terminating complete process tree")
-            if os.name == "nt":
+        elif os.name != "nt" and self._posix_group_exists():
+            self._log("[launcher] parent exited; terminating surviving process-group members")
+
+        if os.name == "nt":
+            if process.poll() is None:
                 self._stop_windows_tree(process, graceful_timeout)
-            else:
-                self._stop_posix_group(process, graceful_timeout)
+        else:
+            self._stop_posix_group(process, graceful_timeout)
 
         self.state.returncode = process.poll()
         self._log(f"[launcher] cleanup complete returncode={self.state.returncode}")
         self._write_gpu_snapshot("after cleanup")
         self._close_log()
+        self.process = None
+        self._posix_pgid = None
         return self.state
 
+    def _posix_group_exists(self) -> bool:
+        pgid = self._posix_pgid
+        if pgid is None:
+            return False
+        proc_root = Path("/proc")
+        if proc_root.is_dir():
+            # Linux keeps an exited orphan visible briefly as a zombie. A zombie owns no CUDA/RAM
+            # resources and cannot receive signals, so do not burn the force-kill timeout on it.
+            for entry in proc_root.iterdir():
+                if not entry.name.isdigit():
+                    continue
+                try:
+                    raw = (entry / "stat").read_text(encoding="utf-8")
+                    fields = raw[raw.rfind(")") + 2 :].split()
+                    state = fields[0]
+                    process_group = int(fields[2])
+                except (FileNotFoundError, IndexError, PermissionError, ValueError):
+                    continue
+                if process_group == pgid and state != "Z":
+                    return True
+            return False
+        try:
+            os.killpg(pgid, 0)
+            return True
+        except ProcessLookupError:
+            return False
+        except PermissionError:
+            return True
+
+    def _wait_for_posix_group_exit(self, timeout: float) -> bool:
+        deadline = time.monotonic() + max(timeout, 0.0)
+        while self._posix_group_exists() and time.monotonic() < deadline:
+            time.sleep(0.02)
+        return not self._posix_group_exists()
+
     def _stop_posix_group(self, process: subprocess.Popen[str], timeout: float) -> None:
-        try:
-            pgid = os.getpgid(process.pid)
-        except (ProcessLookupError, OSError):
+        pgid = self._posix_pgid
+        if pgid is None and process.poll() is None:
+            try:
+                pgid = os.getpgid(process.pid)
+                self._posix_pgid = pgid
+            except (ProcessLookupError, OSError):
+                pgid = None
+        if pgid is None:
             return
 
-        try:
-            os.killpg(pgid, signal.SIGTERM)
-            process.wait(timeout=timeout)
-            return
-        except ProcessLookupError:
-            return
-        except subprocess.TimeoutExpired:
-            self._log("[launcher] graceful timeout; SIGKILL process group")
+        if self._posix_group_exists():
+            try:
+                os.killpg(pgid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+            if not self._wait_for_posix_group_exit(timeout):
+                self._log("[launcher] graceful timeout; SIGKILL process group")
+                try:
+                    os.killpg(pgid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+                if not self._wait_for_posix_group_exit(2.0):
+                    self._log("[launcher] warning: process group survived SIGKILL")
 
-        try:
-            os.killpg(pgid, signal.SIGKILL)
-        except ProcessLookupError:
-            return
-        try:
-            process.wait(timeout=2.0)
-        except subprocess.TimeoutExpired:
-            self._log("[launcher] warning: child group did not report exit after SIGKILL")
+        if process.poll() is None:
+            try:
+                process.wait(timeout=0.25)
+            except subprocess.TimeoutExpired:
+                self._log("[launcher] warning: process-group leader was not reaped")
 
     def _stop_windows_tree(self, process: subprocess.Popen[str], timeout: float) -> None:
         ctrl_break = getattr(signal, "CTRL_BREAK_EVENT", None)
@@ -258,8 +317,27 @@ class FeatureLauncher:
         path = self.state.log_path
         if path is None or not path.exists():
             return "No run log yet."
-        text = path.read_text(encoding="utf-8", errors="replace")
+        # Reading the complete, ever-growing run log on every UI tick made Textual scrolling
+        # progressively slower. Seek from the end so refresh cost remains bounded.
+        max_bytes = max(max_chars * 4, 4096)
+        with path.open("rb") as handle:
+            size = handle.seek(0, os.SEEK_END)
+            handle.seek(max(size - max_bytes, 0))
+            text = handle.read().decode("utf-8", errors="replace")
         return text[-max_chars:]
+
+    def read_log_since(self, offset: int = 0, max_bytes: int = 65536) -> tuple[str, int]:
+        """Read a bounded incremental log chunk for responsive terminal/browser UIs."""
+        path = self.state.log_path
+        if path is None or not path.exists():
+            return "", 0
+        with path.open("rb") as handle:
+            size = handle.seek(0, os.SEEK_END)
+            safe_offset = offset if 0 <= offset <= size else 0
+            handle.seek(safe_offset)
+            data = handle.read(max(1, max_bytes))
+            next_offset = handle.tell()
+        return data.decode("utf-8", errors="replace"), next_offset
 
     def _close_log(self) -> None:
         if self._log_handle is not None:

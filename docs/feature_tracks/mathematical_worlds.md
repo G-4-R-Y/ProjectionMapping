@@ -43,7 +43,9 @@ Dense additive point-cloud sculptures for:
 - De Jong
 - Ikeda
 
-ODE/map trajectories are generated once, robustly normalized, uploaded to GPU memory and then animated at display rate with 3D camera orbit, emissive point material and bloom. This is intentionally different from full-screen shader textures: it adds sparse luminous geometric sculpture to the visual vocabulary. A fixed-point-collapse test now guards registered attractors after the first Ikeda parameter choice was found to converge to one point instead of producing the desired chaotic set.
+ODE/map trajectories are generated once, robustly normalized, uploaded to GPU memory and then animated at display rate with 3D camera orbit, emissive point material and bloom. A trajectory-age animation sends either one long comet or four bright pulse packets through every attractor; a full-scene breathing mode remains available. This is intentionally different from full-screen shader textures: it adds sparse luminous geometric sculpture with obvious internal motion to the visual vocabulary. A fixed-point-collapse test guards registered attractors after the first Ikeda parameter choice was found to converge to one point instead of producing the desired chaotic set.
+
+The attractor lab uses six authored four-stop ramps (`aurora_ice`, `ember_gold`, `violet_plasma`, `toxic_bloom`, `ocean_signal`, and `rose_quartz`) with deliberately dark shadows and controlled hot cores. The browser control deck renders those ramps as live swatches beside the selector instead of asking operators to choose colors from names alone. Legacy palette command-line values remain accepted and map to their nearest curated ramp.
 
 ### Song Studio convergence — implemented
 Song Studio can use `math:<mode>` Famous Math worlds as music-reactive backdrop/conductor layers in addition to Polar Math and Shader Scene Lab scenes. Current automatic research pairings include quasicrystal/Lissajous, Mandelbrot-Julia/Singularity Crown, complex-domain/Prism Shards and zeta/Constellation Bloom. These are experiments, not all promoted presets.

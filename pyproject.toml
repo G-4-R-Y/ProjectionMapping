@@ -39,7 +39,9 @@ dev = ["pytest>=8", "ruff>=0.6"]
 
 [project.scripts]
 projection-map = "projection_mapping.cli:main"
-projection-ui = "projection_mapping.tui:main"
+projection-ui = "projection_mapping.web_ui:main"
+projection-web = "projection_mapping.web_ui:main"
+projection-tui = "projection_mapping.tui:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

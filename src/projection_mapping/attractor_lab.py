@@ -4,8 +4,8 @@ import math
 
 import numpy as np
 
+from .color_palettes import CURATED_PALETTES, glsl_palette_function
 from .graphics_runtime import create_context
-
 
 ATTRACTOR_MODES = (
     "lorenz",
@@ -18,7 +18,16 @@ ATTRACTOR_MODES = (
     "ikeda",
 )
 
-ATTRACTOR_PALETTES = ("spectral", "electric", "solar", "bio", "ultraviolet")
+ATTRACTOR_PALETTES = CURATED_PALETTES + ("spectral", "electric", "solar", "bio", "ultraviolet")
+ATTRACTOR_TRACE_MODES = ("comet", "pulse_train", "full")
+_RENDER_PALETTES = CURATED_PALETTES
+_LEGACY_PALETTE_MAP = {
+    "spectral": "aurora_ice",
+    "electric": "ocean_signal",
+    "solar": "ember_gold",
+    "bio": "toxic_bloom",
+    "ultraviolet": "violet_plasma",
+}
 
 _VERTEX = r"""
 #version 330
@@ -27,17 +36,26 @@ uniform float u_time;
 uniform float u_zoom;
 uniform float u_point_size;
 uniform int u_palette;
+uniform int u_trace_mode;
+uniform float u_trace_length;
+uniform float u_trace_speed;
 out vec3 v_color;
 out float v_age;
+out float v_trace;
 #define TAU 6.28318530718
 
-vec3 pal(float t){
-    t=fract(t);
-    if(u_palette==1) return .50+.50*cos(TAU*(vec3(1.0,.82,.63)*t+vec3(.56,.11,.02)));
-    if(u_palette==2) return .50+.50*cos(TAU*(vec3(1.0,.75,.57)*t+vec3(.02,.07,.16)));
-    if(u_palette==3) return .50+.50*cos(TAU*(vec3(.84,1.0,.70)*t+vec3(.42,.03,.20)));
-    if(u_palette==4) return .50+.50*cos(TAU*(vec3(.94,.74,1.0)*t+vec3(.72,.21,.03)));
-    return .50+.50*cos(TAU*(vec3(1.0,.87,.72)*t+vec3(.01,.17,.44)));
+__PALETTE_FUNCTION__
+
+float traceWeight(float age){
+    if(u_trace_mode==2) return .58+.16*sin(age*TAU*5.0-u_time*1.7);
+    float trains=u_trace_mode==1 ? 4.0 : 1.0;
+    float phase=fract(age*trains);
+    float head=fract(u_time*u_trace_speed*trains);
+    float behind=fract(head-phase);
+    float tail=clamp(u_trace_length*trains,.025,.92);
+    float body=1.0-smoothstep(tail*.52,tail,behind);
+    float headGlow=exp(-behind*behind/max(tail*tail*.012,1e-5));
+    return clamp(body+headGlow*.8,0.0,1.8);
 }
 
 void main(){
@@ -51,16 +69,18 @@ void main(){
     vec2 q=p.xy/max(depth,.55)*u_zoom;
     gl_Position=vec4(q,0.0,1.0);
     float depthLift=clamp(1.35-depth*.18,.62,1.18);
-    gl_PointSize=u_point_size*depthLift*(.70+.55*sin(in_point.w*TAU*3.0+.8));
+    v_trace=traceWeight(in_point.w);
+    gl_PointSize=u_point_size*depthLift*(.62+.30*sin(in_point.w*TAU*3.0+.8)+v_trace*.62);
     v_age=in_point.w;
-    v_color=pal(in_point.w*.82+p.z*.13+u_time*.012);
+    v_color=pal(fract(in_point.w*.76+p.z*.11+u_time*.006));
 }
-"""
+""".replace("__PALETTE_FUNCTION__", glsl_palette_function(_RENDER_PALETTES))
 
 _POINT_FRAGMENT = r"""
 #version 330
 in vec3 v_color;
 in float v_age;
+in float v_trace;
 uniform float u_energy;
 out vec4 fragColor;
 void main(){
@@ -70,8 +90,9 @@ void main(){
     float core=exp(-r*r*18.0);
     float halo=exp(-r*3.2)*.42;
     float twinkle=.72+.28*sin(v_age*83.0);
-    vec3 col=v_color*(halo+.55*core)*twinkle;
-    col+=vec3(1.0,.985,.95)*core*.72;
+    float traceLight=.16+1.28*v_trace;
+    vec3 col=v_color*(halo+.55*core)*twinkle*traceLight;
+    col+=vec3(1.0,.985,.95)*core*(.20+.74*v_trace);
     fragColor=vec4(col*u_energy,core+halo*.48);
 }
 """
@@ -239,7 +260,7 @@ class AttractorRenderer:
         height: int,
         *,
         mode: str = "lorenz",
-        palette: str = "spectral",
+        palette: str = "aurora_ice",
         points: int = 50000,
     ) -> None:
         import moderngl
@@ -281,10 +302,15 @@ class AttractorRenderer:
         point_size: float = 2.2,
         bloom: float = 1.0,
         energy: float = 1.0,
+        trace_mode: str = "comet",
+        trace_length: float = 0.16,
+        trace_speed: float = 0.09,
     ) -> np.ndarray:
         palette = palette or self.palette
         if palette not in ATTRACTOR_PALETTES:
             raise ValueError(palette)
+        if trace_mode not in ATTRACTOR_TRACE_MODES:
+            raise ValueError(trace_mode)
         planar = self.mode in {"clifford", "de_jong", "ikeda"}
         # Iterated 2-D maps occupy a razor-thin plane. Give them a denser luminous material than
         # volumetric ODE trajectories so the projector sees a sculpture rather than isolated dust.
@@ -294,7 +320,11 @@ class AttractorRenderer:
         p["u_time"].value = float(t)
         p["u_zoom"].value = float(max(zoom, 0.1))
         p["u_point_size"].value = float(np.clip(point_size * point_boost, 0.5, 12.0))
-        p["u_palette"].value = ATTRACTOR_PALETTES.index(palette)
+        render_palette = _LEGACY_PALETTE_MAP.get(palette, palette)
+        p["u_palette"].value = _RENDER_PALETTES.index(render_palette)
+        p["u_trace_mode"].value = ATTRACTOR_TRACE_MODES.index(trace_mode)
+        p["u_trace_length"].value = float(np.clip(trace_length, 0.01, 0.9))
+        p["u_trace_speed"].value = float(np.clip(trace_speed, 0.001, 2.0))
         p["u_energy"].value = float(np.clip(energy * energy_boost, 0.0, 4.0))
         self.ctx.viewport = (0, 0, self.width, self.height)
         self.hdr_fbo.use()
@@ -340,6 +370,7 @@ class AttractorRenderer:
 __all__ = [
     "ATTRACTOR_MODES",
     "ATTRACTOR_PALETTES",
-    "generate_attractor",
+    "ATTRACTOR_TRACE_MODES",
     "AttractorRenderer",
+    "generate_attractor",
 ]

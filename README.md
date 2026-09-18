@@ -49,7 +49,7 @@ py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 python -m pip install -e ".[ui,vision,dev]"
-python -m projection_mapping.tui
+python -m projection_mapping.web_ui
 ```
 
 ### Windows cmd.exe
@@ -59,7 +59,7 @@ py -3.12 -m venv .venv
 .venv\Scripts\activate.bat
 python -m pip install --upgrade pip
 python -m pip install -e ".[ui,vision,dev]"
-python -m projection_mapping.tui
+python -m projection_mapping.web_ui
 ```
 
 ### Linux / macOS
@@ -74,16 +74,19 @@ python -m projection_mapping.tui
 
 If your distro does not expose `python3.12` directly, use pyenv/uv/conda to create a 3.12 environment, then use `python` inside it.
 
-After installation, the shorter entry point also works:
+After installation, the shorter entry point opens the browser control deck:
 
 ```text
 projection-ui
 ```
 
+The older Textual interface remains available as a lightweight fallback with
+`projection-tui` or `python -m projection_mapping.tui`.
+
 The loop is:
 
 ```text
-console UI
+browser control deck
   -> choose an effect / experiment
   -> change its parameters
   -> LAUNCH FULLSCREEN
@@ -93,9 +96,11 @@ console UI
   -> mutate settings / switch mapping / launch again
 ```
 
-The console stays alive while each visual runs as a child process. If the projector window has focus, `Esc` exits that visual normally. If the terminal has focus, `Esc` terminates the active visual from the control deck. Run logs are captured under `.projection_mapping/`.
+The local control server stays alive while each visual runs as an isolated child process. If the projector window has focus, `Esc` exits that visual normally. The browser's **Stop visual** button terminates the complete child tree. Run logs are captured under `~/.projection_mapping/` and streamed incrementally without rereading the whole file.
 
-The UI is **registry-driven** by [`configs/features.toml`](configs/features.toml): new effects declare their command, supported OSs, and typed parameters there, and the console renders their controls automatically. Registry commands use a portable `python` token that is replaced with the exact active interpreter, avoiding virtualenv/conda/path mismatches across OSs.
+Known palette controls include an inline color-ramp preview. The Strange Attractor Lab adds six projector-tuned palettes and `comet`, `pulse_train`, and `full` trajectory animation modes, so its internal motion remains visible even when the camera orbit is subtle.
+
+The UI is **registry-driven** by [`configs/features.toml`](configs/features.toml): new effects declare their command, supported OSs, and typed parameters there, and both browser and Textual control decks render their controls automatically. Registry commands use a portable `python` token that is replaced with the exact active interpreter, avoiding virtualenv/conda/path mismatches across OSs.
 
 See [`docs/CONSOLE_UI.md`](docs/CONSOLE_UI.md) for the full operator and extension guide.
 
@@ -143,7 +148,7 @@ See [`ROADMAP.md`](ROADMAP.md) for detailed deliverables, exit criteria, extensi
 ## Implemented foundations
 
 - fullscreen projector test-pattern player
-- clickable/keyboard Textual operator console (`projection-ui`)
+- responsive browser operator deck (`projection-ui`) with Textual fallback (`projection-tui`)
 - typed, extensible, platform-aware feature registry (`configs/features.toml`)
 - cross-platform child-process lifecycle management with ESC-to-return workflow
 - per-run log capture under `.projection_mapping/`

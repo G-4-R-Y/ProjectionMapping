@@ -14,9 +14,13 @@ def main() -> int:
     if is_frozen():
         os.chdir(bundle_root())
 
-    from projection_mapping.tui import main as tui_main
+    if "--tui" in sys.argv:
+        sys.argv.remove("--tui")
+        from projection_mapping.tui import main as ui_main
+    else:
+        from projection_mapping.web_ui import main as ui_main
 
-    tui_main()
+    ui_main()
     return 0
 
 

@@ -208,6 +208,8 @@ class ProjectionMappingApp(App):
         }
         self._last_state_text = ""
         self._last_log_text = ""
+        self._last_log_path = None
+        self._log_offset = 0
 
     def compose(self):
         yield Header(show_clock=True)
@@ -255,7 +257,7 @@ class ProjectionMappingApp(App):
         yield Footer()
 
     def on_mount(self) -> None:
-        self.set_interval(0.35, self._poll_child)
+        self.set_interval(0.75, self._poll_child)
         self._refresh_status()
         self._refresh_log(force=True)
 
@@ -286,6 +288,8 @@ class ProjectionMappingApp(App):
             timeout=5,
         )
         self._last_log_text = ""
+        self._last_log_path = None
+        self._log_offset = 0
         self._refresh_status()
         self._refresh_log(force=True)
 
@@ -299,11 +303,18 @@ class ProjectionMappingApp(App):
 
     def _poll_child(self) -> None:
         previous_running = self.launcher.state.running
-        self.launcher.poll()
-        self._refresh_log()
-        if previous_running and not self.launcher.state.running:
-            state = self.launcher.state
-            self._refresh_log(force=True)
+        state = self.launcher.poll()
+        child_returned = previous_running and not state.running
+
+        # The base control-deck screen remains mounted under ConfigScreen. Repainting its status
+        # and log while the operator scrolls dozens of controls caused visible stutter. Reap the
+        # child here, but leave hidden widgets untouched until the deck is visible again.
+        config_active = isinstance(self.screen, ConfigScreen)
+        if not config_active:
+            self._refresh_log()
+        if child_returned:
+            if not config_active:
+                self._refresh_log(force=True)
             if state.returncode not in (0, None):
                 self.notify(
                     f"{state.feature_name} failed with exit {state.returncode}. See live log below.",
@@ -317,7 +328,8 @@ class ProjectionMappingApp(App):
                     title="Back from projector",
                     timeout=5,
                 )
-        self._refresh_status()
+        if not config_active:
+            self._refresh_status(state)
 
     @staticmethod
     def _latest_runtime_stage(log_text: str) -> str | None:
@@ -329,12 +341,12 @@ class ProjectionMappingApp(App):
             return value.replace("-", " ").upper()
         return None
 
-    def _refresh_status(self) -> None:
+    def _refresh_status(self, state=None) -> None:
         status = self.query_one("#status", Static)
         stop = self.query_one("#stop", Button)
-        state = self.launcher.poll()
+        state = state or self.launcher.poll()
         if state.running:
-            stage = self._latest_runtime_stage(self.launcher.read_log_tail())
+            stage = self._latest_runtime_stage(self._last_log_text)
             stage_text = f"  |  NEURAL {stage}" if stage else ""
             text = f"RUNNING  {state.feature_name}  |  PID {state.pid}{stage_text}  |  started {state.started_at}"
             status.set_classes("status-running")
@@ -354,11 +366,16 @@ class ProjectionMappingApp(App):
     def _refresh_log(self, force: bool = False) -> None:
         state = self.launcher.state
         path_text = f"Full log: {state.log_path}" if state.log_path else "No run log yet."
-        self.query_one("#log-path", Static).update(path_text)
-        text = self.launcher.read_log_tail()
-        if force or text != self._last_log_text:
-            self.query_one("#log", Static).update(text)
-            self._last_log_text = text
+        if state.log_path != self._last_log_path:
+            self.query_one("#log-path", Static).update(path_text)
+            self._last_log_path = state.log_path
+            self._log_offset = 0
+            self._last_log_text = ""
+        chunk, self._log_offset = self.launcher.read_log_since(self._log_offset)
+        if chunk:
+            self._last_log_text = (self._last_log_text + chunk)[-20000:]
+        if force or chunk:
+            self.query_one("#log", Static).update(self._last_log_text or "No run log yet.")
 
     def _copy_text_to_clipboard(self, text: str) -> bool:
         candidates: list[tuple[list[str], bool]] = []

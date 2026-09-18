@@ -1,15 +1,16 @@
-# ProjectionMapping Console UI
+# ProjectionMapping Control Deck
 
-The console UI is the operator surface for the installation. The intended loop is intentionally simple:
+The browser control deck is the primary operator surface for the installation. It runs on localhost
+without a frontend service or framework dependency. The intended loop is intentionally simple:
 
 ```text
-console UI
+browser control deck
   -> choose feature
   -> edit parameters
   -> launch fullscreen on projector
   -> experience / inspect result
   -> ESC
-  -> back to console UI
+  -> back to the same browser form and values
   -> mutate config
   -> launch again
 ```
@@ -49,12 +50,12 @@ python -m pip install -e '.[ui,vision,dev]'
 
 For StreamDiffusion/CUDA features, install the ML stack separately as documented in `README.md`, `docs/RTX4080.md`, and `docs/PLATFORMS.md`.
 
-## Start the console
+## Start the control deck
 
 Portable module form:
 
 ```text
-python -m projection_mapping.tui
+python -m projection_mapping.web_ui
 ```
 
 Installed entry point:
@@ -63,16 +64,19 @@ Installed entry point:
 projection-ui
 ```
 
-The UI supports keyboard and mouse. Selecting a feature opens its configuration screen. **LAUNCH FULLSCREEN** starts it as a child process while the console remains alive underneath.
+The command opens `http://127.0.0.1:8765/` in the default browser. Selecting a feature renders its
+registry-defined configuration form. **Launch fullscreen** starts it as a child process while the
+control server remains alive. Controls, search and log scrolling stay native-browser responsive.
+
+The Textual fallback remains available as `projection-tui` or
+`python -m projection_mapping.tui`.
 
 ### Controls
 
-- **Mouse / Enter** — select a feature or button
+- **Mouse / keyboard** — search, select and edit native browser controls
 - **Esc in projector window** — the visual exits using its normal fullscreen escape handling; the console is still running behind it
-- **Esc while terminal has focus** — terminate the active visual
-- **L** — refresh and show the tail of the last run log
-- **R** — refresh current process status
-- **Q** — quit the console
+- **Stop visual** — terminate the complete active child process tree
+- **Follow** — keep the incremental run log pinned to its newest output
 
 Only one visual/experiment is owned by the console at a time. Launching another feature stops the previous child first. This is intentional: projector ownership should be deterministic.
 
@@ -82,7 +86,7 @@ The UI is data-driven by:
 
 `configs/features.toml`
 
-Every `[[feature]]` becomes a selectable experience. Every `[[feature.param]]` becomes an automatically rendered control. This means the console can grow to hundreds of visual modes without turning `tui.py` into a giant switch statement.
+Every `[[feature]]` becomes a selectable experience. Every `[[feature.param]]` becomes an automatically rendered control. This means both operator surfaces can grow without turning UI code into a giant feature switch statement.
 
 Features may optionally declare OS support:
 
@@ -158,14 +162,17 @@ Every feature parameter has:
 
 ## Process model
 
-`FeatureLauncher` owns the currently running visual process. It launches from the repository root, records stdout/stderr to `.projection_mapping/<timestamp>-<feature>.log`, and exposes status back to the TUI.
+`FeatureLauncher` owns the currently running visual process. It launches from the repository root,
+records stdout/stderr to `~/.projection_mapping/<timestamp>-<feature>.log`, and exposes status to the
+browser API and Textual fallback. Log reads are incremental/bounded so long sessions do not make the
+operator surface progressively slower.
 
 This separation is important. The UI is not the renderer. A bad model load, camera error, or GLSL crash should kill the current visual process without killing the operator console.
 
 The process model is currently:
 
 ```text
-projection-ui
+projection-ui / projection-tui
     |
     +-- operator UI (always alive)
     |
@@ -174,15 +181,17 @@ projection-ui
             +-- projector fullscreen / platform transport / compositor
 ```
 
-On Windows the launcher uses a new process group. On Linux/macOS it starts a new session. The launcher itself remains shell-free and uses the exact active Python interpreter for registry commands.
+On Windows the launcher uses a new process group. On Linux/macOS it starts a new session. On POSIX,
+normal parent exit also sweeps surviving helpers in that session; explicit Stop does the same. The
+launcher itself remains shell-free and uses the exact active Python interpreter for registry commands.
 
 Later the child boundary can become a stronger service boundary (local socket/IPC, separate ML worker, hot-reloadable render graph) without replacing the console UX.
 
 ## Fullscreen behavior
 
-Most current projector experiments use OpenCV windows and already interpret key code 27 (`Esc`) as exit. When that projector window has focus, pressing `Esc` closes the visual subprocess. The TUI then detects the child's exit and updates its status to idle.
+Most current projector experiments use OpenCV windows and already interpret key code 27 (`Esc`) as exit. When that projector window has focus, pressing `Esc` closes the visual subprocess. The control deck then detects the child's exit and updates its status to idle.
 
-If the terminal has focus instead, the TUI's own `Esc` binding terminates the active child.
+The browser **Stop visual** action or the Textual fallback's `Esc` binding terminates the active child tree.
 
 This gives us the intended loop:
 
