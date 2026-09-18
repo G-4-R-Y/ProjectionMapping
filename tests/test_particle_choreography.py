@@ -33,6 +33,9 @@ def test_every_bank_produces_emitters_and_valid_parameters():
         assert 0.0 <= c.feedback <= 1.0
         assert c.palette in GPUParticleField.PALETTES
         assert c.material in GPUParticleField.MATERIALS
+        assert c.field_mode in GPUParticleField.FIELD_MODES
+        assert c.field_strength >= 0.0
+        assert c.field_scale > 0.0
         for emitter in c.emitters:
             assert 0.0 <= emitter.x <= 1.0
             assert 0.0 <= emitter.y <= 1.0
@@ -78,3 +81,34 @@ def test_choreography_blend_reaches_target_exactly():
     target = choreography("polar_gate", signals(), t=1.0)
 
     assert blend_choreographies(source, target, 1.0) == target
+
+
+def test_cosmic_banks_use_nontrivial_vector_fields():
+    s = signals(bass=0.7, mids=0.6, drop=0.2)
+    expected = {
+        "cosmic_roam": "cosmic_roam",
+        "binary_star": "binary_star",
+        "event_horizon_drift": "event_horizon",
+        "accretion_storm": "event_horizon",
+        "supernova_nebula": "nebula",
+    }
+    for bank, field_mode in expected.items():
+        c = choreography(bank, s, t=2.5, madness=0.6)
+        assert c.field_mode == field_mode
+        assert c.field_strength > 0.5
+
+
+def test_binary_star_gravity_strength_tracks_bass():
+    low = choreography("binary_star", signals(bass=0.05), t=1.0)
+    high = choreography("binary_star", signals(bass=0.95), t=1.0)
+    assert high.well_strength > low.well_strength
+
+
+def test_choreography_blend_interpolates_vector_field_strength():
+    source = choreography("cosmic_roam", signals(), t=1.0)
+    target = choreography("binary_star", signals(), t=1.0)
+    blended = blend_choreographies(source, target, 0.25)
+    assert blended.field_mode == source.field_mode
+    assert blended.field_strength == source.field_strength + 0.25 * (
+        target.field_strength - source.field_strength
+    )
