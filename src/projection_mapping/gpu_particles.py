@@ -60,6 +60,13 @@ uniform float u_turbulence;
 uniform float u_drag;
 uniform float u_bass;
 uniform float u_strike;
+uniform float u_drop;
+uniform int u_field_mode;
+uniform float u_field_strength;
+uniform float u_field_scale;
+uniform float u_field_spin;
+uniform float u_well_strength;
+uniform float u_nebula_mix;
 uniform int u_capacity;
 uniform int u_emitter_count;
 uniform vec4 u_emitters[8]; // x,y,vx,vy
@@ -76,11 +83,71 @@ float hash11(float p) {
 vec2 hash21(float p) {
     return vec2(hash11(p+17.0), hash11(p+71.0));
 }
+vec2 safeNorm(vec2 v) {
+    return v / max(length(v), 1e-5);
+}
+vec2 curlFlow(vec2 p, float t) {
+    float scale=max(u_field_scale,.10);
+    vec2 q=(p-.5)*scale;
+    float a = sin(q.x*8.0 + t*.73) + cos(q.y*7.0 - t*.61);
+    float b = cos((q.x+q.y)*6.0 - t*.47) - sin((q.x-q.y)*5.0 + t*.53);
+    return safeNorm(vec2(b, -a));
+}
+vec2 well(vec2 p, vec2 center, float spin) {
+    vec2 d=center-p;
+    float r2=dot(d,d)+.0035;
+    float fall=clamp(.020/r2,0.0,1.75);
+    vec2 radial=safeNorm(d);
+    vec2 tangent=vec2(-radial.y,radial.x);
+    return (radial + tangent*spin)*fall;
+}
 vec2 field(vec2 p, float t) {
-    float a = sin(p.x*8.0 + t*.73) + cos(p.y*7.0 - t*.61);
-    float b = cos((p.x+p.y)*6.0 - t*.47) - sin((p.x-p.y)*5.0 + t*.53);
-    vec2 f = vec2(b, -a);
-    return normalize(f + vec2(1e-5));
+    vec2 base=curlFlow(p,t);
+    float spin=u_field_spin;
+    if(u_field_mode==0) return base;
+
+    if(u_field_mode==1) {
+        vec2 q=(p-.5)*max(u_field_scale,.10);
+        float a=sin(q.x*11.0+t*.37)+sin((q.x+q.y)*7.0-t*.29);
+        float b=cos(q.y*10.0-t*.31)-cos((q.x-q.y)*8.0+t*.23);
+        vec2 cloud=safeNorm(vec2(b,-a));
+        vec2 slow=safeNorm(vec2(
+            sin(q.y*3.2+t*.09)+cos(q.x*2.4-t*.07),
+            cos(q.x*3.0-t*.08)-sin(q.y*2.2+t*.11)
+        ));
+        return safeNorm(mix(base,cloud,.72)+slow*(.24+.34*u_nebula_mix));
+    }
+
+    if(u_field_mode==2) {
+        float orbit=t*(.20+.12*spin);
+        vec2 c1=.5+vec2(cos(orbit),sin(orbit))*(.16+.035*u_bass);
+        vec2 c2=.5-vec2(cos(orbit),sin(orbit))*(.16+.035*u_bass);
+        vec2 wells=well(p,c1,.82*spin)+well(p,c2,-.82*spin);
+        return base*.16+wells*(.42+.58*u_well_strength);
+    }
+
+    if(u_field_mode==3) {
+        vec2 c=.5+.028*vec2(sin(t*.17),cos(t*.13));
+        vec2 d=c-p;
+        float r2=dot(d,d)+.005;
+        vec2 radial=safeNorm(d);
+        vec2 tangent=vec2(-radial.y,radial.x);
+        float fall=clamp(.018/r2,0.0,1.65);
+        float inward=.44+.42*u_bass+.35*u_drop;
+        float swirl=(.70+.48*u_drop)*spin;
+        return base*.12+(radial*inward+tangent*swirl)*fall;
+    }
+
+    vec2 c1=.5+.25*vec2(cos(t*.071),sin(t*.093));
+    vec2 c2=.5+.20*vec2(cos(t*.113+2.1),sin(t*.087+1.4));
+    vec2 c3=.5+.16*vec2(cos(t*.053+4.0),sin(t*.129+3.1));
+    vec2 wells=well(p,c1,.55*spin)+well(p,c2,-.72*spin)+well(p,c3,.91*spin);
+    vec2 q=(p-.5)*max(u_field_scale,.10);
+    vec2 mist=safeNorm(vec2(
+        sin(q.y*5.0+t*.13)+cos((q.x+q.y)*3.7-t*.11),
+        cos(q.x*4.6-t*.10)-sin((q.x-q.y)*4.1+t*.15)
+    ));
+    return base*.12+mist*(.30+.34*u_nebula_mix)+wells*(.30+.42*u_well_strength);
 }
 void main() {
     int id = int(gl_FragCoord.x);
@@ -120,8 +187,8 @@ void main() {
             life = 0.0;
         }
     } else {
-        vec2 f = field(pos*1.7 + seed, u_time);
-        vel += f * u_turbulence * u_dt * (.30 + .70*seed);
+        vec2 f = field(pos, u_time + seed*1.7);
+        vel += f * u_turbulence * u_field_strength * u_dt * (.30 + .70*seed);
         vel *= exp(-u_drag*u_dt);
         pos += vel*u_dt;
         if (pos.x < -.08) pos.x = 1.08;
@@ -319,6 +386,7 @@ class GPUParticleField:
 
     PALETTES={"cyber":0,"solar":1,"bio":2,"prismatic":3}
     MATERIALS={"plasma":0,"comet":1,"spark":2,"mote":3,"shock_ring":4}
+    FIELD_MODES={"flow":0,"nebula":1,"binary_star":2,"event_horizon":3,"cosmic_roam":4}
 
     def __init__(
         self,
@@ -399,6 +467,12 @@ class GPUParticleField:
         bass:float=0.0,
         strike:float=0.0,
         drop:float=0.0,
+        field_mode:str="flow",
+        field_strength:float=1.0,
+        field_scale:float=1.0,
+        field_spin:float=1.0,
+        well_strength:float=0.0,
+        nebula_mix:float=0.0,
     )->np.ndarray:
         m=self.moderngl
         dt=float(np.clip(dt,1e-4,0.08))
@@ -416,6 +490,15 @@ class GPUParticleField:
         p["u_drag"].value=float(max(drag,0.0))
         p["u_bass"].value=float(np.clip(bass,0.0,1.0))
         p["u_strike"].value=float(np.clip(strike,0.0,1.0))
+        p["u_drop"].value=float(np.clip(drop,0.0,1.0))
+        if field_mode not in self.FIELD_MODES:
+            raise ValueError(f"unknown particle field {field_mode!r}; choices: {', '.join(self.FIELD_MODES)}")
+        p["u_field_mode"].value=self.FIELD_MODES[field_mode]
+        p["u_field_strength"].value=float(np.clip(field_strength,0.0,4.0))
+        p["u_field_scale"].value=float(np.clip(field_scale,0.10,6.0))
+        p["u_field_spin"].value=float(np.clip(field_spin,-3.0,3.0))
+        p["u_well_strength"].value=float(np.clip(well_strength,0.0,4.0))
+        p["u_nebula_mix"].value=float(np.clip(nebula_mix,0.0,3.0))
         p["u_capacity"].value=self.capacity
         p["u_emitter_count"].value=min(len(emitters),8)
         p["u_emitters"].write(body.tobytes())
