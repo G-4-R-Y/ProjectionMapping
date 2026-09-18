@@ -23,6 +23,11 @@ BANKS = (
     "lissajous_storm",
     "singularity_crown",
     "prism_shards",
+    "cosmic_roam",
+    "binary_star",
+    "event_horizon_drift",
+    "accretion_storm",
+    "supernova_nebula",
 )
 
 
@@ -36,6 +41,12 @@ class ParticleChoreography:
     bloom: float
     palette: str
     material: str = "plasma"
+    field_mode: str = "flow"
+    field_strength: float = 1.0
+    field_scale: float = 1.0
+    field_spin: float = 1.0
+    well_strength: float = 0.0
+    nebula_mix: float = 0.0
 
 
 def _lerp(a: float, b: float, mix: float) -> float:
@@ -94,6 +105,12 @@ def blend_choreographies(
         _lerp(source.bloom, target.bloom, m),
         style.palette,
         style.material,
+        style.field_mode,
+        _lerp(source.field_strength, target.field_strength, m),
+        _lerp(source.field_scale, target.field_scale, m),
+        _lerp(source.field_spin, target.field_spin, m),
+        _lerp(source.well_strength, target.well_strength, m),
+        _lerp(source.nebula_mix, target.nebula_mix, m),
     )
 
 
@@ -414,6 +431,190 @@ def choreography(
             1.42,
             "prismatic",
             "mote",
+            "nebula",
+            1.05 + 0.25 * m,
+            1.35,
+            0.72,
+            0.18 + 0.28 * s.bass,
+            0.88 + 0.42 * s.mids,
+        )
+
+    if bank == "cosmic_roam":
+        emitters = []
+        for i in range(6):
+            p = t * (0.045 + i * 0.003) + i * math.tau / 6.0
+            x = 0.5 + 0.29 * math.sin(p * 1.7 + i * 0.31)
+            y = 0.5 + 0.22 * math.sin(p * 2.3 + i * 0.83)
+            vx = 0.035 * math.cos(p * 1.7) + 0.045 * s.mids * math.sin(p * 0.7 + i)
+            vy = 0.035 * math.cos(p * 2.3) - 0.045 * s.mids * math.cos(p * 0.9 + i)
+            emitters.append(
+                ParticleEmitter(
+                    x, y, vx, vy,
+                    0.20 + 0.42 * loud + 0.32 * s.section_energy,
+                    (s.color + i * 0.137) % 1.0,
+                    0.010 + 0.008 * s.highs,
+                )
+            )
+        return ParticleChoreography(
+            tuple(emitters),
+            1500 + 4600 * loud + 5000 * strike + 9000 * drop,
+            0.34 + 0.38 * m + 0.18 * s.mids,
+            0.78,
+            0.970,
+            1.38,
+            "prismatic",
+            "mote",
+            "cosmic_roam",
+            1.20 + 0.45 * s.section_energy,
+            1.15 + 0.55 * s.mids,
+            0.82 + 0.45 * s.highs,
+            0.65 + 0.75 * s.bass + 0.55 * drop,
+            0.90 + 0.55 * s.mids,
+        )
+
+    if bank == "binary_star":
+        orbit = angle * 0.23 + t * 0.055
+        radius = 0.16 + 0.035 * s.bass
+        c1 = (0.5 + math.cos(orbit) * radius, 0.5 + math.sin(orbit) * radius)
+        c2 = (0.5 - math.cos(orbit) * radius, 0.5 - math.sin(orbit) * radius)
+        emitters = [
+            ParticleEmitter(c1[0], c1[1], -math.sin(orbit) * 0.16, math.cos(orbit) * 0.16, 0.70 + 0.30 * loud, 0.08, 0.019),
+            ParticleEmitter(c2[0], c2[1], math.sin(orbit) * 0.16, -math.cos(orbit) * 0.16, 0.70 + 0.30 * loud, 0.62, 0.019),
+        ]
+        for i in range(4):
+            a = orbit + math.pi * 0.25 + i * math.pi * 0.5
+            rr = 0.25 + 0.04 * math.sin(t * 0.13 + i)
+            emitters.append(
+                ParticleEmitter(
+                    0.5 + math.cos(a) * rr,
+                    0.5 + math.sin(a) * rr,
+                    -math.sin(a) * (0.12 + 0.22 * s.mids),
+                    math.cos(a) * (0.12 + 0.22 * s.mids),
+                    0.28 + 0.42 * loud,
+                    (0.15 + i * 0.18 + s.color * 0.08) % 1.0,
+                    0.008,
+                )
+            )
+        return ParticleChoreography(
+            tuple(emitters),
+            3600 + 7600 * loud + 9200 * strike,
+            0.26 + 0.26 * m,
+            0.62,
+            0.965,
+            1.46,
+            "solar",
+            "comet",
+            "binary_star",
+            1.25 + 0.55 * s.bass,
+            1.0,
+            0.92 + 0.35 * s.mids,
+            1.15 + 1.05 * s.bass + 0.60 * drop,
+            0.18,
+        )
+
+    if bank == "event_horizon_drift":
+        emitters = []
+        radius = 0.31 - 0.08 * s.bass + 0.025 * math.sin(t * 0.17)
+        for i in range(8):
+            a = angle * 0.11 + i * math.tau / 8.0
+            inward = -(0.05 + 0.16 * s.bass + 0.26 * drop)
+            tangent = (0.15 + 0.26 * s.mids) * (1.0 if i % 3 else -0.65)
+            emitters.append(
+                ParticleEmitter(
+                    0.5 + math.cos(a) * radius,
+                    0.5 + math.sin(a) * radius,
+                    math.cos(a) * inward - math.sin(a) * tangent,
+                    math.sin(a) * inward + math.cos(a) * tangent,
+                    0.30 + 0.52 * loud + 0.32 * drop,
+                    (0.72 + i * 0.045 + s.color * 0.10) % 1.0,
+                    0.008 + 0.008 * strike,
+                )
+            )
+        return ParticleChoreography(
+            tuple(emitters),
+            3100 + 7200 * loud + 14500 * drop,
+            0.24 + 0.32 * m,
+            0.52,
+            0.969,
+            1.50,
+            "cyber",
+            "shock_ring" if drop > 0.58 else "comet",
+            "event_horizon",
+            1.32 + 0.70 * s.bass + 0.55 * drop,
+            1.0,
+            1.08 + 0.55 * s.mids,
+            1.25 + 1.20 * s.bass + 0.85 * drop,
+            0.08,
+        )
+
+    if bank == "accretion_storm":
+        emitters = []
+        for i in range(8):
+            a = t * 0.10 + i * math.tau / 8.0 + 0.16 * math.sin(t * 0.21 + i * 1.4)
+            rr = 0.12 + 0.20 * ((i % 4) / 3.0) + 0.035 * math.sin(t * 0.16 + i)
+            tangent = 0.22 + 0.42 * s.mids + 0.16 * strike
+            inward = -(0.03 + 0.10 * s.bass + 0.16 * drop)
+            emitters.append(
+                ParticleEmitter(
+                    0.5 + math.cos(a) * rr,
+                    0.5 + math.sin(a) * rr * 0.72,
+                    math.cos(a) * inward - math.sin(a) * tangent,
+                    math.sin(a) * inward + math.cos(a) * tangent,
+                    0.34 + 0.52 * loud + 0.30 * strike,
+                    (0.02 + i * 0.107 + s.color * 0.12) % 1.0,
+                    0.006 + 0.009 * strike,
+                )
+            )
+        return ParticleChoreography(
+            tuple(emitters),
+            5200 + 9200 * loud + 11000 * strike + 12000 * drop,
+            0.42 + 0.48 * m + 0.16 * s.highs,
+            0.58,
+            0.963,
+            1.58,
+            "prismatic",
+            "comet",
+            "event_horizon",
+            1.55 + 0.55 * s.section_energy,
+            1.25 + 0.45 * s.mids,
+            1.35 + 0.55 * s.mids,
+            0.95 + 1.10 * s.bass + 0.75 * drop,
+            0.35 + 0.40 * s.highs,
+        )
+
+    if bank == "supernova_nebula":
+        emitters = []
+        burst = 0.10 + 0.65 * drop + 0.36 * strike
+        for i in range(8):
+            a = i * math.tau / 8.0 + t * 0.035
+            rr = 0.035 + 0.10 * (i % 2) + 0.05 * s.bass
+            radial = burst * (0.34 + 0.12 * (i % 3))
+            emitters.append(
+                ParticleEmitter(
+                    0.5 + math.cos(a) * rr,
+                    0.5 + math.sin(a) * rr,
+                    math.cos(a) * radial,
+                    math.sin(a) * radial,
+                    0.18 + 0.42 * loud + 0.72 * drop,
+                    (0.82 + i * 0.073 + s.color * 0.08) % 1.0,
+                    0.012 + 0.018 * drop,
+                )
+            )
+        return ParticleChoreography(
+            tuple(emitters),
+            700 + 2300 * loud + 15000 * strike + 28000 * drop,
+            0.26 + 0.34 * m + 0.25 * drop,
+            0.88,
+            0.976,
+            1.72,
+            "prismatic",
+            "shock_ring" if drop > 0.35 else "mote",
+            "nebula",
+            1.05 + 0.85 * drop,
+            1.55,
+            0.72,
+            0.20 + 0.55 * s.bass,
+            1.28 + 0.65 * s.mids + 0.45 * drop,
         )
 
     if bank == "lissajous_storm":
