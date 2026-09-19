@@ -67,6 +67,31 @@ def test_feature_payload_preserves_registry_driven_groups():
     assert [param["key"] for param in payload["groups"][0]["params"]] == ["mode", "gain"]
 
 
+def test_feature_payload_preserves_choice_labels():
+    feature = Feature(
+        id="labeled_demo",
+        name="Labeled demo",
+        category="Visual",
+        description="Readable choices",
+        command=(sys.executable, "demo.py"),
+        params=(
+            FeatureParam(
+                "look",
+                "--look",
+                "Look",
+                "choice",
+                "black_sun",
+                ("black_sun",),
+                choice_labels={"black_sun": "Black Sun"},
+            ),
+        ),
+    )
+
+    payload = _feature_payload(feature)
+    look = payload["groups"][0]["params"][0]
+    assert look["choice_labels"] == {"black_sun": "Black Sun"}
+
+
 def test_feature_payload_adds_known_palette_swatches():
     feature = Feature(
         id="palette_demo",

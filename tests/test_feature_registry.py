@@ -24,6 +24,15 @@ def test_registry_loads_project_features():
     assert registry.by_id("spout_diagnostics").platforms == ("windows",)
 
 
+def test_registry_loads_human_readable_choice_labels():
+    registry = load_registry(Path("configs/features.toml"))
+    feature = registry.by_id("shader_scene_lab")
+    preset = next(param for param in feature.params if param.key == "preset")
+
+    assert preset.choice_labels["mercury_temple"] == "Mercury Temple"
+    assert set(preset.choice_labels) == set(preset.choices)
+
+
 def test_build_argv_coerces_python_and_bool_flags():
     feature = Feature(
         id="demo",

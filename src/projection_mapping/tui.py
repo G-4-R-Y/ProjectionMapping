@@ -111,7 +111,9 @@ class ConfigScreen(Screen):
         if param.type == "bool":
             return Checkbox(value=bool(value), id=_control_id(param), classes="param-control")
         if param.type == "choice":
-            options = [(choice, choice) for choice in param.choices]
+            options = [
+                (param.choice_labels.get(choice, choice), choice) for choice in param.choices
+            ]
             return Select(options, value=str(value), id=_control_id(param), classes="param-control")
         return Input(value=str(value), id=_control_id(param), classes="param-control")
 

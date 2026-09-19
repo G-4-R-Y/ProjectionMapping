@@ -7,11 +7,13 @@ import time
 import cv2
 
 from projection_mapping.runtime import FullscreenSink
+from projection_mapping.shader_presets import PRESET_IDS, resolve_shader_preset
 from projection_mapping.shader_scenes import SCENE_IDS, ShaderSceneRenderer
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
+    ap.add_argument("--preset", choices=PRESET_IDS, default="custom")
     ap.add_argument("--scene", choices=sorted(SCENE_IDS), default="event_horizon")
     ap.add_argument("--display", type=int, default=1)
     ap.add_argument("--projector-width", type=int, default=1920)
@@ -22,13 +24,21 @@ def main() -> None:
     ap.add_argument("--intensity", type=float, default=1.0)
     ap.add_argument("--chaos", type=float, default=1.15)
     args = ap.parse_args()
+    scene_id, speed, intensity, chaos = resolve_shader_preset(
+        args.preset,
+        scene=args.scene,
+        speed=args.speed,
+        intensity=args.intensity,
+        chaos=args.chaos,
+    )
 
     renderer = ShaderSceneRenderer(args.render_width, args.render_height)
     print(
-        f"[shader-lab] ModernGL backend={renderer.backend} scene={args.scene} chaos={args.chaos:.2f}",
+        f"[shader-lab] ModernGL backend={renderer.backend} preset={args.preset} "
+        f"scene={scene_id} chaos={chaos:.2f}",
         flush=True,
     )
-    sink = FullscreenSink(window=f"ProjectionMapping-Shader-{args.scene}", display=args.display)
+    sink = FullscreenSink(window=f"ProjectionMapping-Shader-{scene_id}", display=args.display)
     t0 = time.perf_counter()
     report_t = t0
     frames = 0
@@ -36,10 +46,10 @@ def main() -> None:
         while True:
             now = time.perf_counter()
             rgb = renderer.render(
-                args.scene,
-                t=(now - t0) * args.speed,
-                intensity=args.intensity,
-                chaos=args.chaos,
+                scene_id,
+                t=(now - t0) * speed,
+                intensity=intensity,
+                chaos=chaos,
             )
             out = cv2.resize(
                 rgb,
@@ -51,7 +61,7 @@ def main() -> None:
             frames += 1
             if now - report_t >= 2.0:
                 print(
-                    f"[shader-lab] scene={args.scene} chaos={args.chaos:.2f} "
+                    f"[shader-lab] preset={args.preset} scene={scene_id} chaos={chaos:.2f} "
                     f"fps={frames / (now - report_t):.1f} F11=fullscreen ESC=exit",
                     flush=True,
                 )

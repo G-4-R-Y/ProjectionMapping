@@ -98,7 +98,7 @@ browser control deck
 
 The local control server stays alive while each visual runs as an isolated child process. If the projector window has focus, `Esc` exits that visual normally. The browser's **Stop visual** button terminates the complete child tree. Run logs are captured under `~/.projection_mapping/` and streamed incrementally without rereading the whole file.
 
-Known palette controls include an inline color-ramp preview. The Strange Attractor Lab adds six projector-tuned palettes and `comet`, `pulse_train`, and `full` trajectory animation modes, so its internal motion remains visible even when the camera orbit is subtle.
+Known palette controls include an inline color-ramp preview. The Strange Attractor Lab adds six projector-tuned palettes and `comet`, `pulse_train`, and `full` trajectory animation modes, so its internal motion remains visible even when the camera orbit is subtle. **Shader Scene Lab** and **GPU-Mapped Shader Scene** now share 12 readable authored looks—from Mercury Temple and Aurora Silk to Amethyst Cavern, Abyssal Bloom and Prismatic Altar—while **Custom controls** keeps direct scene/speed/intensity/chaos editing available.
 
 For spatial setup, launch **Surface Mapper / Corner Pin**. It maps the built-in animated calibration plate—or an image/video—onto multiple draggable quadrilateral surfaces, applies polygon masks and edge feathering, and autosaves normalized geometry to `calibration_data/surface_map.json`. Press `G` to hide the editor guides for clean output.
 

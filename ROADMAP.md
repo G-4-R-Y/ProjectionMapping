@@ -175,17 +175,19 @@ Implemented:
 - ✅ Polar Math structured-chaos control: analytic cross-harmonic/domain deformation while preserving each equation family's identity
 - ✅ Neon Cathedral rewritten as a moving radial vault with perspective bands, caustics and breathing/oculus motion after the original static-looking version failed the art bar
 - ✅ new structured-chaos shader studies: Wormhole Choir, Plasma Singularity, Vortex Crown, Collapse Flower
+- ✅ four additional authored shader families: Crystal Cavern, Solar Loom, Abyssal Garden, Prism Mirage
+- ✅ 12-look preset vault shared by normal and GPU-mapped playback, with readable labels in both control decks
 - ✅ reusable shader asset manifests: `ritual_geometry`, `singularity_suite`, `holographic_overlays`
 
 Visual/shader direction:
 - ✅ legacy CPU portal branch-cut seam fixed
-- ✅ Shader Scene Lab scenes: Event Horizon, Aurora Void, Liquid Chrome, Neon Cathedral v2, Wormhole Choir, Plasma Singularity, Vortex Crown, Collapse Flower
+- ✅ Shader Scene Lab scenes: Event Horizon, Aurora Void, Liquid Chrome, Neon Cathedral v2, Wormhole Choir, Plasma Singularity, Vortex Crown, Collapse Flower, Crystal Cavern, Solar Loom, Abyssal Garden, Prism Mirage
 - ✅ Event Horizon raw-angle FBM branch cut removed: promoted angular field now uses unit-circle complex harmonics instead of raw `atan()` coordinates
 - ✅ `experiments/21_visual_probe.py` includes an Event Horizon seam-regression metric across the previously visible negative-X discontinuity
 - ✅ Liquid Chrome is the current user-validated in-repo aesthetic benchmark; use it as a quality floor to beat, not a ceiling
 - ✅ saturated emissive / clean-black visual direction documented in `docs/ART_DIRECTION.md`
 - ⬜ projector-test the four new chaos studies and all five revised Polar Math modes; keep/incubate/rewrite based on beauty, motion, color and projection readability
-- ⬜ per-scene art controls + preset vault
+- 🟡 authored preset vault implemented; live per-scene controls, saved user presets and smooth preset morphing remain
 - ⬜ shared GPU particle/feedback engine as a spatial surface layer
 - ⬜ multi-pass HDR bloom / reaction diffusion / fluid-like fields
 - ⬜ SDF/raymarched architectural primitives

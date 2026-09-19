@@ -36,6 +36,11 @@ float hash21(vec2 p) {
     return fract(p.x * p.y);
 }
 
+vec2 hash22(vec2 p){
+    float n=sin(dot(p,vec2(41.0,289.0)));
+    return fract(vec2(262144.0,32768.0)*n);
+}
+
 float noise(vec2 p) {
     vec2 i = floor(p), f = fract(p);
     f = f*f*(3.0-2.0*f);
@@ -322,6 +327,110 @@ vec3 collapseFlower(vec2 p,float t){
     return c;
 }
 
+vec3 crystalCavern(vec2 p,float t){
+    float chaos=clamp(u_chaos,0.0,2.5);
+    vec2 q=rot(.08*sin(t*.11))*p*2.65;
+    vec2 drift=vec2(fbm(q*.72+vec2(t*.025,1.7)),fbm(q*.78+vec2(-2.3,-t*.021)))-.5;
+    q+=drift*(.12+.12*chaos);
+    vec2 cell=floor(q), local=fract(q);
+    float nearest=9.0,second=9.0,identity=0.0;
+    for(int y=-1;y<=1;y++) for(int x=-1;x<=1;x++){
+        vec2 neighbor=vec2(float(x),float(y));
+        vec2 seed=hash22(cell+neighbor);
+        vec2 pulse=.22*sin(t*(.12+.05*seed.x)+TAU*seed+vec2(0.0,1.7));
+        float distanceToSeed=length(neighbor+seed+pulse-local);
+        if(distanceToSeed<nearest){second=nearest;nearest=distanceToSeed;identity=seed.x+seed.y*.7;}
+        else if(distanceToSeed<second) second=distanceToSeed;
+    }
+    float edge=second-nearest;
+    float crystal=exp(-edge*(17.0+5.0*chaos));
+    float core=exp(-edge*58.0);
+    float facets=pow(.5+.5*cos(nearest*20.0-identity*8.0+t*.23),7.0);
+    float vault=exp(-24.0*abs(length(p)-(.54+.055*sin(t*.17))));
+    vec3 cyan=vec3(.02,.82,1.0),violet=vec3(.72,.04,1.0),rose=vec3(1.0,.05,.42);
+    vec3 hue=mix(cyan,violet,.5+.5*sin(identity*9.0+t*.09));
+    hue=mix(hue,rose,.22+.18*sin(identity*17.0));
+    vec3 c=hue*crystal*(.48+.54*facets);
+    c+=vec3(.88,.97,1.0)*core*(.50+.42*facets);
+    c+=mix(violet,cyan,.5+.5*sin(t*.12))*vault*(.14+.30*crystal);
+    c*=.38+.62*(1.0-smoothstep(.08,1.35,length(p)));
+    return c;
+}
+
+vec3 solarLoom(vec2 p,float t){
+    float chaos=clamp(u_chaos,0.0,2.5);
+    vec2 q=p;
+    q+=vec2(.035*sin(t*.13),.025*cos(t*.17));
+    float r=length(q)+1e-4;
+    vec2 d=q/r;
+    vec2 h9=harmonic(d,9),h14=harmonic(d,14),h19=harmonic(d,19);
+    float turbulence=fbm(q*4.0+vec2(t*.035,-t*.027));
+    float coronaRadius=.34+.024*h9.x+.016*h14.y+.025*(turbulence-.5)*chaos;
+    float corona=exp(-38.0*abs(r-coronaRadius));
+    float hot=exp(-105.0*abs(r-coronaRadius));
+    float magneticPhase=10.0/(r+.12)-t*.74+turbulence*2.4;
+    vec2 magnetic=vec2(cos(magneticPhase),sin(magneticPhase));
+    float threads=pow(.5+.5*dot(h19,magnetic),18.0)*exp(-r*1.25);
+    float prominences=pow(.5+.5*dot(h9,vec2(magnetic.x,-magnetic.y)),12.0);
+    prominences*=exp(-20.0*abs(r-(.48+.05*h14.x)));
+    float inner=exp(-r*8.5)*(1.0+.28*sin(t*.83));
+    vec3 c=vec3(.96,.08,.008)*(corona*.82+threads*.42);
+    c+=vec3(1.0,.40,.025)*(corona*.66+prominences*.88);
+    c+=vec3(1.0,.91,.48)*hot*.92+vec3(1.0,.98,.86)*inner*.72;
+    float sparks=pow(hash21(floor((p+1.4)*u_resolution/5.0)),55.0)*exp(-r*.8);
+    c+=vec3(1.0,.47,.08)*sparks*(.15+.30*chaos);
+    return c;
+}
+
+vec3 abyssalGarden(vec2 p,float t){
+    float chaos=clamp(u_chaos,0.0,2.5);
+    vec2 q=p;
+    q.y+=.18+.035*sin(t*.12);
+    vec3 c=vec3(0.0);
+    for(int i=0;i<7;i++){
+        float fi=float(i),seed=fi*1.731;
+        float root=(fi-3.0)*.215;
+        float sway=.055*sin(q.y*(2.4+fi*.17)+t*(.16+.025*fi)+seed);
+        sway+=.024*sin(q.y*7.0-t*.13+seed*2.0)*chaos;
+        float taper=(1.0-smoothstep(-.72,.92,q.y))*smoothstep(-1.08,-.46,q.y);
+        float strand=exp(-abs(q.x-root-sway)*(42.0+fi*2.0))*taper;
+        float nodes=pow(.5+.5*cos(q.y*(13.0+fi*.55)-t*(.36+.025*fi)+seed),16.0);
+        vec3 hue=mix(vec3(.00,.92,.57),vec3(.02,.42,1.0),fi/6.0);
+        hue=mix(hue,vec3(.72,.05,1.0),.18+.12*sin(seed));
+        c+=hue*strand*(.50+.85*nodes);
+        c+=vec3(.80,1.0,.92)*strand*pow(nodes,3.0)*.52;
+    }
+    float caustic=pow(ridged(p*4.8+vec2(t*.025,-t*.038)),10.0);
+    caustic*=(1.0-smoothstep(-.55,.75,p.y))*(.12+.20*chaos);
+    c+=mix(vec3(.00,.42,.34),vec3(.05,.22,.85),.5+.5*p.x)*caustic;
+    float spores=pow(hash21(floor((p+vec2(1.7,t*.025))*u_resolution/7.0)),62.0);
+    c+=vec3(.42,1.0,.76)*spores*.72;
+    return c;
+}
+
+vec3 prismMirage(vec2 p,float t){
+    float chaos=clamp(u_chaos,0.0,2.5);
+    vec2 q=rot(t*.035)*p;
+    q.x=abs(q.x);
+    q=rot(-.52)*q;
+    q.x=abs(q.x);
+    q=rot(.31+.06*sin(t*.12))*q;
+    vec2 warp=vec2(fbm(q*2.2+vec2(t*.025,1.0)),fbm(q*2.5-vec2(2.0,t*.021)))-.5;
+    q+=warp*(.04+.08*chaos);
+    vec2 tiles=abs(fract(q*2.35)-.5);
+    float diagonal=abs(tiles.x+tiles.y-.46);
+    float facets=exp(-diagonal*(42.0+8.0*chaos));
+    float blades=exp(-55.0*abs(tiles.x-tiles.y));
+    float rings=exp(-42.0*abs(length(p)-(.31+.13*sin(t*.18))));
+    float shimmer=pow(ridged(q*6.0+vec2(t*.04,-t*.031)),8.0);
+    vec3 c=pal(q.x*.24+q.y*.17+t*.018,vec3(.03,.28,.61))*facets*(.58+.48*shimmer);
+    c+=pal(length(q)*.32-t*.014,vec3(.62,.07,.18))*blades*.66;
+    c+=vec3(.92,.98,1.0)*facets*blades*.74;
+    c+=vec3(.28,.08,1.0)*rings*(.18+.25*facets);
+    c*=.40+.60*(1.0-smoothstep(.12,1.25,length(p)));
+    return c;
+}
+
 void main() {
     vec2 p=(gl_FragCoord.xy*2.0-u_resolution)/u_resolution.y;
     float t=u_time;
@@ -333,7 +442,11 @@ void main() {
     else if(u_scene==4) c=wormholeChoir(p,t);
     else if(u_scene==5) c=plasmaSingularity(p,t);
     else if(u_scene==6) c=vortexCrown(p,t);
-    else c=collapseFlower(p,t);
+    else if(u_scene==7) c=collapseFlower(p,t);
+    else if(u_scene==8) c=crystalCavern(p,t);
+    else if(u_scene==9) c=solarLoom(p,t);
+    else if(u_scene==10) c=abyssalGarden(p,t);
+    else c=prismMirage(p,t);
 
     float vignette=1.0-smoothstep(.20,1.47,length(p));
     c*=mix(.70,1.0,vignette);
@@ -356,6 +469,10 @@ SCENE_IDS = {
     "plasma_singularity": 5,
     "vortex_crown": 6,
     "collapse_flower": 7,
+    "crystal_cavern": 8,
+    "solar_loom": 9,
+    "abyssal_garden": 10,
+    "prism_mirage": 11,
 }
 
 

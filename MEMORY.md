@@ -95,6 +95,15 @@ compilation/offscreen composition is CI-tested on available OpenGL; the native w
 selection, VSync behavior and projector result still require physical-machine validation. Keep the
 CPU Surface Mapper as the editor/reference until GPU-side live editing is implemented.
 
+### Shader preset vault and scene diversity
+Shader Scene Lab now contains 12 GPU scene families. Crystal Cavern, Solar Loom, Abyssal Garden and
+Prism Mirage extend the earlier radial/plasma set with faceted, filament, bioluminescent-organic and
+folded spectral architecture. A shared 12-look authored preset vault drives both normal Shader Scene
+Lab and GPU-Mapped Shader Scene; each look fixes scene, speed, intensity and chaos, while `custom`
+preserves direct controls. Registry choice labels keep human-readable names in both the primary
+browser deck and Textual fallback without changing stable CLI IDs. All looks compile and render in
+the software OpenGL probe and show temporal motion; projector beauty/readability remains unvalidated.
+
 ## 5. Rejected promoted directions / lessons — do not repeat blindly
 
 These are not bans on experimentation. They describe implementations that failed as promoted/default experiences. A new experiment may revisit an underlying idea if it changes the failure mechanism and documents why.

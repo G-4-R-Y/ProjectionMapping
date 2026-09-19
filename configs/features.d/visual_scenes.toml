@@ -63,10 +63,20 @@ max = 2.0
 id = "shader_scene_lab"
 name = "Shader Scene Lab / ModernGL"
 category = "Visual Madness"
-description = "GPU fragment-shader scene research with seam-safe structured chaos, vivid emissive color and continuous domains. Liquid Chrome is the current aesthetic benchmark; Event Horizon is atan-free and the new singularity family is intentionally more chaotic. F11 toggles fullscreen."
+description = "Twelve GPU shader worlds spanning liquid metal, singularities, architecture, crystal, solar, bioluminescent and prismatic compositions. Includes one-click authored performance presets. F11 toggles fullscreen."
 command = ["python", "experiments/14_shader_scene_lab.py"]
 fullscreen = true
 requires_modules = ["moderngl"]
+
+[[feature.param]]
+key = "preset"
+flag = "--preset"
+label = "Authored look"
+type = "choice"
+default = "mercury_temple"
+choices = ["custom", "mercury_temple", "black_sun_corona", "aurora_silk", "neon_reliquary", "choir_of_depth", "plasma_orchid", "vortex_coronation", "collapse_ritual", "amethyst_cavern", "solar_tapestry", "abyssal_bloom", "prismatic_altar"]
+choice_labels = { custom = "Custom controls", mercury_temple = "Mercury Temple", black_sun_corona = "Black Sun Corona", aurora_silk = "Aurora Silk", neon_reliquary = "Neon Reliquary", choir_of_depth = "Choir of Depth", plasma_orchid = "Plasma Orchid", vortex_coronation = "Vortex Coronation", collapse_ritual = "Collapse Ritual", amethyst_cavern = "Amethyst Cavern", solar_tapestry = "Solar Tapestry", abyssal_bloom = "Abyssal Bloom", prismatic_altar = "Prismatic Altar" }
+help = "An authored look sets scene, speed, intensity and chaos together. Choose custom to use the individual controls below."
 
 [[feature.param]]
 key = "scene"
@@ -74,7 +84,8 @@ flag = "--scene"
 label = "Shader scene"
 type = "choice"
 default = "liquid_chrome"
-choices = ["event_horizon", "aurora_void", "liquid_chrome", "neon_cathedral", "wormhole_choir", "plasma_singularity", "vortex_crown", "collapse_flower"]
+choices = ["event_horizon", "aurora_void", "liquid_chrome", "neon_cathedral", "wormhole_choir", "plasma_singularity", "vortex_crown", "collapse_flower", "crystal_cavern", "solar_loom", "abyssal_garden", "prism_mirage"]
+help = "Used when Authored look is custom."
 
 [[feature.param]]
 key = "chaos"
@@ -84,6 +95,7 @@ type = "float"
 default = 1.15
 min = 0.0
 max = 2.5
+help = "Used when Authored look is custom."
 
 [[feature.param]]
 key = "display"
@@ -138,6 +150,7 @@ type = "float"
 default = 1.0
 min = 0.05
 max = 5.0
+help = "Used when Authored look is custom."
 
 [[feature.param]]
 key = "intensity"
@@ -147,6 +160,7 @@ type = "float"
 default = 1.0
 min = 0.0
 max = 2.5
+help = "Used when Authored look is custom."
 
 [[feature]]
 id = "polar_math_lab"

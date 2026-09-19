@@ -105,6 +105,16 @@ fullscreen = true
 requires_modules = ["moderngl", "glfw"]
 
 [[feature.param]]
+key = "preset"
+flag = "--preset"
+label = "Authored look"
+type = "choice"
+default = "mercury_temple"
+choices = ["custom", "mercury_temple", "black_sun_corona", "aurora_silk", "neon_reliquary", "choir_of_depth", "plasma_orchid", "vortex_coronation", "collapse_ritual", "amethyst_cavern", "solar_tapestry", "abyssal_bloom", "prismatic_altar"]
+choice_labels = { custom = "Custom controls", mercury_temple = "Mercury Temple", black_sun_corona = "Black Sun Corona", aurora_silk = "Aurora Silk", neon_reliquary = "Neon Reliquary", choir_of_depth = "Choir of Depth", plasma_orchid = "Plasma Orchid", vortex_coronation = "Vortex Coronation", collapse_ritual = "Collapse Ritual", amethyst_cavern = "Amethyst Cavern", solar_tapestry = "Solar Tapestry", abyssal_bloom = "Abyssal Bloom", prismatic_altar = "Prismatic Altar" }
+help = "Sets scene, speed, intensity and chaos together. Choose custom to use individual controls."
+
+[[feature.param]]
 key = "profile"
 flag = "--profile"
 label = "Mapping profile"
@@ -118,7 +128,8 @@ flag = "--scene"
 label = "Shader scene"
 type = "choice"
 default = "liquid_chrome"
-choices = ["event_horizon", "aurora_void", "liquid_chrome", "neon_cathedral", "wormhole_choir", "plasma_singularity", "vortex_crown", "collapse_flower"]
+choices = ["event_horizon", "aurora_void", "liquid_chrome", "neon_cathedral", "wormhole_choir", "plasma_singularity", "vortex_crown", "collapse_flower", "crystal_cavern", "solar_loom", "abyssal_garden", "prism_mirage"]
+help = "Used when Authored look is custom."
 
 [[feature.param]]
 key = "chaos"

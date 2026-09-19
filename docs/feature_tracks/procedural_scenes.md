@@ -22,6 +22,11 @@ A screenshot also showed that the original `event_horizon` still had a hard hori
 
 The scene library was expanded with four deliberately unstable/chaotic studies: `wormhole_choir`, `plasma_singularity`, `vortex_crown`, and `collapse_flower`. All Shader Scene Lab scenes now expose a `chaos` control that changes domain warping/harmonic interference rather than merely raising brightness.
 
+### 2026-09-19 — scene diversity / authored preset vault
+Four visually distinct GPU families were added: faceted `crystal_cavern`, magnetic-filament `solar_loom`, bioluminescent-organic `abyssal_garden`, and folded spectral `prism_mirage`. The normal and GPU-mapped launch paths now share 12 authored looks. A look selects scene, speed, intensity and chaos as a coherent composition; `custom` exposes the individual controls. Human-readable labels are rendered by both control decks while stable IDs remain in profiles and command lines.
+
+All 12 looks compile and render under the software OpenGL probe, and two-time samples confirm nonzero motion. This is software validation only; promotion on the physical projector still depends on contrast, readability and one-minute motion review.
+
 ## Current state
 
 ### Legacy CPU fallback
@@ -41,6 +46,10 @@ The scene library was expanded with four deliberately unstable/chaotic studies: 
 - `plasma_singularity` — nested domain warps and high-contrast plasma web/shell fields.
 - `vortex_crown` — five moving attractors with local radial harmonic crowns.
 - `collapse_flower` — nested harmonic petals/fracture field collapsing into a hot core.
+- `crystal_cavern` — animated Voronoi facets with cyan/amethyst internal light and a breathing vault.
+- `solar_loom` — magnetic crimson-gold filaments woven around a compact white solar core.
+- `abyssal_garden` — swaying emerald/cobalt bioluminescent strands, travelling nodes and rising spores.
+- `prism_mirage` — mirrored/folded spectral architecture, crystalline blades and restrained radial motion.
 
 ### Polar Math Lab — preferred mathematical-art branch
 Five dedicated analytic radial families:
@@ -57,7 +66,7 @@ Palettes: spectral, cyber, solar, bio, ultraviolet. The renderer uses saturated 
 ## Quality ladder
 - **Prototype:** CPU procedural images. **Legacy/fallback.**
 - **Usable:** GPU fragment scenes with continuous domains and stable fullscreen output.
-- **Polished:** visually curated Polar Math / structured-chaos / architecture scenes, per-scene controls, vivid color, clean black floor, smooth transitions, real multiscale bloom and saved presets. **Current implementation is moving here; projector art validation remains the gate.**
+- **Polished:** visually curated Polar Math / structured-chaos / architecture scenes, per-scene controls, vivid color, clean black floor, smooth transitions, real multiscale bloom and saved presets. **The authored vault is implemented; projector art validation, live controls and transitions remain the gate.**
 - **Advanced:** ping-pong feedback, reaction diffusion, GPU particles, SDF/raymarched architecture, depth/parallax, audio/performer modulation, direct GPU output.
 - **Ridiculous:** calibrated surface-aware shader worlds that react to performers/audio and accept sparse neural material/keyframe injections while remaining display-rate and temporally exact.
 
@@ -79,12 +88,12 @@ Palettes: spectral, cyber, solar, bio, ultraviolet. The renderer uses saturated 
 - `chaos` should alter structure/topology/flow. A brightness knob relabeled “chaos” does not count.
 
 ## Validation
-- `experiments/21_visual_probe.py` creates a real OpenGL context and renders every promoted Shader Scene Lab scene, all five Polar Math modes and particle materials in CI.
+- `experiments/21_visual_probe.py` creates a real OpenGL context and renders all 12 Shader Scene Lab scenes, all five Polar Math modes and particle materials in CI.
 - It also reports `event_horizon seam_mean/seam_p95` across the old branch-cut location; this is a correctness regression metric, **not** an aesthetic score.
 - Mesa/llvmpipe passing does not replace RTX 4050/projector validation.
 
 ## Next queue
-1. Hardware-test all eight Shader Scene Lab modes and five Polar Math modes on the projector; aggressively art-pass/rewrite weak variants rather than deleting technically promising ones too early.
+1. Hardware-test all 12 Shader Scene Lab modes and five Polar Math modes on the projector; aggressively art-pass/rewrite weak variants rather than deleting technically promising ones too early.
 2. Re-test Event Horizon specifically at the exact camera/screen framing that exposed the horizontal seam; preserve screenshot evidence if any discontinuity remains.
 3. Compare every mathematical mode against the user's uploaded radial shader seed on color vividness, contour clarity, motion elegance, negative space and “designed instrument” feel.
 4. Add per-mode controls beyond chaos: symmetry/order, density, radial scale, hue velocity, contour width, camera drift, bloom.
@@ -100,16 +109,16 @@ Palettes: spectral, cyber, solar, bio, ultraviolet. The renderer uses saturated 
 GPU scene frame time, readback time, projector FPS/p95, temporal continuity, branch-cut seam mean/p95, aliasing, black-level/contrast, highlight saturation, scene transition smoothness, parameter reproducibility and subjective projector/recording quality.
 
 ## Preset vault
-Populate/promote only after hardware viewing. Initial candidates:
-- Liquid Chrome / chaos 1.0–1.4 — current benchmark candidate.
-- Wormhole Choir / chaos 1.1–1.6.
-- Plasma Singularity / chaos 1.0–1.5.
-- Vortex Crown / chaos 1.0–1.5.
-- Collapse Flower / chaos 0.9–1.4.
+Software-validated authored candidates shared by Shader Scene Lab and GPU-Mapped Shader Scene:
+- Mercury Temple, Black Sun Corona, Aurora Silk, Neon Reliquary.
+- Choir of Depth, Plasma Orchid, Vortex Coronation, Collapse Ritual.
+- Amethyst Cavern, Solar Tapestry, Abyssal Bloom, Prismatic Altar.
+
+The following Polar Math candidates remain to be encoded as presets:
 - Rose Lattice / Spectral / chaos 1.0–1.4.
 - Hypotrochoid Engine / Cyber / chaos 0.8–1.3.
 - Log Spiral Interference / Ultraviolet / chaos 1.0–1.5.
 - Phyllotaxis Reactor / Bio / chaos 0.8–1.3.
 - Bessel Wave Chamber / Solar or Spectral / chaos 0.8–1.3.
 
-A preset is not promoted until it is worth filming.
+No preset is projector-promoted until it is worth filming.

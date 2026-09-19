@@ -145,6 +145,7 @@ class FeatureParam:
     max: float | int | None = None
     help: str = ""
     group: str = ""
+    choice_labels: dict[str, str] = field(default_factory=dict)
 
     @property
     def ui_group(self) -> str:
@@ -335,6 +336,7 @@ def load_registry(path: str | Path | None = None) -> FeatureRegistry:
                 max=p.get("max"),
                 help=p.get("help", ""),
                 group=p.get("group", ""),
+                choice_labels=dict(p.get("choice_labels", {})),
             )
             for p in raw.get("param", [])
         )
