@@ -8,6 +8,12 @@ A small user-supplied ModernGL shader playground produced a more appealing resul
 
 The implication is important: **do not confuse shader complexity with artistic quality**. A 20-line equation with good color, hierarchy and motion can beat a large procedural system with weak composition.
 
+Current user feedback places the liquid shader family above the other promoted scene families. The
+useful qualities are material coherence, flowing caustic structure, apparent depth, luminous metal
+and continuous deformation—not the `liquid_chrome` identifier itself. Use that family as the active
+quality floor and explore liquid glass, oil-film, molten metal, mercury, refractive plasma and
+surface-tension variants before reaching for unrelated complexity.
+
 But the inverse mistake is also bad: **do not kill technically interesting experiments just because the first rendering is ugly.** Research sketches are allowed to look rough if they expose a useful mathematical, rendering, tracking, spatial, interaction, or neural idea. Promising prototypes should earn artistic iteration; only promoted/default visuals are held to the finished quality bar below.
 
 ## Prototype -> incubation -> promotion

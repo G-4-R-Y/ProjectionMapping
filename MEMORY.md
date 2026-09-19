@@ -103,6 +103,10 @@ Lab and GPU-Mapped Shader Scene; each look fixes scene, speed, intensity and cha
 preserves direct controls. Registry choice labels keep human-readable names in both the primary
 browser deck and Textual fallback without changing stable CLI IDs. All looks compile and render in
 the software OpenGL probe and show temporal motion; projector beauty/readability remains unvalidated.
+User feedback after the diversity pass still ranks the liquid shaders as the strongest visual family.
+Treat this as a broader material preference—not loyalty to only one preset: prioritize evolving
+fluid metallic surfaces, caustic folds, refractive/emissive flow and liquid motion hierarchy. New
+families should either learn from that material depth and coherence or clearly outperform it.
 
 ## 5. Rejected promoted directions / lessons — do not repeat blindly
 
@@ -230,8 +234,11 @@ Typical development setup:
 git pull
 source .venv/bin/activate
 python -m pip install -e '.[ui,vision,audio,graphics,performer,assets3d,interop,dev]'
-python -m projection_mapping.tui
+projection-ui
 ```
+
+Equivalent browser-deck module command: `python -m projection_mapping.web_ui`. Use
+`projection-tui` only as the Textual fallback.
 
 Graphics probe:
 

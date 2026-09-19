@@ -185,6 +185,7 @@ Visual/shader direction:
 - ✅ Event Horizon raw-angle FBM branch cut removed: promoted angular field now uses unit-circle complex harmonics instead of raw `atan()` coordinates
 - ✅ `experiments/21_visual_probe.py` includes an Event Horizon seam-regression metric across the previously visible negative-X discontinuity
 - ✅ Liquid Chrome is the current user-validated in-repo aesthetic benchmark; use it as a quality floor to beat, not a ceiling
+- 🟡 expand the user-preferred liquid material family into mercury, liquid glass, oil-film, molten-metal and refractive-plasma studies, then projector-curate the winners
 - ✅ saturated emissive / clean-black visual direction documented in `docs/ART_DIRECTION.md`
 - ⬜ projector-test the four new chaos studies and all five revised Polar Math modes; keep/incubate/rewrite based on beauty, motion, color and projection readability
 - 🟡 authored preset vault implemented; live per-scene controls, saved user presets and smooth preset morphing remain

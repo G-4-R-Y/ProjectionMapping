@@ -69,16 +69,24 @@ python3.12 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -e '.[ui,vision,dev]'
-python -m projection_mapping.tui
+projection-ui
 ```
 
 If your distro does not expose `python3.12` directly, use pyenv/uv/conda to create a 3.12 environment, then use `python` inside it.
 
-After installation, the shorter entry point opens the browser control deck:
+### Browser control deck — primary UI
 
-```text
+The primary operator interface is the responsive browser control deck implemented in
+[`src/projection_mapping/web_ui.py`](src/projection_mapping/web_ui.py). Start it with either command:
+
+```bash
 projection-ui
+# Equivalent module form:
+python -m projection_mapping.web_ui
 ```
+
+It opens `http://127.0.0.1:8765/` automatically and stays alive while visual processes launch and
+exit. If the browser does not open automatically, visit that address directly.
 
 The older Textual interface remains available as a lightweight fallback with
 `projection-tui` or `python -m projection_mapping.tui`.
@@ -98,7 +106,7 @@ browser control deck
 
 The local control server stays alive while each visual runs as an isolated child process. If the projector window has focus, `Esc` exits that visual normally. The browser's **Stop visual** button terminates the complete child tree. Run logs are captured under `~/.projection_mapping/` and streamed incrementally without rereading the whole file.
 
-Known palette controls include an inline color-ramp preview. The Strange Attractor Lab adds six projector-tuned palettes and `comet`, `pulse_train`, and `full` trajectory animation modes, so its internal motion remains visible even when the camera orbit is subtle. **Shader Scene Lab** and **GPU-Mapped Shader Scene** now share 12 readable authored looks—from Mercury Temple and Aurora Silk to Amethyst Cavern, Abyssal Bloom and Prismatic Altar—while **Custom controls** keeps direct scene/speed/intensity/chaos editing available.
+Known palette controls include an inline color-ramp preview. The Strange Attractor Lab adds six projector-tuned palettes and `comet`, `pulse_train`, and `full` trajectory animation modes, so its internal motion remains visible even when the camera orbit is subtle. **Shader Scene Lab** and **GPU-Mapped Shader Scene** now share 12 readable authored looks—from Mercury Temple and Aurora Silk to Amethyst Cavern, Abyssal Bloom and Prismatic Altar—while **Custom controls** keeps direct scene/speed/intensity/chaos editing available. Liquid/caustic materials remain the current aesthetic benchmark and the direction to beat with future variants.
 
 For spatial setup, launch **Surface Mapper / Corner Pin**. It maps the built-in animated calibration plate—or an image/video—onto multiple draggable quadrilateral surfaces, applies polygon masks and edge feathering, and autosaves normalized geometry to `calibration_data/surface_map.json`. Press `G` to hide the editor guides for clean output.
 

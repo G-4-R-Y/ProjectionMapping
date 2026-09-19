@@ -27,6 +27,13 @@ Four visually distinct GPU families were added: faceted `crystal_cavern`, magnet
 
 All 12 looks compile and render under the software OpenGL probe, and two-time samples confirm nonzero motion. This is software validation only; promotion on the physical projector still depends on contrast, readability and one-minute motion review.
 
+### 2026-09-19 — liquid-family preference reaffirmed
+After reviewing the broader scene/preset range, user feedback still places the liquid shaders first.
+The next art branch should therefore expand the winning material language—coherent caustic flow,
+liquid-metal depth, refraction, surface tension and controlled emissive highlights—rather than
+assuming diversity alone raises quality. Liquid Chrome remains the current floor to beat, not a
+finished ceiling or a reason to make every scene visually identical.
+
 ## Current state
 
 ### Legacy CPU fallback
@@ -93,17 +100,18 @@ Palettes: spectral, cyber, solar, bio, ultraviolet. The renderer uses saturated 
 - Mesa/llvmpipe passing does not replace RTX 4050/projector validation.
 
 ## Next queue
-1. Hardware-test all 12 Shader Scene Lab modes and five Polar Math modes on the projector; aggressively art-pass/rewrite weak variants rather than deleting technically promising ones too early.
-2. Re-test Event Horizon specifically at the exact camera/screen framing that exposed the horizontal seam; preserve screenshot evidence if any discontinuity remains.
-3. Compare every mathematical mode against the user's uploaded radial shader seed on color vividness, contour clarity, motion elegance, negative space and “designed instrument” feel.
-4. Add per-mode controls beyond chaos: symmetry/order, density, radial scale, hue velocity, contour width, camera drift, bloom.
-5. Add smooth morphing between equation families / singularity studies without a hard reset where mathematically sensible.
-6. Add real HDR multiscale bloom/downsample chain and optional temporal accumulation.
-7. Add ping-pong feedback / flow-advection mathematical fields.
-8. Add high-quality SDF primitives shared with Performer FX: glyphs, runes, HUD arcs, portals and architectural motifs.
-9. Route `MusicalSignals` and performer state into selected structural uniforms; Song Studio already drives backdrop chaos/intensity and should remain the integration reference.
-10. Add calibrated projector-coordinate masks so walls/ceiling/doors can receive distinct fields.
-11. Remove CPU readback with GL-native display/shared texture.
+1. Build a liquid-material study set spanning mercury, liquid glass, oil-film, molten metal and refractive plasma; preserve coherent flow and black negative space rather than producing generic noise.
+2. Hardware-test all 12 Shader Scene Lab modes and five Polar Math modes on the projector; aggressively art-pass/rewrite weak variants rather than deleting technically promising ones too early.
+3. Re-test Event Horizon specifically at the exact camera/screen framing that exposed the horizontal seam; preserve screenshot evidence if any discontinuity remains.
+4. Compare every mathematical mode against the user's uploaded radial shader seed on color vividness, contour clarity, motion elegance, negative space and “designed instrument” feel.
+5. Add per-mode controls beyond chaos: symmetry/order, density, radial scale, hue velocity, contour width, camera drift, bloom.
+6. Add smooth morphing between equation families / singularity studies without a hard reset where mathematically sensible.
+7. Add real HDR multiscale bloom/downsample chain and optional temporal accumulation.
+8. Add ping-pong feedback / flow-advection mathematical fields.
+9. Add high-quality SDF primitives shared with Performer FX: glyphs, runes, HUD arcs, portals and architectural motifs.
+10. Route `MusicalSignals` and performer state into selected structural uniforms; Song Studio already drives backdrop chaos/intensity and should remain the integration reference.
+11. Add calibrated projector-coordinate masks so walls/ceiling/doors can receive distinct fields.
+12. Remove CPU readback with GL-native display/shared texture.
 
 ## Metrics
 GPU scene frame time, readback time, projector FPS/p95, temporal continuity, branch-cut seam mean/p95, aliasing, black-level/contrast, highlight saturation, scene transition smoothness, parameter reproducibility and subjective projector/recording quality.
