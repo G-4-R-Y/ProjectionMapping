@@ -21,7 +21,9 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-vision = ["opencv-python>=4.9,<5"]
+# OpenCV 4.12+ switched Python 3.9+ wheels to NumPy 2.x. The runtime deliberately
+# stays on NumPy 1.26 for now, so keep vision on the last compatible wheel line.
+vision = ["opencv-python>=4.9,<4.12"]
 ml = ["torch>=2.2", "torchvision>=0.17"]
 ui = ["textual>=0.70"]
 audio = ["SoundCard>=0.4.6"]
