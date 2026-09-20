@@ -142,10 +142,10 @@ vec2 field(vec2 p, float t) {
         // Circuit field: stylized curl flow quantized toward orthogonal data-lane motion.
         vec2 f=base;
         vec2 cardinal=abs(f.x)>abs(f.y)?vec2(sign(f.x),0.0):vec2(0.0,sign(f.y));
-        float lane=.72+.28*sin((p.x*18.0+p.y*14.0)*TAU+t*2.2);
+        float lane=.72+.28*sin((p.x*18.0+p.y*14.0)*6.2831853+t*2.2);
         vec2 gridPull=vec2(
-            sin((p.y-.5)*TAU*12.0+t*.31),
-            cos((p.x-.5)*TAU*12.0-t*.27)
+            sin((p.y-.5)*6.2831853*12.0+t*.31),
+            cos((p.x-.5)*6.2831853*12.0-t*.27)
         )*.18;
         return safeNorm(mix(f,cardinal,.82)+gridPull)*lane;
     }
@@ -552,7 +552,6 @@ class GPUParticleField:
         pp["u_resolution"].value=(float(self.width),float(self.height))
         pp["u_material"].value=self.material
         pp["u_palette"].value=self.palette
-        pp["u_material"].value=self.material
         pp["u_strike"].value=float(np.clip(strike,0.0,1.0))
         self.ctx.enable(m.BLEND)
         self.ctx.blend_func=(m.ONE,m.ONE)
