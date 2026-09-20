@@ -37,7 +37,7 @@ key = "palette"
 flag = "--palette"
 label = "Palette"
 type = "choice"
-default = "cyber"
+default = "cyan_magenta"
 choices = ["cyber", "cyan_magenta", "ultraviolet", "deep_ocean", "sunset_neon", "ion", "acid", "ember", "ice"]
 
 [[feature.param]]
