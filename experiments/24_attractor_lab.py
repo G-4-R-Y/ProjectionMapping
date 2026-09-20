@@ -18,7 +18,7 @@ from projection_mapping.runtime import FullscreenSink
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", choices=ATTRACTOR_MODES, default="lorenz")
-    ap.add_argument("--palette", choices=ATTRACTOR_PALETTES, default="spectral")
+    ap.add_argument("--palette", choices=ATTRACTOR_PALETTES, default="cyan_magenta")
     ap.add_argument("--points", type=int, default=50000)
     ap.add_argument("--display", type=int, default=1)
     ap.add_argument("--render-width", type=int, default=960)
