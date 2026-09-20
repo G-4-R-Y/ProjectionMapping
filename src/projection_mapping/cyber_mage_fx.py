@@ -11,6 +11,7 @@ from .spell_state import SpellState
 
 
 PALETTES: dict[str, tuple[tuple[int, int, int], tuple[int, int, int], tuple[int, int, int]]] = {
+    "cyan_magenta": ((0, 245, 255), (255, 5, 205), (235, 250, 255)),
     "arcane": ((45, 220, 255), (245, 60, 255), (180, 255, 255)),
     "solar": ((0, 150, 255), (0, 40, 255), (180, 245, 255)),
     "void": ((255, 80, 190), (150, 20, 255), (255, 210, 245)),
@@ -29,14 +30,14 @@ class CyberMageRenderer:
         self,
         width: int,
         height: int,
-        palette: str = "arcane",
+        palette: str = "cyan_magenta",
         complexity: float = 0.75,
         trail_length: int = 28,
         feedback: float = 0.90,
     ) -> None:
         self.width = int(width)
         self.height = int(height)
-        self.palette_name = palette if palette in PALETTES else "arcane"
+        self.palette_name = palette if palette in PALETTES else "cyan_magenta"
         self.complexity = float(np.clip(complexity, 0.0, 1.0))
         self.feedback_decay = float(np.clip(feedback, 0.0, 0.985))
         self.feedback = np.zeros((self.height, self.width, 3), dtype=np.float32)
