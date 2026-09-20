@@ -104,7 +104,7 @@ def main() -> None:
     ap.add_argument("--gravity", type=float, default=1.0)
     ap.add_argument("--nebula-mix", type=float, default=1.0)
     ap.add_argument("--backdrop", choices=_BACKDROP_CHOICES, default="none")
-    ap.add_argument("--backdrop-palette", choices=POLAR_PALETTES, default="spectral")
+    ap.add_argument("--backdrop-palette", choices=POLAR_PALETTES, default="cyan_magenta")
     ap.add_argument("--math-palette", choices=MATH_PALETTES, default="spectral")
     ap.add_argument("--backdrop-intensity", type=float, default=0.28)
     ap.add_argument("--backdrop-chaos", type=float, default=1.20)
