@@ -38,7 +38,7 @@ flag = "--palette"
 label = "Palette"
 type = "choice"
 default = "cyber"
-choices = ["cyber", "cyan_magenta", "ultraviolet", "toxic_pink", "deep_ocean", "sunset_neon", "ion", "acid", "ember", "ice"]
+choices = ["cyber", "cyan_magenta", "ultraviolet", "deep_ocean", "sunset_neon", "ion", "acid", "ember", "ice"]
 
 [[feature.param]]
 key = "track_scope"
