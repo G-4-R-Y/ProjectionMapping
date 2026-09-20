@@ -60,7 +60,7 @@ vec3 cosinePalette(float t,vec3 a,vec3 b,vec3 c,vec3 d){
     return a+b*cos(TAU*(c*t+d));
 }
 vec3 palette(float t){
-    if(u_palette==0) return vec3(.5+.5*cos(TAU*(t+.50)), .5+.5*cos(TAU*(t+.00)), .5+.5*cos(TAU*(t+.50)));
+    if(u_palette==0) return mix(vec3(.00,.96,1.00),vec3(1.00,.02,.78),.5+.5*cos(TAU*t));
     t=fract(t);
     if(u_palette==2) return cosinePalette(t,vec3(.50),vec3(.50),vec3(1.0,.82,.62),vec3(.56,.10,.02));
     if(u_palette==3) return cosinePalette(t,vec3(.55,.32,.16),vec3(.48,.36,.20),vec3(1.0,.78,.55),vec3(.02,.05,.12));
