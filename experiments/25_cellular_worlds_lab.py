@@ -21,7 +21,7 @@ from projection_mapping.runtime import FullscreenSink
 def main() -> None:
     ap=argparse.ArgumentParser()
     ap.add_argument("--mode",choices=CELLULAR_MODES,default="cyclic_8")
-    ap.add_argument("--palette",choices=CELLULAR_PALETTES,default="electric")
+    ap.add_argument("--palette",choices=CELLULAR_PALETTES,default="cyan_magenta")
     ap.add_argument("--display",type=int,default=1)
     ap.add_argument("--render-width",type=int,default=512)
     ap.add_argument("--render-height",type=int,default=288)
