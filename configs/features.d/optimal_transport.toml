@@ -21,8 +21,8 @@ key = "palette"
 flag = "--palette"
 label = "Palette"
 type = "choice"
-default = "spectral"
-choices = ["spectral", "electric", "solar", "bio", "ultraviolet", "icefire"]
+default = "cyan_magenta"
+choices = ["cyan_magenta", "spectral", "electric", "solar", "bio", "ultraviolet", "icefire"]
 group = "Design Customization"
 
 [[feature.param]]

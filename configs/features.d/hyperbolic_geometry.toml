@@ -21,7 +21,7 @@ flag = "--palette"
 label = "Palette"
 type = "choice"
 default = "ultraviolet"
-choices = ["spectral", "electric", "solar", "bio", "ultraviolet", "icefire"]
+choices = ["cyan_magenta", "spectral", "electric", "solar", "bio", "ultraviolet", "icefire"]
 
 [[feature.param]]
 key = "chaos"

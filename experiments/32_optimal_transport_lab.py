@@ -16,7 +16,7 @@ from projection_mapping.runtime import FullscreenSink
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", choices=TRANSPORT_MODES, default="rose_to_lissajous")
-    ap.add_argument("--palette", choices=TRANSPORT_PALETTES, default="spectral")
+    ap.add_argument("--palette", choices=TRANSPORT_PALETTES, default="cyan_magenta")
     ap.add_argument("--points", type=int, default=384)
     ap.add_argument("--epsilon", type=float, default=0.08)
     ap.add_argument("--point-size", type=float, default=7.0)

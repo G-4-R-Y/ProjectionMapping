@@ -16,7 +16,7 @@ from projection_mapping.runtime import FullscreenSink
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", choices=GEOMETRY_MODES, default="voronoi_flow")
-    ap.add_argument("--palette", choices=GEOMETRY_PALETTES, default="spectral")
+    ap.add_argument("--palette", choices=GEOMETRY_PALETTES, default="cyan_magenta")
     ap.add_argument("--site-count", type=int, default=18)
     ap.add_argument("--scale", type=float, default=1.0)
     ap.add_argument("--relax-strength", type=float, default=0.52)

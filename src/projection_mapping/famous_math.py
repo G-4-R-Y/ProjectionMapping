@@ -16,7 +16,7 @@ MATH_MODES = (
     "complex_domain",
 )
 
-MATH_PALETTES = ("spectral", "electric", "solar", "bio", "ultraviolet", "icefire")
+MATH_PALETTES = ("cyan_magenta", "spectral", "electric", "solar", "bio", "ultraviolet", "icefire")
 
 _VERTEX = r"""
 #version 330
@@ -60,12 +60,13 @@ vec3 cosinePalette(float t,vec3 a,vec3 b,vec3 c,vec3 d){
     return a+b*cos(TAU*(c*t+d));
 }
 vec3 palette(float t){
+    if(u_palette==0) return vec3(.5+.5*cos(TAU*(t+.50)), .5+.5*cos(TAU*(t+.00)), .5+.5*cos(TAU*(t+.50)));
     t=fract(t);
-    if(u_palette==1) return cosinePalette(t,vec3(.50),vec3(.50),vec3(1.0,.82,.62),vec3(.56,.10,.02));
-    if(u_palette==2) return cosinePalette(t,vec3(.55,.32,.16),vec3(.48,.36,.20),vec3(1.0,.78,.55),vec3(.02,.05,.12));
-    if(u_palette==3) return cosinePalette(t,vec3(.28,.50,.37),vec3(.31,.50,.48),vec3(.86,1.0,.72),vec3(.42,.03,.20));
-    if(u_palette==4) return cosinePalette(t,vec3(.45,.30,.62),vec3(.50,.45,.42),vec3(.92,.72,1.0),vec3(.72,.21,.03));
-    if(u_palette==5) return cosinePalette(t,vec3(.48,.42,.45),vec3(.48,.47,.52),vec3(1.0,.72,.82),vec3(.55,.90,.12));
+    if(u_palette==2) return cosinePalette(t,vec3(.50),vec3(.50),vec3(1.0,.82,.62),vec3(.56,.10,.02));
+    if(u_palette==3) return cosinePalette(t,vec3(.55,.32,.16),vec3(.48,.36,.20),vec3(1.0,.78,.55),vec3(.02,.05,.12));
+    if(u_palette==4) return cosinePalette(t,vec3(.28,.50,.37),vec3(.31,.50,.48),vec3(.86,1.0,.72),vec3(.42,.03,.20));
+    if(u_palette==5) return cosinePalette(t,vec3(.45,.30,.62),vec3(.50,.45,.42),vec3(.92,.72,1.0),vec3(.72,.21,.03));
+    if(u_palette==6) return cosinePalette(t,vec3(.48,.42,.45),vec3(.48,.47,.52),vec3(1.0,.72,.82),vec3(.55,.90,.12));
     return cosinePalette(t,vec3(.54,.50,.55),vec3(.46,.48,.45),vec3(1.0,.87,.72),vec3(.01,.17,.44));
 }
 
@@ -334,7 +335,7 @@ class FamousMathRenderer:
         height: int,
         *,
         mode: str = "mandelbrot_julia",
-        palette: str = "spectral",
+        palette: str = "cyan_magenta",
     ) -> None:
         import moderngl
 

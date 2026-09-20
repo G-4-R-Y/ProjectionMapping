@@ -13,7 +13,7 @@ GEOMETRY_MODES = (
     "apollonian_gasket",
     "penrose_interference",
 )
-GEOMETRY_PALETTES = ("spectral", "electric", "solar", "bio", "ultraviolet", "icefire")
+GEOMETRY_PALETTES = ("cyan_magenta", "spectral", "electric", "solar", "bio", "ultraviolet", "icefire")
 
 
 def lloyd_relax(points: np.ndarray, *, strength: float = 0.65, grid: int = 42) -> np.ndarray:
@@ -63,12 +63,13 @@ out vec4 fragColor;
 #define TAU 6.283185307179586
 
 vec3 pal(float t){
+    if(u_palette==0) return vec3(.5+.5*cos(TAU*(t+.50)), .5+.5*cos(TAU*(t+.00)), .5+.5*cos(TAU*(t+.50)));
     t=fract(t);
-    if(u_palette==1)return .50+.50*cos(TAU*(vec3(1.0,.82,.63)*t+vec3(.56,.11,.02)));
-    if(u_palette==2)return .50+.50*cos(TAU*(vec3(1.0,.74,.55)*t+vec3(.02,.08,.16)));
-    if(u_palette==3)return .50+.50*cos(TAU*(vec3(.84,1.0,.70)*t+vec3(.42,.03,.20)));
-    if(u_palette==4)return .50+.50*cos(TAU*(vec3(.94,.74,1.0)*t+vec3(.72,.21,.03)));
-    if(u_palette==5)return .50+.50*cos(TAU*(vec3(1.0,.72,.82)*t+vec3(.55,.90,.12)));
+    if(u_palette==2) return .50+.50*cos(TAU*(vec3(1.0,.82,.63)*t+vec3(.56,.11,.02)));
+    if(u_palette==3) return .50+.50*cos(TAU*(vec3(1.0,.74,.55)*t+vec3(.02,.08,.16)));
+    if(u_palette==4) return .50+.50*cos(TAU*(vec3(.84,1.0,.70)*t+vec3(.42,.03,.20)));
+    if(u_palette==5) return .50+.50*cos(TAU*(vec3(.94,.74,1.0)*t+vec3(.72,.21,.03)));
+    if(u_palette==6) return .50+.50*cos(TAU*(vec3(1.0,.72,.82)*t+vec3(.55,.90,.12)));
     return .50+.50*cos(TAU*(vec3(1.0,.87,.72)*t+vec3(.01,.17,.44)));
 }
 
@@ -156,7 +157,7 @@ void main(){
 class GeometryFieldRenderer:
     """Voronoi/power/Lloyd and geometric interference worlds."""
 
-    def __init__(self, width: int, height: int, *, mode: str = "voronoi_flow", palette: str = "spectral", site_count: int = 18, seed: int = 13) -> None:
+    def __init__(self, width: int, height: int, *, mode: str = "voronoi_flow", palette: str = "cyan_magenta", site_count: int = 18, seed: int = 13) -> None:
         import moderngl
 
         if mode not in GEOMETRY_MODES:
