@@ -16,7 +16,7 @@ from projection_mapping.topology_worlds import TOPOLOGY_MODES, TOPOLOGY_PALETTES
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", choices=TOPOLOGY_MODES, default="torus_knot")
-    ap.add_argument("--palette", choices=TOPOLOGY_PALETTES, default="spectral")
+    ap.add_argument("--palette", choices=TOPOLOGY_PALETTES, default="cyan_magenta")
     ap.add_argument("--param-a", type=float, default=0.5)
     ap.add_argument("--param-b", type=float, default=0.5)
     ap.add_argument("--scale", type=float, default=1.0)
