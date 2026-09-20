@@ -19,6 +19,7 @@ from projection_mapping.runtime import FullscreenSink
 
 
 PALETTES = {
+    "cyan_magenta": ((0.00, 0.96, 1.00), (1.00, 0.02, 0.78), (0.86, 0.96, 1.00)),
     "neon": ((0.96, 0.08, 0.62), (0.05, 0.80, 1.00), (0.75, 0.92, 1.00)),
     "jade": ((0.00, 0.95, 0.58), (0.02, 0.35, 0.25), (0.75, 1.00, 0.88)),
     "ember": ((1.00, 0.12, 0.02), (1.00, 0.55, 0.02), (1.00, 0.93, 0.65)),
@@ -105,7 +106,7 @@ def main() -> None:
     ap.add_argument("--capture-width", type=int, default=640)
     ap.add_argument("--capture-height", type=int, default=360)
     ap.add_argument("--style", choices=["plasma", "outline", "ghost", "ember", "xray"], default="plasma")
-    ap.add_argument("--palette", choices=sorted(PALETTES), default="neon")
+    ap.add_argument("--palette", choices=sorted(PALETTES), default="cyan_magenta")
     ap.add_argument("--intensity", type=float, default=0.9)
     ap.add_argument("--feedback", type=float, default=0.90)
     ap.add_argument("--edge-gain", type=float, default=1.35)
