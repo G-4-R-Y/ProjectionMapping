@@ -59,13 +59,14 @@ vec2 cpow3(vec2 z){ return cmul(cmul(z,z),z); }
 vec3 cosinePalette(float t,vec3 a,vec3 b,vec3 c,vec3 d){
     return a+b*cos(TAU*(c*t+d));
 }
-vec3 palette(float t){\n    if(u_palette==0) return vec3(.5+.5*cos(TAU*(t+.50)), .5+.5*cos(TAU*(t+.00)), .5+.5*cos(TAU*(t+.50)));
+vec3 palette(float t){
+    if(u_palette==0) return vec3(.5+.5*cos(TAU*(t+.50)), .5+.5*cos(TAU*(t+.00)), .5+.5*cos(TAU*(t+.50)));
     t=fract(t);
-    if(u_palette==6) return cosinePalette(t,vec3(.50),vec3(.50),vec3(1.0,.82,.62),vec3(.56,.10,.02));
-    if(u_palette==6) return cosinePalette(t,vec3(.55,.32,.16),vec3(.48,.36,.20),vec3(1.0,.78,.55),vec3(.02,.05,.12));
-    if(u_palette==6) return cosinePalette(t,vec3(.28,.50,.37),vec3(.31,.50,.48),vec3(.86,1.0,.72),vec3(.42,.03,.20));
-    if(u_palette==6) return cosinePalette(t,vec3(.45,.30,.62),vec3(.50,.45,.42),vec3(.92,.72,1.0),vec3(.72,.21,.03));
-    if(u_palette==6) return cosinePalette(t,vec3(.48,.42,.45),vec3(.48,.47,.52),vec3(1.0,.72,.82),vec3(.55,.90,.12));
+    if(u_palette==2)$1 cosinePalette(t,vec3(.50),vec3(.50),vec3(1.0,.82,.62),vec3(.56,.10,.02));
+    if(u_palette==3)$1 cosinePalette(t,vec3(.55,.32,.16),vec3(.48,.36,.20),vec3(1.0,.78,.55),vec3(.02,.05,.12));
+    if(u_palette==4)$1 cosinePalette(t,vec3(.28,.50,.37),vec3(.31,.50,.48),vec3(.86,1.0,.72),vec3(.42,.03,.20));
+    if(u_palette==5)$1 cosinePalette(t,vec3(.45,.30,.62),vec3(.50,.45,.42),vec3(.92,.72,1.0),vec3(.72,.21,.03));
+    if(u_palette==6)$1 cosinePalette(t,vec3(.48,.42,.45),vec3(.48,.47,.52),vec3(1.0,.72,.82),vec3(.55,.90,.12));
     return cosinePalette(t,vec3(.54,.50,.55),vec3(.46,.48,.45),vec3(1.0,.87,.72),vec3(.01,.17,.44));
 }
 
