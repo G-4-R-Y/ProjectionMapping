@@ -22,8 +22,8 @@ from projection_mapping.runtime import FullscreenSink
 from projection_mapping.spell_grammar import SpellGrammar
 
 
-PALETTE_BY_STYLE={"cyber":"cyber","solar":"solar","bio":"bio","prismatic":"prismatic"}
-HUE_BY_STYLE={"cyber":0.78,"solar":0.04,"bio":0.38,"prismatic":0.90}
+PALETTE_BY_STYLE={"cyan_magenta":"cyan_magenta","cyber":"cyan_magenta","solar":"solar","bio":"bio","prismatic":"prismatic"}
+HUE_BY_STYLE={"cyan_magenta":0.93,"cyber":0.93,"solar":0.04,"bio":0.38,"prismatic":0.90}
 
 
 def _make_tracker(name:str,confidence:float,smoothing:float):
@@ -115,7 +115,7 @@ def main()->None:
     ap.add_argument("--render-width",type=int,default=768)
     ap.add_argument("--render-height",type=int,default=432)
     ap.add_argument("--particles",type=int,default=32768)
-    ap.add_argument("--style",choices=sorted(PALETTE_BY_STYLE),default="cyber")
+    ap.add_argument("--style",choices=sorted(PALETTE_BY_STYLE),default="cyan_magenta")
     ap.add_argument("--intensity",type=float,default=1.0)
     ap.add_argument("--madness",type=float,default=0.48)
     ap.add_argument("--feedback",type=float,default=0.94)
