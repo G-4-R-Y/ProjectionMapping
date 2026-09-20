@@ -13,7 +13,7 @@ POLAR_MODES = (
     "bessel_wave_chamber",
 )
 
-POLAR_PALETTES = ("spectral", "cyber", "solar", "bio", "ultraviolet")
+POLAR_PALETTES = ("spectral", "cyber", "solar", "bio", "ultraviolet", "cyan_magenta")
 
 _VERTEX = r"""
 #version 330
@@ -90,6 +90,8 @@ vec3 palette(float t) {
         return cosinePalette(t, vec3(.32,.50,.42), vec3(.32,.50,.50), vec3(.88,1.0,.72), vec3(.43,.04,.18));
     if (u_palette == 4)
         return cosinePalette(t, vec3(.47,.34,.62), vec3(.49,.43,.42), vec3(.94,.76,1.0), vec3(.73,.22,.03));
+    if (u_palette == 5)
+        return mix(vec3(.00,.96,1.00), vec3(1.00,.02,.78), .5+.5*cos(TAU*t));
     return cosinePalette(t, vec3(.55,.52,.56), vec3(.47,.48,.46), vec3(1.0,.87,.73), vec3(.02,.18,.46));
 }
 
@@ -345,7 +347,7 @@ class PolarMathRenderer:
         height: int,
         *,
         mode: str = "rose_lattice",
-        palette: str = "spectral",
+        palette: str = "cyan_magenta",
     ) -> None:
         import moderngl
 
