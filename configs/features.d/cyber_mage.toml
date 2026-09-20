@@ -1,8 +1,8 @@
 [[feature]]
 id = "cyber_mage"
-name = "Cyber Mage SFX / Point Tracker"
+name = "Cyber Mage / GPU Point Particles"
 category = "Visual Madness"
-description = "Persistent Shi-Tomasi/Lucas-Kanade point tracks drive cinematic trails, plasma mesh, sparks and motion shockwaves. Optional ModernGL post shader adds coherent bloom/atmosphere. No fake hand-gesture assumptions. F11 toggles fullscreen."
+description = "Dense point-cloud / particle VFX driven by persistent Shi-Tomasi/LK motion tracks. The default GPU path emits ~32k tiny cyan/magenta data-points into curl, circuit, orbital and singularity vector fields with feedback/bloom; tracked points are measurements, not fake hand semantics. Auto falls back to the legacy CPU renderer if ModernGL is unavailable. F11 toggles fullscreen."
 command = ["python", "experiments/13_cyber_mage.py"]
 fullscreen = true
 
@@ -25,12 +25,20 @@ min = 0
 max = 8
 
 [[feature.param]]
+key = "engine"
+flag = "--engine"
+label = "Particle engine"
+type = "choice"
+default = "auto"
+choices = ["auto", "gpu", "legacy"]
+
+[[feature.param]]
 key = "mode"
 flag = "--mode"
-label = "SFX mode"
+label = "Particle choreography"
 type = "choice"
-default = "plasma_mesh"
-choices = ["plasma_mesh", "constellation", "afterburner", "liquid_wire"]
+default = "data_swarm"
+choices = ["data_swarm", "circuit_grid", "orbit_core", "event_horizon", "cosmic_roam"]
 
 [[feature.param]]
 key = "palette"
@@ -38,7 +46,23 @@ flag = "--palette"
 label = "Palette"
 type = "choice"
 default = "cyan_magenta"
-choices = ["cyber", "cyan_magenta", "ultraviolet", "deep_ocean", "sunset_neon", "ion", "acid", "ember", "ice"]
+choices = ["cyan_magenta", "ultraviolet", "deep_ocean", "sunset_neon", "cyber", "ion", "acid", "ember", "ice"]
+
+[[feature.param]]
+key = "material"
+flag = "--material"
+label = "GPU particle material"
+type = "choice"
+default = "auto"
+choices = ["auto", "data_point", "plasma", "comet", "spark", "mote", "shock_ring"]
+
+[[feature.param]]
+key = "particles"
+flag = "--particles"
+label = "GPU particle capacity"
+type = "choice"
+default = "32768"
+choices = ["8192", "16384", "32768", "65536"]
 
 [[feature.param]]
 key = "track_scope"
@@ -51,61 +75,34 @@ choices = ["foreground", "full"]
 [[feature.param]]
 key = "max_points"
 flag = "--max-points"
-label = "Maximum tracked points"
+label = "Motion control tracks"
 type = "int"
-default = 96
-min = 12
+default = 144
+min = 24
 max = 240
-
-[[feature.param]]
-key = "trail_length"
-flag = "--trail-length"
-label = "Track trail length"
-type = "int"
-default = 28
-min = 2
-max = 120
-
-[[feature.param]]
-key = "connection_radius"
-flag = "--connection-radius"
-label = "Plasma connection radius"
-type = "float"
-default = 95.0
-min = 20.0
-max = 300.0
-
-[[feature.param]]
-key = "point_radius"
-flag = "--point-radius"
-label = "Emitter point radius"
-type = "float"
-default = 2.2
-min = 0.5
-max = 12.0
 
 [[feature.param]]
 key = "feedback"
 flag = "--feedback"
-label = "Trail persistence"
+label = "Particle trail persistence"
 type = "float"
-default = 0.91
+default = 0.946
 min = 0.0
 max = 0.985
 
 [[feature.param]]
 key = "bloom"
 flag = "--bloom"
-label = "Bloom"
+label = "Particle bloom"
 type = "float"
-default = 1.0
+default = 1.15
 min = 0.0
 max = 2.5
 
 [[feature.param]]
 key = "intensity"
 flag = "--intensity"
-label = "SFX intensity"
+label = "Particle intensity"
 type = "float"
 default = 1.0
 min = 0.0
@@ -116,7 +113,7 @@ key = "camera_mix"
 flag = "--camera-mix"
 label = "Camera underlay"
 type = "float"
-default = 0.03
+default = 0.02
 min = 0.0
 max = 1.0
 
@@ -128,16 +125,85 @@ type = "bool"
 default = true
 
 [[feature.param]]
+key = "render_width"
+flag = "--render-width"
+label = "Particle render width"
+type = "int"
+default = 768
+min = 320
+max = 1920
+
+[[feature.param]]
+key = "render_height"
+flag = "--render-height"
+label = "Particle render height"
+type = "int"
+default = 432
+min = 180
+max = 1080
+
+[[feature.param]]
+key = "projector_width"
+flag = "--projector-width"
+label = "Projector width"
+type = "int"
+default = 1920
+min = 320
+max = 7680
+
+[[feature.param]]
+key = "projector_height"
+flag = "--projector-height"
+label = "Projector height"
+type = "int"
+default = 1080
+min = 240
+max = 4320
+
+# Legacy CPU fallback tuning. These are ignored by the normal GPU path.
+[[feature.param]]
+key = "trail_length"
+flag = "--trail-length"
+label = "Legacy trail length"
+type = "int"
+default = 28
+min = 2
+max = 120
+group = "Performance & Advanced"
+
+[[feature.param]]
+key = "connection_radius"
+flag = "--connection-radius"
+label = "Legacy connection radius"
+type = "float"
+default = 95.0
+min = 20.0
+max = 300.0
+group = "Performance & Advanced"
+
+[[feature.param]]
+key = "point_radius"
+flag = "--point-radius"
+label = "Legacy point radius"
+type = "float"
+default = 2.2
+min = 0.5
+max = 12.0
+group = "Performance & Advanced"
+
+[[feature.param]]
 key = "shader"
 flag = "--shader"
-label = "ModernGL cinematic post FX"
+label = "Legacy post shader"
 type = "bool"
-default = true
+default = false
+group = "Performance & Advanced"
 
 [[feature.param]]
 key = "shader_background"
 flag = "--shader-background"
-label = "Shader atmosphere"
+label = "Legacy shader atmosphere"
 type = "choice"
 default = "nebula"
 choices = ["black", "nebula", "grid", "liquid"]
+group = "Performance & Advanced"
