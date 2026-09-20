@@ -21,7 +21,7 @@ from projection_mapping.runtime import FullscreenSink
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--preset", choices=tuple(REACTION_PRESETS), default="coral")
-    ap.add_argument("--palette", choices=REACTION_PALETTES, default="ultraviolet")
+    ap.add_argument("--palette", choices=REACTION_PALETTES, default="cyan_magenta")
     ap.add_argument("--display", type=int, default=1)
     ap.add_argument("--render-width", type=int, default=640)
     ap.add_argument("--render-height", type=int, default=360)

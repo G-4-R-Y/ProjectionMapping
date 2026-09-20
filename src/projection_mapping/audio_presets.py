@@ -20,7 +20,7 @@ class AudioPerformancePreset:
 PRESETS: dict[str, AudioPerformancePreset] = {
     "journey_balanced": AudioPerformancePreset(
         scene="journey",
-        palette="neon_aurora",
+        palette="cyan_magenta",
         reactivity="balanced",
         madness=0.42,
         event_threshold=0.64,

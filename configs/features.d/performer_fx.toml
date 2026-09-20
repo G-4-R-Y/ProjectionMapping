@@ -29,8 +29,8 @@ key = "style"
 flag = "--style"
 label = "Particle / spell material"
 type = "choice"
-default = "cyber"
-choices = ["cyber", "solar", "bio", "prismatic"]
+default = "cyan_magenta"
+choices = ["cyan_magenta", "cyber", "solar", "bio", "prismatic"]
 
 [[feature.param]]
 key = "particles"

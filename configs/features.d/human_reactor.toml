@@ -37,8 +37,8 @@ key = "palette"
 flag = "--palette"
 label = "Palette"
 type = "choice"
-default = "neon"
-choices = ["neon", "jade", "ember", "ice", "violet", "mono"]
+default = "cyan_magenta"
+choices = ["cyan_magenta", "neon", "jade", "ember", "ice", "violet", "mono"]
 
 [[feature.param]]
 key = "intensity"

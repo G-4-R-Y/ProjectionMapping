@@ -27,7 +27,7 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("--list-devices", action="store_true")
     ap.add_argument("--performance-preset", choices=["custom", *sorted(PRESETS)], default="custom")
     ap.add_argument("--scene", choices=SCENES, default="journey")
-    ap.add_argument("--palette", choices=PALETTES, default="neon_aurora")
+    ap.add_argument("--palette", choices=PALETTES, default="cyan_magenta")
     ap.add_argument("--reactivity", choices=["smooth", "balanced", "punchy", "chaotic"], default="balanced")
     ap.add_argument("--event-threshold", type=float, default=0.64)
     ap.add_argument("--beat-threshold", type=float, default=0.50)

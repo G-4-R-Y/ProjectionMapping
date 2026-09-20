@@ -99,8 +99,8 @@ key = "backdrop_palette"
 flag = "--backdrop-palette"
 label = "Polar backdrop palette"
 type = "choice"
-default = "spectral"
-choices = ["spectral", "cyber", "solar", "bio", "ultraviolet"]
+default = "cyan_magenta"
+choices = ["cyan_magenta", "spectral", "cyber", "solar", "bio", "ultraviolet"]
 group = "Design Customization"
 
 [[feature.param]]
@@ -109,7 +109,7 @@ flag = "--math-palette"
 label = "Math/world palette"
 type = "choice"
 default = "spectral"
-choices = ["spectral", "electric", "solar", "bio", "ultraviolet", "icefire"]
+choices = ["cyan_magenta", "spectral", "electric", "solar", "bio", "ultraviolet", "icefire"]
 group = "Design Customization"
 
 [[feature.param]]

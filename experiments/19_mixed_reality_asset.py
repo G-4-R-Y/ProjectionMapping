@@ -23,6 +23,7 @@ from projection_mapping.runtime import FullscreenSink
 
 
 STYLES = {
+    "cyan_magenta": ((0.02, 0.10, 0.18), (1.00, 0.02, 0.78), "cyan_magenta"),
     "cyber": ((0.05, 0.18, 0.30), (0.05, 0.82, 1.00), "cyber"),
     "bio": ((0.04, 0.22, 0.16), (0.15, 1.00, 0.55), "bio"),
     "solar": ((0.26, 0.08, 0.03), (1.00, 0.48, 0.06), "solar"),
@@ -70,7 +71,7 @@ def main() -> None:
     ap.add_argument("--projector-height", type=int, default=1080)
     ap.add_argument("--scale", type=float, default=0.34)
     ap.add_argument("--spin-speed", type=float, default=0.65)
-    ap.add_argument("--style", choices=sorted(STYLES), default="cyber")
+    ap.add_argument("--style", choices=sorted(STYLES), default="cyan_magenta")
     ap.add_argument("--camera-mix", type=float, default=0.72)
     ap.add_argument("--particles", type=int, default=16384)
     ap.add_argument("--particle-aura", action="store_true")
@@ -158,7 +159,7 @@ def main() -> None:
                         emit = ParticleEmitter.from_anchor(
                             semantic_anchor,
                             energy=0.45 + 0.75 * anchor_conf,
-                            hue={"cyber": 0.78, "bio": 0.36, "solar": 0.05, "prismatic": 0.90}[args.style],
+                            hue={"cyan_magenta": 0.93, "cyber": 0.93, "bio": 0.36, "solar": 0.05, "prismatic": 0.90}[args.style],
                             radius=0.030,
                         )
                         emitters = [emit]

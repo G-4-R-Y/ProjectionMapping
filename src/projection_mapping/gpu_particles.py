@@ -138,6 +138,18 @@ vec2 field(vec2 p, float t) {
         return base*.12+(radial*inward+tangent*swirl)*fall;
     }
 
+    if(u_field_mode==5) {
+        // Circuit field: stylized curl flow quantized toward orthogonal data-lane motion.
+        vec2 f=base;
+        vec2 cardinal=abs(f.x)>abs(f.y)?vec2(sign(f.x),0.0):vec2(0.0,sign(f.y));
+        float lane=.72+.28*sin((p.x*18.0+p.y*14.0)*6.2831853+t*2.2);
+        vec2 gridPull=vec2(
+            sin((p.y-.5)*6.2831853*12.0+t*.31),
+            cos((p.x-.5)*6.2831853*12.0-t*.27)
+        )*.18;
+        return safeNorm(mix(f,cardinal,.82)+gridPull)*lane;
+    }
+
     vec2 c1=.5+.25*vec2(cos(t*.071),sin(t*.093));
     vec2 c2=.5+.20*vec2(cos(t*.113+2.1),sin(t*.087+1.4));
     vec2 c3=.5+.16*vec2(cos(t*.053+4.0),sin(t*.129+3.1));
@@ -207,6 +219,7 @@ uniform sampler2D u_state0;
 uniform sampler2D u_state1;
 uniform float u_energy;
 uniform vec2 u_resolution;
+uniform int u_material;
 out float v_life;
 out float v_hue;
 out float v_seed;
@@ -223,7 +236,8 @@ void main() {
     float speed=length(s1.xy);
     float speedLift=smoothstep(.10,.95,speed);
     float aspectScale = clamp(min(u_resolution.x,u_resolution.y)/720.0, .6, 2.2);
-    gl_PointSize = clamp(s1.w * aspectScale * (.72 + .50*u_energy) * (1.0+.75*speedLift), 1.0, 34.0);
+    float materialScale = u_material==5 ? .42 : 1.0;
+    gl_PointSize = clamp(s1.w * aspectScale * (.72 + .50*u_energy) * (1.0+.75*speedLift) * materialScale, 1.0, 34.0);
     v_life = life;
     v_hue = s1.z;
     v_seed = s0.w;
@@ -258,6 +272,18 @@ vec3 satPalette(float t) {
     if (u_palette == 3) {
         return .54 + .54*cos(TAU*(vec3(1.0,.78,.58)*t+vec3(.00,.17,.43)));
     }
+    if (u_palette == 4) {
+        vec3 a=vec3(.08,.00,.32), b=vec3(.55,.04,1.00), c=vec3(1.00,.02,.74);
+        return mix(mix(a,b,smoothstep(0.0,.52,t)),c,smoothstep(.52,1.0,t));
+    }
+    if (u_palette == 5) {
+        vec3 a=vec3(.00,.10,.22), b=vec3(.00,.72,1.00), c=vec3(.10,.97,1.00);
+        return mix(mix(a,b,smoothstep(0.0,.55,t)),c,smoothstep(.55,1.0,t));
+    }
+    if (u_palette == 6) {
+        vec3 a=vec3(.20,.02,.30), b=vec3(1.00,.03,.58), c=vec3(1.00,.66,.05);
+        return mix(mix(a,b,smoothstep(0.0,.50,t)),c,smoothstep(.50,1.0,t));
+    }
     vec3 a=vec3(.00,.92,1.00), b=vec3(.12,.20,1.00), c=vec3(1.00,.03,.78);
     return mix(mix(a,b,smoothstep(0.0,.46,t)),c,smoothstep(.46,1.0,t));
 }
@@ -265,7 +291,7 @@ vec3 satPalette(float t) {
 void main() {
     vec2 q = gl_PointCoord*2.0-1.0;
     float rawR=length(q);
-    if(rawR>1.0) discard;
+    if(u_material!=5 && rawR>1.0) discard;
     float speedLift=smoothstep(.10,.95,v_speed);
     vec2 dir=normalize(v_vel+vec2(1e-5));
     vec2 perp=vec2(-dir.y,dir.x);
@@ -312,6 +338,13 @@ void main() {
         shell=ring*1.35;
         halo=exp(-abs(r-.50)*6.5)*.55;
         accent=(1.0-smoothstep(.0,.22,r))*.20;
+    } else if(u_material==5){
+        // Data point: tiny hard-edged photon/pixel with restrained glow.
+        float box=max(abs(q.x),abs(q.y));
+        core=1.0-smoothstep(.00,.22,box);
+        shell=exp(-box*6.5)*.42;
+        halo=exp(-box*2.8)*.18;
+        accent=(exp(-abs(q.x)*18.0)+exp(-abs(q.y)*18.0))*exp(-box*4.0)*(.06+.20*speedLift);
     } else {
         // Plasma: default premium point material.
         float r=rawR;
@@ -384,9 +417,9 @@ void main(){
 class GPUParticleField:
     """OpenGL 3.3 particle simulation/render pipeline with reusable emissive materials."""
 
-    PALETTES={"cyber":0,"solar":1,"bio":2,"prismatic":3}
-    MATERIALS={"plasma":0,"comet":1,"spark":2,"mote":3,"shock_ring":4}
-    FIELD_MODES={"flow":0,"nebula":1,"binary_star":2,"event_horizon":3,"cosmic_roam":4}
+    PALETTES={"cyan_magenta":0,"cyber":0,"solar":1,"bio":2,"prismatic":3,"ultraviolet":4,"deep_ocean":5,"sunset_neon":6}
+    MATERIALS={"plasma":0,"comet":1,"spark":2,"mote":3,"shock_ring":4,"data_point":5}
+    FIELD_MODES={"flow":0,"nebula":1,"binary_star":2,"event_horizon":3,"cosmic_roam":4,"circuit":5}
 
     def __init__(
         self,
@@ -394,7 +427,7 @@ class GPUParticleField:
         height:int,
         *,
         capacity:int=32768,
-        palette:str="cyber",
+        palette:str="cyan_magenta",
         material:str="plasma",
     )->None:
         import moderngl
@@ -517,8 +550,8 @@ class GPUParticleField:
         pp=self.particle_program
         pp["u_energy"].value=float(max(energy,0.0))
         pp["u_resolution"].value=(float(self.width),float(self.height))
-        pp["u_palette"].value=self.palette
         pp["u_material"].value=self.material
+        pp["u_palette"].value=self.palette
         pp["u_strike"].value=float(np.clip(strike,0.0,1.0))
         self.ctx.enable(m.BLEND)
         self.ctx.blend_func=(m.ONE,m.ONE)

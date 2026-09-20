@@ -20,8 +20,8 @@ key = "palette"
 flag = "--palette"
 label = "Palette"
 type = "choice"
-default = "electric"
-choices = ["electric", "bio", "solar", "ultraviolet", "icefire"]
+default = "cyan_magenta"
+choices = ["cyan_magenta", "electric", "bio", "solar", "ultraviolet", "icefire"]
 
 [[feature.param]]
 key = "density"

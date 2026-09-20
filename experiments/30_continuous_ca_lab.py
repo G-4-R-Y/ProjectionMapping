@@ -16,7 +16,7 @@ from projection_mapping.runtime import FullscreenSink
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", choices=CONTINUOUS_CA_MODES, default="lenia_ring")
-    ap.add_argument("--palette", choices=CONTINUOUS_CA_PALETTES, default="bio")
+    ap.add_argument("--palette", choices=CONTINUOUS_CA_PALETTES, default="cyan_magenta")
     ap.add_argument("--dt", type=float, default=0.10)
     ap.add_argument("--growth-center", type=float, default=0.28)
     ap.add_argument("--growth-width", type=float, default=0.055)

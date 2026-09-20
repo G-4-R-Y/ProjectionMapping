@@ -110,7 +110,7 @@ in vec2 v_uv;
 out vec4 fragColor;
 #define TAU 6.283185307179586
 vec3 pal(float t){
-    if(u_palette==0) return vec3(.5+.5*cos(TAU*(t+.50)), .5+.5*cos(TAU*(t+.00)), .5+.5*cos(TAU*(t+.50)));
+    if(u_palette==0) return mix(vec3(.00,.96,1.00),vec3(1.00,.02,.78),.5+.5*cos(TAU*t));
     t=fract(t);
     if(u_palette==2) return .50+.50*cos(TAU*(vec3(1.0,.82,.63)*t+vec3(.56,.11,.02)));
     if(u_palette==3) return .50+.50*cos(TAU*(vec3(1.0,.74,.55)*t+vec3(.02,.08,.16)));
@@ -143,7 +143,7 @@ class ContinuousCARenderer:
     reproduction of every reference Lenia kernel.
     """
 
-    def __init__(self, width: int, height: int, *, mode: str = "lenia_ring", palette: str = "bio", seed: int = 23) -> None:
+    def __init__(self, width: int, height: int, *, mode: str = "lenia_ring", palette: str = "cyan_magenta", seed: int = 23) -> None:
         import moderngl
 
         if mode not in CONTINUOUS_CA_MODES:

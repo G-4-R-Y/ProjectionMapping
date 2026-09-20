@@ -16,7 +16,7 @@ from projection_mapping.wave_equation import WAVE_MODES, WAVE_PALETTES, WaveEqua
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", choices=WAVE_MODES, default="chladni_drive")
-    ap.add_argument("--palette", choices=WAVE_PALETTES, default="ultraviolet")
+    ap.add_argument("--palette", choices=WAVE_PALETTES, default="cyan_magenta")
     ap.add_argument("--drive", type=float, default=0.45)
     ap.add_argument("--tension", type=float, default=0.22)
     ap.add_argument("--damping", type=float, default=0.018)

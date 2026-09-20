@@ -28,8 +28,8 @@ key = "style"
 flag = "--style"
 label = "Cyber material"
 type = "choice"
-default = "cyber"
-choices = ["cyber", "bio", "solar", "prismatic"]
+default = "cyan_magenta"
+choices = ["cyan_magenta", "cyber", "bio", "solar", "prismatic"]
 
 [[feature.param]]
 key = "scale"

@@ -170,8 +170,8 @@ key = "palette"
 flag = "--palette"
 label = "Vivid palette"
 type = "choice"
-default = "spectral"
-choices = ["spectral", "cyber", "solar", "bio", "ultraviolet"]
+default = "cyan_magenta"
+choices = ["cyan_magenta", "spectral", "cyber", "solar", "bio", "ultraviolet"]
 
 [[feature.param]]
 key = "chaos"

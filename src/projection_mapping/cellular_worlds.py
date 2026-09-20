@@ -6,7 +6,7 @@ from .graphics_runtime import create_context
 
 
 CELLULAR_MODES = ("conway_life", "brians_brain", "cyclic_8", "seeds")
-CELLULAR_PALETTES = ("electric", "bio", "solar", "ultraviolet", "icefire")
+CELLULAR_PALETTES = ("electric", "bio", "solar", "ultraviolet", "icefire", "cyan_magenta")
 
 _VERTEX = r"""
 #version 330
@@ -113,6 +113,7 @@ vec3 pal(float t){
     if(u_palette==2) return .50+.50*cos(TAU*(vec3(1.0,.74,.55)*t+vec3(.02,.08,.16)));
     if(u_palette==3) return .50+.50*cos(TAU*(vec3(.94,.74,1.0)*t+vec3(.72,.21,.03)));
     if(u_palette==4) return .50+.50*cos(TAU*(vec3(1.0,.72,.82)*t+vec3(.55,.90,.12)));
+    if(u_palette==5) return mix(vec3(.00,.96,1.00),vec3(1.00,.02,.78),.5+.5*cos(TAU*t));
     return .50+.50*cos(TAU*(vec3(1.0,.82,.63)*t+vec3(.56,.11,.02)));
 }
 
@@ -151,7 +152,7 @@ class CellularWorldRenderer:
         height: int,
         *,
         mode: str = "conway_life",
-        palette: str = "electric",
+        palette: str = "cyan_magenta",
         density: float = 0.18,
         seed: int = 17,
     ) -> None:
