@@ -24,7 +24,7 @@ REACTION_PRESETS: dict[str, ReactionPreset] = {
     "waves": ReactionPreset(0.0140, 0.0540),
 }
 
-REACTION_PALETTES = ("ultraviolet", "bio", "solar", "electric", "mono")
+REACTION_PALETTES = ("ultraviolet", "bio", "solar", "electric", "mono", "cyan_magenta")
 
 _VERTEX = r"""
 #version 330
@@ -91,6 +91,7 @@ vec3 pal(float t){
     if(u_palette==2) return .50+.50*cos(TAU*(vec3(1.0,.74,.55)*t+vec3(.02,.08,.16)));
     if(u_palette==3) return .50+.50*cos(TAU*(vec3(1.0,.82,.64)*t+vec3(.56,.12,.01)));
     if(u_palette==4) return vec3(.76+.24*cos(TAU*t));
+    if(u_palette==5) return mix(vec3(.00,.96,1.00),vec3(1.00,.02,.78),.5+.5*cos(TAU*t));
     return .50+.50*cos(TAU*(vec3(.92,.74,1.0)*t+vec3(.72,.20,.03)));
 }
 
@@ -125,7 +126,7 @@ class ReactionDiffusionRenderer:
         height: int,
         *,
         preset: str = "coral",
-        palette: str = "ultraviolet",
+        palette: str = "cyan_magenta",
         seed: int = 7,
     ) -> None:
         import moderngl
