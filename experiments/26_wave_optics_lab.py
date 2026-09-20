@@ -16,7 +16,7 @@ from projection_mapping.wave_optics import OPTICS_MODES, OPTICS_PALETTES, WaveOp
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", choices=OPTICS_MODES, default="multi_source_interference")
-    ap.add_argument("--palette", choices=OPTICS_PALETTES, default="spectral")
+    ap.add_argument("--palette", choices=OPTICS_PALETTES, default="cyan_magenta")
     ap.add_argument("--display", type=int, default=1)
     ap.add_argument("--render-width", type=int, default=960)
     ap.add_argument("--render-height", type=int, default=540)
