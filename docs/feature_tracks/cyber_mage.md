@@ -8,16 +8,31 @@ The first Cyber Mage performer-rig prototype was rejected after hardware testing
 
 This failure is retained deliberately: **never build semantic gesture behavior on guessed silhouette extrema and never promote debug primitives as final art direction.**
 
+## Visual reference reset — 2026-09-20
+The Cyber Mage visual target is now explicitly **dense point-particle / point-cloud VFX**, with
+[@emiko0](https://www.instagram.com/emiko0/) used as an art-direction reference rather than a
+code dependency. The qualities to preserve are: tens of thousands of tiny luminous points,
+coherent macro-flow with turbulent micro-motion, particle volumes that gather around performer
+motion, occasional geometric/data alignment, restrained trails, and high-contrast emissive
+cyan/magenta. Avoid making the look primarily from OpenCV circles, line meshes, HUD rings, or
+debug-style connective geometry.
+
+Cyber Mage v3 therefore promotes the native GPU particle field to the default path. Persistent LK
+tracks are reduced to a small spatially diverse emitter rig controlling a 32k+ simulation; the
+renderer supplies curl/circuit/orbital fields, a hard-edged data-point material, feedback and bloom.
+The legacy line/mesh renderer remains only as a graceful fallback. This is an original
+implementation inspired by the visual language, not a reproduction of another artist's assets.
+
 ## Current state
-- Generic Cyber Mage path: persistent Shi-Tomasi features + pyramidal Lucas-Kanade flow with forward/backward drift rejection.
+- Generic Cyber Mage v3 path: persistent Shi-Tomasi features + pyramidal Lucas-Kanade flow drive a dense native GPU point-particle field; the older CPU mesh/trail renderer is fallback-only.
 - Point tracks keep IDs, age, velocity, speed and quality; foreground-only or full-frame seeding is available.
-- CPU point-SFX fallback still provides plasma mesh / constellation / afterburner / liquid-wire experiments.
+- CPU point-SFX fallback still provides plasma mesh / constellation / afterburner / liquid-wire experiments when the GPU path cannot start.
 - New shared `TrackingState` / `PerformanceState` semantic bus is implemented.
 - New preferred fully-open semantic path: RTMLib Wholebody/RTMW-style COCO-WholeBody landmarks behind a renderer-independent tracker interface.
 - Optional MediaPipe Tasks backend lives behind the same contract.
 - Semantic anchors now include body joints, palm centres, fingertips, chest/pelvis and normalized velocity instead of contour guesses.
 - `SpellGrammar` implements real-anchor charge/release, slash, shield, circular portal and ascension events; low-confidence/missing anchors disable spells rather than inventing them.
-- New `GPUParticleField` keeps particle simulation in ping-pong float textures and renders additive point sprites plus feedback/advection/bloom on GPU.
+- `GPUParticleField` keeps particle simulation in ping-pong float textures and now includes a tiny `data_point` material plus a quantized `circuit` vector field for Cyber Mage's point-cloud/data aesthetic.
 - `Performer FX / Whole-Body GPU` connects real semantic anchors -> spell grammar -> GPU particles.
 - VFX pack / GLB-glTF ingestion and mixed-reality entity foundations now exist for generated content.
 - Neural performer-control maps encode anchors/motion/gesture energy for the later style-skin path.
