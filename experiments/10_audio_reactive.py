@@ -13,6 +13,7 @@ from projection_mapping.runtime import FullscreenSink
 
 
 PALETTES = {
+    "cyan_magenta": np.array([[0.005, 0.02, 0.04], [0.00, 0.96, 1.00], [0.16, 0.34, 1.00], [1.00, 0.02, 0.78]], np.float32),
     "neon_aurora": np.array([[0.01, 0.07, 0.14], [0.00, 0.88, 1.00], [0.55, 0.18, 1.00], [1.00, 0.08, 0.67]], np.float32),
     "solar_flare": np.array([[0.08, 0.01, 0.03], [1.00, 0.16, 0.05], [1.00, 0.63, 0.00], [1.00, 0.10, 0.48]], np.float32),
     "bioluminescent": np.array([[0.00, 0.06, 0.08], [0.00, 0.95, 0.66], [0.05, 0.45, 1.00], [0.57, 0.20, 1.00]], np.float32),
@@ -140,7 +141,7 @@ def main() -> None:
     ap.add_argument("--device", default=None)
     ap.add_argument("--list-devices", action="store_true")
     ap.add_argument("--preset", choices=PRESETS, default="spectral_bloom")
-    ap.add_argument("--palette", choices=sorted(PALETTES), default="neon_aurora")
+    ap.add_argument("--palette", choices=sorted(PALETTES), default="cyan_magenta")
     ap.add_argument("--reactivity", choices=["smooth", "balanced", "punchy", "chaotic"], default="balanced")
     ap.add_argument("--event-threshold", type=float, default=0.62)
     ap.add_argument("--beat-threshold", type=float, default=0.50)
