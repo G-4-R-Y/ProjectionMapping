@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import gc
+import importlib
+import importlib.util
 import runpy
 import sys
 from pathlib import Path
@@ -45,6 +47,40 @@ def release_runtime_resources() -> None:
     except Exception:
         # Cleanup must never mask the original renderer error/exit code.
         pass
+
+
+def desktop_self_test() -> int:
+    """Exercise the installed/frozen desktop runtime without opening a window."""
+    checks = ("numpy", "cv2", "textual", "moderngl", "glcontext", "soundcard")
+    missing = [name for name in checks if importlib.util.find_spec(name) is None]
+    if missing:
+        print("[self-test] missing modules: " + ", ".join(missing), file=sys.stderr)
+        return 2
+
+    try:
+        numpy = importlib.import_module("numpy")
+        cv2 = importlib.import_module("cv2")
+        importlib.import_module("textual")
+        importlib.import_module("moderngl")
+        importlib.import_module("glcontext")
+
+        from .feature_registry import load_registry
+
+        registry = load_registry()
+        cyber = registry.by_id("cyber_mage")
+        if cyber.defaults().get("palette") != "cyan_magenta":
+            raise RuntimeError("Cyber Mage registry default is not cyan_magenta")
+
+        print(
+            "[self-test] ok "
+            f"frozen={is_frozen()} python={sys.version.split()[0]} "
+            f"numpy={numpy.__version__} opencv={cv2.__version__} "
+            f"features={len(registry.features)} root={bundle_root()}"
+        )
+        return 0
+    except Exception as exc:
+        print(f"[self-test] failed: {type(exc).__name__}: {exc}", file=sys.stderr)
+        return 3
 
 
 def run_frozen_child(argv: list[str]) -> int:
