@@ -13,7 +13,7 @@ WAVE_MODES = (
     "chaotic_boundary",
     "audio_plate",
 )
-WAVE_PALETTES = ("spectral", "electric", "solar", "bio", "ultraviolet", "icefire")
+WAVE_PALETTES = ("cyan_magenta", "spectral", "electric", "solar", "bio", "ultraviolet", "icefire")
 
 _VERTEX = r"""
 #version 330
@@ -99,13 +99,13 @@ uniform int u_palette;
 in vec2 v_uv;
 out vec4 fragColor;
 #define TAU 6.283185307179586
-vec3 pal(float t){
+vec3 pal(float t){\n    if(u_palette==0) return vec3(.5+.5*cos(TAU*(t+.50)), .5+.5*cos(TAU*(t+.00)), .5+.5*cos(TAU*(t+.50)));
     t=fract(t);
-    if(u_palette==1)return .50+.50*cos(TAU*(vec3(1.0,.82,.63)*t+vec3(.56,.11,.02)));
-    if(u_palette==2)return .50+.50*cos(TAU*(vec3(1.0,.74,.55)*t+vec3(.02,.08,.16)));
-    if(u_palette==3)return .50+.50*cos(TAU*(vec3(.84,1.0,.70)*t+vec3(.42,.03,.20)));
-    if(u_palette==4)return .50+.50*cos(TAU*(vec3(.94,.74,1.0)*t+vec3(.72,.21,.03)));
-    if(u_palette==5)return .50+.50*cos(TAU*(vec3(1.0,.72,.82)*t+vec3(.55,.90,.12)));
+    if(u_palette==6)return .50+.50*cos(TAU*(vec3(1.0,.82,.63)*t+vec3(.56,.11,.02)));
+    if(u_palette==6)return .50+.50*cos(TAU*(vec3(1.0,.74,.55)*t+vec3(.02,.08,.16)));
+    if(u_palette==6)return .50+.50*cos(TAU*(vec3(.84,1.0,.70)*t+vec3(.42,.03,.20)));
+    if(u_palette==6)return .50+.50*cos(TAU*(vec3(.94,.74,1.0)*t+vec3(.72,.21,.03)));
+    if(u_palette==6)return .50+.50*cos(TAU*(vec3(1.0,.72,.82)*t+vec3(.55,.90,.12)));
     return .50+.50*cos(TAU*(vec3(1.0,.87,.72)*t+vec3(.01,.17,.44)));
 }
 void main(){
@@ -128,7 +128,7 @@ void main(){
 class WaveEquationRenderer:
     """Persistent damped 2-D wave equation with cymatic/eigenmode forcing."""
 
-    def __init__(self, width: int, height: int, *, mode: str = "membrane_drop", palette: str = "spectral", seed: int = 19) -> None:
+    def __init__(self, width: int, height: int, *, mode: str = "membrane_drop", palette: str = "cyan_magenta", seed: int = 19) -> None:
         import moderngl
 
         if mode not in WAVE_MODES:
