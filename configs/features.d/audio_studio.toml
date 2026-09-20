@@ -36,8 +36,8 @@ key = "palette"
 flag = "--palette"
 label = "Palette"
 type = "choice"
-default = "neon_aurora"
-choices = ["neon_aurora", "solar_flare", "bioluminescent", "intelli", "mono_accent", "prismatic"]
+default = "cyan_magenta"
+choices = ["cyan_magenta", "neon_aurora", "solar_flare", "bioluminescent", "intelli", "mono_accent", "prismatic"]
 
 [[feature.param]]
 key = "reactivity"
