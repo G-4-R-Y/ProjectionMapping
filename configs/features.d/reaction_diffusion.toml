@@ -20,8 +20,8 @@ key = "palette"
 flag = "--palette"
 label = "Palette"
 type = "choice"
-default = "ultraviolet"
-choices = ["ultraviolet", "bio", "solar", "electric", "mono"]
+default = "cyan_magenta"
+choices = ["cyan_magenta", "ultraviolet", "bio", "solar", "electric", "mono"]
 
 [[feature.param]]
 key = "steps"
