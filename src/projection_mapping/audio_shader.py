@@ -8,7 +8,7 @@ from .music_reactivity import MusicalSignals
 
 
 SCENES = ("journey", "aurora", "liquid", "pulse", "void", "cathedral")
-PALETTES = ("neon_aurora", "solar_flare", "bioluminescent", "intelli", "mono_accent", "prismatic")
+PALETTES = ("neon_aurora", "solar_flare", "bioluminescent", "intelli", "mono_accent", "prismatic", "cyan_magenta")
 
 _VERTEX = r"""
 #version 330
@@ -96,6 +96,8 @@ vec3 palette(float t) {
     }
     if (u_palette == 5)
         return cosinePalette(t, vec3(.50), vec3(.50), vec3(1.0,.82,.67), vec3(.00,.16,.39));
+    if (u_palette == 6)
+        return mix(vec3(.00,.96,1.00), vec3(1.00,.02,.78), .5+.5*cos(TAU*t));
     return cosinePalette(t, vec3(.42,.36,.53), vec3(.40,.44,.46), vec3(.92,.80,.72), vec3(.56,.12,.02));
 }
 
@@ -237,7 +239,7 @@ class AudioShaderRenderer:
         height: int,
         *,
         scene: str = "journey",
-        palette: str = "neon_aurora",
+        palette: str = "cyan_magenta",
         madness: float = 0.45,
         transition_seconds: float = 2.4,
         auto_scene_seconds: float = 28.0,
