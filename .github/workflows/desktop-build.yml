@@ -2,6 +2,14 @@ name: Desktop bundles
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/desktop-build.yml"
+      - "packaging/**"
+      - "src/**"
+      - "configs/**"
+      - "experiments/**"
+      - "pyproject.toml"
   push:
     branches:
       - main
