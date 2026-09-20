@@ -20,7 +20,7 @@ key = "palette"
 flag = "--palette"
 label = "Palette"
 type = "choice"
-default = "ultraviolet"
+default = "cyan_magenta"
 choices = ["cyan_magenta", "spectral", "electric", "solar", "bio", "ultraviolet", "icefire"]
 
 [[feature.param]]
