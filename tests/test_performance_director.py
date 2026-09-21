@@ -122,3 +122,38 @@ def test_shared_macro_rises_with_music_and_drop_energy():
     assert hot_state.macro.particle_emission > calm_state.macro.particle_emission
     assert hot_state.macro.shader_chaos > calm_state.macro.shader_chaos
     assert hot_state.macro.composite_mix > 0.0
+
+
+
+def test_external_controls_can_trigger_cues_and_change_madness():
+    director = PerformanceDirector(
+        journey="liquid_arc",
+        mode="hybrid",
+        base_madness=0.30,
+        transition_seconds=1.0,
+    )
+    director.update(_structure(), _signals(), 50.0)
+    director.set_base_madness(0.78)
+    director.trigger_cue("afterglow", 50.2)
+    state = director.update(_structure(), _signals(), 50.2)
+
+    assert director.base_madness == 0.78
+    assert state.target_cue == "afterglow"
+    assert state.active_transition
+
+
+def test_user_journey_can_be_registered_selected_and_advanced():
+    director = PerformanceDirector(
+        journey="liquid_arc",
+        mode="timed",
+        journeys={"my_set": ("afterglow", "data_build", "singularity_drop")},
+        transition_seconds=0.5,
+    )
+    director.update(_structure(), _signals(), 10.0)
+    director.set_journey("my_set", 10.1)
+    assert director.journey == "my_set"
+    assert director.current_cue == "afterglow"
+
+    director.next_cue(11.0)
+    state = director.update(_structure(), _signals(), 11.0)
+    assert state.target_cue == "data_build"
