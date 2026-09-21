@@ -20,6 +20,7 @@ PARAM_GROUP_ORDER = (
     "Output & Resolution",
     "Design Customization",
     "Behavior & Reactivity",
+    "Live Control",
     "Performance & Advanced",
 )
 
