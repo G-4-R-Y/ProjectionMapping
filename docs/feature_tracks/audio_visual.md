@@ -35,6 +35,9 @@ A performable visual instrument that responds to musical structure, not raw FFT 
 - Particle sprite materials: plasma, comet, spark, mote, shock-ring.
 - Smooth/Balanced/Punchy/Chaotic musical reactivity modes and Calm<->Madness macro remain available.
 - Curated shader performance banks: `journey_balanced`, `techno_pulse`, `ambient_void`, `liquid_melodic`, `cathedral_installation`, `acid_afterhours`.
+- New **Performance Director** composes the existing music bus, section/phrase tracker, Shader Performance Deck and persistent GPU particles into one instrument. It supports timed, musical and hybrid cue sequencing; confident drops can override the authored journey immediately.
+- The shared Performance Director macro turns base MADNESS + cue identity + macro musical energy into shader chaos/intensity/palette drift, particle emission/turbulence/bloom/vector-field force, and shader/particle composition. This is the first implementation of one macro driving multiple renderer families rather than independent per-feature knobs.
+- Initial authored journeys: `liquid_arc`, `neon_ritual`, `cosmic_rave`. Cue identities include liquid intro, membrane drift, data build, mercury rise, singularity drop, reactor release and oil afterglow.
 - Previous NumPy/OpenCV studio remains available as a CPU legacy fallback rather than the art-quality target.
 
 ## Quality ladder
@@ -128,7 +131,7 @@ The next step is not to spawn these on every beat. Asset spawning should happen 
 - Particle material rewrite still needs hardware tuning after the latest visual changes.
 - Cosmic vector fields are implemented and GL-smoke-covered but still need RTX/projector art tuning:
   tune gravity, advection and density so they read as astronomical motion rather than particle soup.
-- Shader/particle parameters are launch-time settings; no live hot-control/preset morphing yet.
+- Performance Director now morphs shader/particle presets live from musical/timed state; arbitrary operator hot-editing and user-saved snapshots are still pending.
 - Curated built-in banks exist, but user-saved named banks / A-B snapshots do not yet.
 - Transition duration and auto-pairing still need projector tuning; palette/material are global particle
   shader state and currently switch at the morph midpoint rather than being dual-rendered.
@@ -144,7 +147,7 @@ The next step is not to spawn these on every beat. Asset spawning should happen 
    morph; evaluate transition duration and the midpoint palette/material switch.
 6. Benchmark particle capacities 8k/16k/32k/65k and GL readback cost; preserve the lowest-latency visually dense operating point.
 7. Add chroma/key-class vector + harmonic-change descriptor; use them for palette/asset-state decisions rather than per-frame pixel motion.
-8. Add live local IPC/hot controls, user-named banks and A/B snapshots.
+8. Expose Performance Director macro/cue state over local IPC and add hot controls, user-named journeys and A/B snapshots.
 9. Add audio-reactive VFX-pack / generated-asset spawning: rare macro events can summon approved sprite/GLB entities with persistent lifetimes.
 10. Add MIDI/OSC mappings and Ableton Link/clock experiment.
 11. Move display to GL-native/shared texture and remove final readback.
