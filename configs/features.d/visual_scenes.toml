@@ -63,7 +63,7 @@ max = 2.0
 id = "shader_scene_lab"
 name = "Shader Scene Lab / ModernGL"
 category = "Visual Madness"
-description = "GPU fragment-shader scene research with seam-safe structured chaos, vivid emissive color and continuous domains. Liquid Chrome is the current aesthetic benchmark; Event Horizon is atan-free and the new singularity family is intentionally more chaotic. F11 toggles fullscreen."
+description = "GPU fragment-shader performance lab with liquid/chrome/oil/ferrofluid families, cyan-magenta-first palette control, palette cycling, and crossfading between any two scenes. F11 toggles fullscreen."
 command = ["python", "experiments/14_shader_scene_lab.py"]
 fullscreen = true
 requires_modules = ["moderngl"]
@@ -74,7 +74,41 @@ flag = "--scene"
 label = "Shader scene"
 type = "choice"
 default = "liquid_chrome"
-choices = ["event_horizon", "aurora_void", "liquid_chrome", "neon_cathedral", "wormhole_choir", "plasma_singularity", "vortex_crown", "collapse_flower"]
+choices = ["liquid_chrome", "liquid_membrane", "ferrofluid_bloom", "holographic_oil", "data_tide", "event_horizon", "aurora_void", "neon_cathedral", "wormhole_choir", "plasma_singularity", "vortex_crown", "collapse_flower"]
+
+[[feature.param]]
+key = "scene_b"
+flag = "--scene-b"
+label = "Crossfade target"
+type = "choice"
+default = "holographic_oil"
+choices = ["liquid_chrome", "liquid_membrane", "ferrofluid_bloom", "holographic_oil", "data_tide", "event_horizon", "aurora_void", "neon_cathedral", "wormhole_choir", "plasma_singularity", "vortex_crown", "collapse_flower"]
+
+[[feature.param]]
+key = "scene_mix"
+flag = "--scene-mix"
+label = "Scene crossfade"
+type = "float"
+default = 0.18
+min = 0.0
+max = 1.0
+
+[[feature.param]]
+key = "palette"
+flag = "--palette"
+label = "Palette"
+type = "choice"
+default = "cyan_magenta"
+choices = ["cyan_magenta", "ultraviolet", "deep_ocean", "sunset_neon", "spectral", "mono"]
+
+[[feature.param]]
+key = "palette_cycle"
+flag = "--palette-cycle"
+label = "Palette drift"
+type = "float"
+default = 0.025
+min = -0.25
+max = 0.25
 
 [[feature.param]]
 key = "chaos"
@@ -147,6 +181,86 @@ type = "float"
 default = 1.0
 min = 0.0
 max = 2.5
+
+[[feature]]
+id = "shader_preset_deck"
+name = "Shader Performance Deck"
+category = "Visual Madness"
+description = "Curated one-click GPU looks for performance: liquid neon, ferrofluid/mercury blooms, membranes, data tides, cathedral haze, and singularity blends. Presets set scene pair, crossfade, palette, chaos, animation speed, emissive level and palette drift."
+command = ["python", "experiments/14_shader_scene_lab.py"]
+fullscreen = true
+requires_modules = ["moderngl"]
+
+[[feature.param]]
+key = "preset"
+flag = "--preset"
+label = "Performance preset"
+type = "choice"
+default = "liquid_neon"
+choices = ["liquid_neon", "mercury_bloom", "membrane_flux", "data_tide", "cathedral_dream", "singularity_choir"]
+
+[[feature.param]]
+key = "display"
+flag = "--display"
+label = "Projector display"
+type = "int"
+default = 1
+min = 0
+max = 8
+
+[[feature.param]]
+key = "speed"
+flag = "--speed"
+label = "Preset speed multiplier"
+type = "float"
+default = 1.0
+min = 0.1
+max = 3.0
+
+[[feature.param]]
+key = "intensity"
+flag = "--intensity"
+label = "Preset intensity multiplier"
+type = "float"
+default = 1.0
+min = 0.2
+max = 2.5
+
+[[feature.param]]
+key = "render_width"
+flag = "--render-width"
+label = "Shader render width"
+type = "int"
+default = 960
+min = 320
+max = 1920
+
+[[feature.param]]
+key = "render_height"
+flag = "--render-height"
+label = "Shader render height"
+type = "int"
+default = 540
+min = 240
+max = 1080
+
+[[feature.param]]
+key = "projector_width"
+flag = "--projector-width"
+label = "Projector width"
+type = "int"
+default = 1920
+min = 320
+max = 7680
+
+[[feature.param]]
+key = "projector_height"
+flag = "--projector-height"
+label = "Projector height"
+type = "int"
+default = 1080
+min = 240
+max = 4320
 
 [[feature]]
 id = "polar_math_lab"
