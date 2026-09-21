@@ -160,6 +160,8 @@ See [`ROADMAP.md`](ROADMAP.md) for detailed deliverables, exit criteria, extensi
 - latest-frame-wins worker and runtime telemetry
 - StreamDiffusion benchmark harness
 - first spatially locked Room Skin prototype
+- unified Performance Director combining musical section/phrase tracking, Shader Performance Deck cues, persistent GPU particle choreography, and one shared MADNESS macro
+- timed / musical / hybrid audiovisual journeys with drop overrides and smooth shader/particle cue morphing
 - modular realtime runtime loop
 - OpenCV fullscreen sink
 - Spout adapter interface + diagnostics on Windows
