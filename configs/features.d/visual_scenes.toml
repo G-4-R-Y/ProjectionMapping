@@ -197,7 +197,7 @@ flag = "--preset"
 label = "Performance preset"
 type = "choice"
 default = "liquid_neon"
-choices = ["liquid_neon", "mercury_bloom", "membrane_flux", "data_tide", "cathedral_dream", "singularity_choir"]
+choices = ["liquid_neon", "mercury_bloom", "membrane_flux", "data_tide", "cathedral_dream", "singularity_choir", "oil_afterglow"]
 
 [[feature.param]]
 key = "display"

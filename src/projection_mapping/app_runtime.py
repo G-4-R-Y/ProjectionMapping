@@ -65,11 +65,16 @@ def desktop_self_test() -> int:
         importlib.import_module("glcontext")
 
         from .feature_registry import load_registry
+        from .performance_director import validate_performance_catalog
 
         registry = load_registry()
+        validate_performance_catalog()
         cyber = registry.by_id("cyber_mage")
         if cyber.defaults().get("palette") != "cyan_magenta":
             raise RuntimeError("Cyber Mage registry default is not cyan_magenta")
+        director = registry.by_id("performance_director")
+        if director.defaults().get("journey") != "liquid_arc":
+            raise RuntimeError("Performance Director registry default is not liquid_arc")
 
         print(
             "[self-test] ok "

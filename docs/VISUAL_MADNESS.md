@@ -80,6 +80,37 @@ The design rule is to treat liquid/chrome as a reusable material language, not a
 Crossfades should preserve continuous motion so changing looks feels like the projected material is
 mutating rather than switching scenes.
 
+## Performance Director
+
+The high-level performance layer now treats shaders and particles as one instrument:
+
+```text
+AudioFeatures
+  -> MusicalSignals
+  -> MusicStructure
+  -> PerformanceDirector
+       -> cue identity / transition
+       -> shared MADNESS macro
+       -> Shader Performance Deck
+       -> GPU particle choreography
+  -> screen/additive composition
+  -> projector
+```
+
+Three sequencing modes are implemented:
+
+- `timed` — authored cue journeys with deterministic maximum dwell;
+- `musical` — breakdown/build/drop/release evidence selects cue identity;
+- `hybrid` — authored journey is the backbone, phrase/section changes steer it, and strong drops
+  can interrupt immediately.
+
+The shared macro intentionally changes several visual dimensions at once. As MADNESS rises, shader
+chaos/intensity/palette drift, particle emission/turbulence/bloom/vector-field force, and the
+shader/particle composite amount rise together. It is a coordinated art-direction control, not a
+single brightness knob.
+
+Initial journeys: `liquid_arc`, `neon_ritual`, `cosmic_rave`.
+
 ## Temporal strategy
 
 A slower neural renderer should create semantic keyframes. Between them:

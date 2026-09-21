@@ -299,6 +299,113 @@ def main() -> None:
         finally:
             field.close()
 
+
+    def performance_director() -> None:
+        from projection_mapping.gpu_particles import GPUParticleField
+        from projection_mapping.music_reactivity import MusicalSignals
+        from projection_mapping.music_structure import MusicStructure
+        from projection_mapping.particle_choreography import choreography
+        from projection_mapping.performance_director import (
+            PERFORMANCE_CUES,
+            PerformanceDirector,
+        )
+        from projection_mapping.shader_scenes import SHADER_SCENE_PRESETS, ShaderSceneRenderer
+
+        signals = MusicalSignals(
+            loudness=.88,
+            bass=.84,
+            mids=.66,
+            highs=.52,
+            color=.74,
+            strike=.76,
+            beat=.72,
+            ascension=.30,
+            tempo_bpm=126.0,
+            beat_phase=.18,
+            bar_phase=.55,
+            beat_confidence=.86,
+            section_energy=.82,
+            drop=.91,
+        )
+        structure = MusicStructure(
+            section="drop",
+            confidence=.96,
+            phrase_phase=.02,
+            energy_fast=.86,
+            energy_slow=.58,
+            energy_slope=.28,
+            bars_seen=16,
+        )
+        director = PerformanceDirector(
+            journey="liquid_arc",
+            mode="hybrid",
+            base_madness=.48,
+            transition_seconds=.8,
+            minimum_dwell=4.0,
+        )
+        director.update(structure, signals, 10.0)
+        state = director.update(structure, signals, 10.1)
+        cue = PERFORMANCE_CUES[state.target_cue]
+        assert state.target_cue == "singularity_drop"
+
+        shader = ShaderSceneRenderer(192, 108)
+        field = GPUParticleField(192, 108, capacity=2048, palette="cyan_magenta")
+        try:
+            preset = SHADER_SCENE_PRESETS[cue.shader_preset]
+            shader_frame = shader.render(
+                preset.scene,
+                t=.73 * preset.speed,
+                intensity=preset.intensity * state.macro.shader_intensity,
+                chaos=min(2.5, preset.chaos * .50 + state.macro.shader_chaos * .58),
+                palette=preset.palette,
+                palette_shift=.13,
+                scene_b=preset.scene_b,
+                scene_mix=preset.scene_mix,
+            )
+            _assert_frame(shader_frame, (108, 192, 3), "performance_shader", 6)
+
+            choreo = choreography(cue.particle_bank, signals, .73, state.macro.madness)
+            field.palette = field.PALETTES.get(choreo.palette, field.PALETTES["cyan_magenta"])
+            field.set_material(choreo.material)
+            particle_frame = None
+            for i in range(10):
+                particle_frame = field.render(
+                    list(choreo.emitters),
+                    t=.73 + i / 60.0,
+                    dt=1 / 60,
+                    emission_rate=choreo.emission_rate * state.macro.particle_emission,
+                    turbulence=choreo.turbulence * state.macro.particle_turbulence,
+                    drag=choreo.drag,
+                    feedback=choreo.feedback,
+                    bloom=choreo.bloom * state.macro.particle_bloom,
+                    energy=1.15,
+                    bass=signals.bass,
+                    strike=signals.strike,
+                    drop=signals.drop,
+                    field_mode=choreo.field_mode,
+                    field_strength=choreo.field_strength * state.macro.field_force,
+                    field_scale=choreo.field_scale,
+                    field_spin=choreo.field_spin,
+                    well_strength=choreo.well_strength * 1.2,
+                    nebula_mix=choreo.nebula_mix * 1.1,
+                )
+            assert particle_frame is not None
+            _assert_frame(particle_frame, (108, 192, 3), "performance_particles", 4)
+
+            a = particle_frame.astype(np.float32) / 255.0
+            b = shader_frame.astype(np.float32) / 255.0 * state.macro.composite_mix
+            composite = np.clip((1.0 - (1.0 - a) * (1.0 - b)) * 255.0, 0, 255).astype(np.uint8)
+            _assert_frame(composite, (108, 192, 3), "performance_composite", 8)
+            print(
+                f"[visual-probe]   performance cue={state.target_cue} macro={state.macro.madness:.2f} "
+                f"shader_peak={int(shader_frame.max())} particle_peak={int(particle_frame.max())} "
+                f"composite_peak={int(composite.max())}",
+                flush=True,
+            )
+        finally:
+            field.close()
+            shader.close()
+
     ok &= _probe("Polar Math all modes @ chaos=1.25", polar)
     ok &= _probe("Shader Scene Lab all modes + seam regression", scenes)
     ok &= _probe("Famous Math all modes", famous_math)
@@ -313,6 +420,7 @@ def main() -> None:
     ok &= _probe("Classic attractor GPU point clouds", attractors)
     ok &= _probe("Sinkhorn optimal-transport morphs", optimal_transport)
     ok &= _probe("GPU particle materials", particles)
+    ok &= _probe("Performance Director shader + particle composite", performance_director)
     if not ok:
         raise SystemExit(2)
     print("[visual-probe] PASS", flush=True)
