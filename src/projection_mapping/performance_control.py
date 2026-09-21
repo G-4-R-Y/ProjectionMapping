@@ -257,6 +257,7 @@ class MIDIControlInput:
     def list_devices() -> tuple[str, ...]:
         try:
             import mido
+            mido.set_backend("mido.backends.rtmidi")
         except ImportError as exc:
             raise RuntimeError(
                 "MIDI control requires the controls extra: python -m pip install -e '.[controls]'"
@@ -293,6 +294,7 @@ class MIDIControlInput:
     def start(self) -> "MIDIControlInput":
         try:
             import mido
+            mido.set_backend("mido.backends.rtmidi")
         except ImportError as exc:
             raise RuntimeError(
                 "MIDI control requires the controls extra: python -m pip install -e '.[controls]'"
