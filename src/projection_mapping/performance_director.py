@@ -120,8 +120,19 @@ class PerformanceDirector:
         cue_seconds: float = 24.0,
         transition_seconds: float = 3.0,
         minimum_dwell: float = 5.0,
+        journeys: dict[str, tuple[str, ...]] | None = None,
     ) -> None:
-        if journey not in PERFORMANCE_JOURNEYS:
+        self._journeys = dict(PERFORMANCE_JOURNEYS)
+        if journeys:
+            for name, sequence in journeys.items():
+                seq = tuple(sequence)
+                if not seq:
+                    raise ValueError(f"performance journey {name!r} cannot be empty")
+                unknown = [cue for cue in seq if cue not in PERFORMANCE_CUES]
+                if unknown:
+                    raise ValueError(f"performance journey {name!r} has unknown cues: {unknown}")
+                self._journeys[str(name)] = seq
+        if journey not in self._journeys:
             raise ValueError(f"unknown performance journey: {journey}")
         if mode not in {"timed", "musical", "hybrid"}:
             raise ValueError(f"unknown performance director mode: {mode}")
@@ -132,7 +143,7 @@ class PerformanceDirector:
         self.transition_seconds = float(max(transition_seconds, 0.05))
         self.minimum_dwell = float(max(minimum_dwell, 1.0))
 
-        sequence = PERFORMANCE_JOURNEYS[journey]
+        sequence = self._journeys[journey]
         self._index = 0
         self._source = sequence[0]
         self._target = sequence[0]
@@ -146,8 +157,49 @@ class PerformanceDirector:
     def current_cue(self) -> str:
         return self._target
 
+    @property
+    def journey_names(self) -> tuple[str, ...]:
+        return tuple(self._journeys)
+
+    def set_base_madness(self, value: float) -> None:
+        self.base_madness = float(np.clip(value, 0.0, 1.0))
+
+    def set_mode(self, mode: str) -> None:
+        if mode not in {"timed", "musical", "hybrid"}:
+            raise ValueError(f"unknown performance director mode: {mode}")
+        self.mode = mode
+
+    def trigger_cue(self, cue: str, now: float) -> None:
+        if cue not in PERFORMANCE_CUES:
+            raise ValueError(f"unknown performance cue: {cue}")
+        self._accept(cue, float(now), urgent=True)
+
+    def next_cue(self, now: float) -> None:
+        self._accept(self._sequence_next(), float(now), urgent=True)
+
+    def set_journey(self, journey: str, now: float, *, trigger_first: bool = True) -> None:
+        if journey not in self._journeys:
+            raise ValueError(f"unknown performance journey: {journey}")
+        self.journey = journey
+        sequence = self._journeys[journey]
+        try:
+            self._index = sequence.index(self._target)
+        except ValueError:
+            self._index = 0
+            if trigger_first:
+                self._accept(sequence[0], float(now), urgent=True)
+
+    def register_journey(self, name: str, sequence: tuple[str, ...]) -> None:
+        seq = tuple(sequence)
+        if not seq:
+            raise ValueError("performance journey cannot be empty")
+        unknown = [cue for cue in seq if cue not in PERFORMANCE_CUES]
+        if unknown:
+            raise ValueError(f"performance journey {name!r} has unknown cues: {unknown}")
+        self._journeys[str(name)] = seq
+
     def _sequence_next(self) -> str:
-        sequence = PERFORMANCE_JOURNEYS[self.journey]
+        sequence = self._journeys[self.journey]
         try:
             current_index = sequence.index(self._target)
         except ValueError:
