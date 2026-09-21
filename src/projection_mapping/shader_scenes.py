@@ -505,6 +505,7 @@ SHADER_SCENE_PRESETS = {
     "data_tide": ShaderScenePreset("data_tide", "liquid_membrane", .18, "deep_ocean", 1.20, .95, 1.08, .028),
     "cathedral_dream": ShaderScenePreset("neon_cathedral", "aurora_void", .22, "cyan_magenta", 1.05, .62, 1.10, .018),
     "singularity_choir": ShaderScenePreset("event_horizon", "wormhole_choir", .36, "ultraviolet", 1.62, .88, 1.16, .026),
+    "oil_afterglow": ShaderScenePreset("holographic_oil", "liquid_membrane", .20, "cyan_magenta", .82, .48, .92, .012),
 }
 
 
