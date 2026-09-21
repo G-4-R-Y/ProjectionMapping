@@ -61,6 +61,25 @@ person     -> neural mirror
 hands      -> particle/fluid emitters
 ```
 
+## Shader performance deck
+
+The ModernGL Shader Scene Lab is now a performance instrument rather than a single-look experiment.
+
+- liquid family: `liquid_chrome`, `liquid_membrane`, `holographic_oil`, `ferrofluid_bloom`, `data_tide`
+- palette layer: cyan/magenta default, plus ultraviolet, deep ocean, sunset neon, spectral and mono
+- any scene can crossfade into any other scene inside the same shader pass
+- palette phase can drift continuously without changing geometry
+- curated presets combine scene pair, crossfade, palette, chaos, speed, intensity and palette drift
+- `Shader Performance Deck` exposes the presets as one-click looks; `Shader Scene Lab` remains the detailed manual surface
+
+Current preset bank:
+`liquid_neon`, `mercury_bloom`, `membrane_flux`, `data_tide`,
+`cathedral_dream`, and `singularity_choir`.
+
+The design rule is to treat liquid/chrome as a reusable material language, not a one-off effect.
+Crossfades should preserve continuous motion so changing looks feels like the projected material is
+mutating rather than switching scenes.
+
 ## Temporal strategy
 
 A slower neural renderer should create semantic keyframes. Between them:

@@ -67,12 +67,19 @@ def main() -> None:
             r.close()
 
     def scenes() -> None:
-        from projection_mapping.shader_scenes import SCENE_IDS, ShaderSceneRenderer
+        from projection_mapping.shader_scenes import PALETTE_IDS, SCENE_IDS, SHADER_SCENE_PRESETS, ShaderSceneRenderer
 
         r = ShaderSceneRenderer(321, 181)
         try:
             for i, scene in enumerate(SCENE_IDS):
-                frame = r.render(scene, t=0.43 + i * 0.13, intensity=1.0, chaos=1.25)
+                frame = r.render(
+                    scene,
+                    t=0.43 + i * 0.13,
+                    intensity=1.0,
+                    chaos=1.25,
+                    palette="cyan_magenta",
+                    palette_shift=0.07,
+                )
                 _assert_frame(frame, (181, 321, 3), scene, 8)
                 print(f"[visual-probe]   scene={scene} peak={int(frame.max())} mean={float(frame.mean()):.2f}", flush=True)
                 if scene == "event_horizon":
@@ -81,6 +88,29 @@ def main() -> None:
                     assert seam_mean < 38.0 and seam_p95 < 96.0, (
                         f"Event Horizon seam regression: mean={seam_mean:.2f}, p95={seam_p95:.2f}"
                     )
+
+            blend = r.render(
+                "liquid_chrome",
+                t=0.91,
+                intensity=1.1,
+                chaos=1.35,
+                palette="cyan_magenta",
+                palette_shift=0.13,
+                scene_b="holographic_oil",
+                scene_mix=0.42,
+            )
+            _assert_frame(blend, (181, 321, 3), "liquid_crossfade", 8)
+            print(
+                f"[visual-probe]   scene-crossfade peak={int(blend.max())} mean={float(blend.mean()):.2f}",
+                flush=True,
+            )
+            for name, preset in SHADER_SCENE_PRESETS.items():
+                assert preset.scene in SCENE_IDS and preset.scene_b in SCENE_IDS
+                assert preset.palette in PALETTE_IDS
+            print(
+                f"[visual-probe]   presets={len(SHADER_SCENE_PRESETS)} palettes={len(PALETTE_IDS)}",
+                flush=True,
+            )
         finally:
             r.close()
 
