@@ -51,7 +51,7 @@ def release_runtime_resources() -> None:
 
 def desktop_self_test() -> int:
     """Exercise the installed/frozen desktop runtime without opening a window."""
-    checks = ("numpy", "cv2", "textual", "moderngl", "glcontext", "soundcard")
+    checks = ("numpy", "cv2", "textual", "moderngl", "glcontext", "soundcard", "pythonosc", "mido", "rtmidi")
     missing = [name for name in checks if importlib.util.find_spec(name) is None]
     if missing:
         print("[self-test] missing modules: " + ", ".join(missing), file=sys.stderr)
@@ -65,6 +65,7 @@ def desktop_self_test() -> int:
         importlib.import_module("glcontext")
 
         from .feature_registry import load_registry
+        from .performance_control import HOT_CUES, PerformanceControlBus
         from .performance_director import validate_performance_catalog
 
         registry = load_registry()
@@ -75,6 +76,12 @@ def desktop_self_test() -> int:
         director = registry.by_id("performance_director")
         if director.defaults().get("journey") != "liquid_arc":
             raise RuntimeError("Performance Director registry default is not liquid_arc")
+        if director.defaults().get("osc_port") != 9000:
+            raise RuntimeError("Performance Director OSC default is not 9000")
+        control_bus = PerformanceControlBus()
+        control_bus.emit("cue", HOT_CUES[0])
+        if control_bus.drain()[0].args != (HOT_CUES[0],):
+            raise RuntimeError("Performance Director control bus failed frozen self-test")
 
         print(
             "[self-test] ok "

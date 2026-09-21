@@ -38,6 +38,8 @@ A performable visual instrument that responds to musical structure, not raw FFT 
 - New **Performance Director** composes the existing music bus, section/phrase tracker, Shader Performance Deck and persistent GPU particles into one instrument. It supports timed, musical and hybrid cue sequencing; confident drops can override the authored journey immediately.
 - The shared Performance Director macro turns base MADNESS + cue identity + macro musical energy into shader chaos/intensity/palette drift, particle emission/turbulence/bloom/vector-field force, and shader/particle composition. This is the first implementation of one macro driving multiple renderer families rather than independent per-feature knobs.
 - Initial authored journeys: `liquid_arc`, `neon_ritual`, `cosmic_rave`. Cue identities include liquid intro, membrane drift, data build, mercury rise, singularity drop, reactor release and oil afterglow.
+- Performance Director now has a live operator layer: keyboard hot cues, configurable MIDI CC/note mapping, localhost OSC commands, persistent named snapshots, and saved user journeys. Manual actions feed the same director state machine rather than bypassing musical transitions.
+- MIDI default mapping: CC1 drives MADNESS; notes 36-43 trigger the eight cue identities; 44 advances; 45/46 save/load A; 47/48 save/load B. OSC exposes matching `/pm/*` commands.
 - Previous NumPy/OpenCV studio remains available as a CPU legacy fallback rather than the art-quality target.
 
 ## Quality ladder
@@ -147,7 +149,7 @@ The next step is not to spawn these on every beat. Asset spawning should happen 
    morph; evaluate transition duration and the midpoint palette/material switch.
 6. Benchmark particle capacities 8k/16k/32k/65k and GL readback cost; preserve the lowest-latency visually dense operating point.
 7. Add chroma/key-class vector + harmonic-change descriptor; use them for palette/asset-state decisions rather than per-frame pixel motion.
-8. Expose Performance Director macro/cue state over local IPC and add hot controls, user-named journeys and A/B snapshots.
+8. ✅ Performance Director hot controls, MIDI/OSC input, persistent A/B snapshots and user journeys implemented; next extend state broadcast/output and controller feedback.
 9. Add audio-reactive VFX-pack / generated-asset spawning: rare macro events can summon approved sprite/GLB entities with persistent lifetimes.
 10. Add MIDI/OSC mappings and Ableton Link/clock experiment.
 11. Move display to GL-native/shared texture and remove final readback.

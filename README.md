@@ -162,6 +162,7 @@ See [`ROADMAP.md`](ROADMAP.md) for detailed deliverables, exit criteria, extensi
 - first spatially locked Room Skin prototype
 - unified Performance Director combining musical section/phrase tracking, Shader Performance Deck cues, persistent GPU particle choreography, and one shared MADNESS macro
 - timed / musical / hybrid audiovisual journeys with drop overrides and smooth shader/particle cue morphing
+- live Performance Director control via keyboard, MIDI and localhost OSC, with persistent A/B snapshots and user journeys
 - modular realtime runtime loop
 - OpenCV fullscreen sink
 - Spout adapter interface + diagnostics on Windows
@@ -209,4 +210,5 @@ See [`docs/RESEARCH_WATCH.md`](docs/RESEARCH_WATCH.md) for the curation and auto
 - [`docs/HARDWARE_BRINGUP.md`](docs/HARDWARE_BRINGUP.md) — physical setup and bring-up order
 - [`docs/RTX4080.md`](docs/RTX4080.md) — hardware-specific starting points and tuning notes
 - [`docs/VISUAL_MADNESS.md`](docs/VISUAL_MADNESS.md) — artistic direction and high-intensity visual concepts
+- [`docs/PERFORMANCE_CONTROL.md`](docs/PERFORMANCE_CONTROL.md) — Performance Director keyboard, MIDI, OSC, snapshots, and user journeys
 - [`docs/PROGRESS.md`](docs/PROGRESS.md) — implemented vs hardware-validated status
