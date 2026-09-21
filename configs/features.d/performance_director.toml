@@ -2,7 +2,7 @@
 id = "performance_director"
 name = "Performance Director / Shader + Particles"
 category = "Visual Madness"
-description = "Unified audiovisual conductor: music-aware section/phrase tracking chooses coordinated shader presets and GPU particle choreography while one smoothed MADNESS macro drives chaos, palette drift, scene morphing, particle density/turbulence/bloom, vector-field force, and layer composition. Hybrid mode follows musical structure but falls back to authored timed journeys. F11 toggles fullscreen."
+description = "Unified audiovisual conductor with live keyboard, OSC and MIDI control. Music-aware section/phrase tracking chooses coordinated shader presets and GPU particle choreography while one smoothed MADNESS macro drives chaos, palette drift, scene morphing, particle density/turbulence/bloom, vector-field force, and layer composition. Supports persistent A/B snapshots and user journeys. F11 toggles fullscreen."
 command = ["python", "experiments/33_performance_director.py"]
 fullscreen = true
 requires_modules = ["soundcard", "moderngl"]
@@ -23,6 +23,85 @@ label = "Audio device name/id (optional)"
 type = "text"
 default = ""
 group = "System & Input"
+
+[[feature.param]]
+key = "osc_host"
+flag = "--osc-host"
+label = "OSC bind host"
+type = "text"
+default = "127.0.0.1"
+group = "Live Control"
+help = "OSC is localhost-only by default. Use another bind address only when you intentionally want LAN controllers."
+
+[[feature.param]]
+key = "osc_port"
+flag = "--osc-port"
+label = "OSC UDP port (0 = off)"
+type = "int"
+default = 9000
+min = 0
+max = 65535
+group = "Live Control"
+
+[[feature.param]]
+key = "midi"
+flag = "--midi"
+label = "Enable MIDI input"
+type = "bool"
+default = false
+group = "Live Control"
+
+[[feature.param]]
+key = "midi_device"
+flag = "--midi-device"
+label = "MIDI device substring"
+type = "text"
+default = ""
+group = "Live Control"
+
+[[feature.param]]
+key = "midi_madness_cc"
+flag = "--midi-madness-cc"
+label = "MADNESS MIDI CC"
+type = "int"
+default = 1
+min = 0
+max = 127
+group = "Live Control"
+
+[[feature.param]]
+key = "midi_note_base"
+flag = "--midi-note-base"
+label = "Hot-cue MIDI base note"
+type = "int"
+default = 36
+min = 0
+max = 115
+group = "Live Control"
+
+[[feature.param]]
+key = "user_journey"
+flag = "--user-journey"
+label = "Saved user journey name"
+type = "text"
+default = ""
+group = "Live Control"
+
+[[feature.param]]
+key = "load_snapshot"
+flag = "--load-snapshot"
+label = "Load snapshot on launch"
+type = "text"
+default = ""
+group = "Live Control"
+
+[[feature.param]]
+key = "state_file"
+flag = "--state-file"
+label = "State vault path (optional)"
+type = "text"
+default = ""
+group = "Performance & Advanced"
 
 [[feature.param]]
 key = "sensitivity"
