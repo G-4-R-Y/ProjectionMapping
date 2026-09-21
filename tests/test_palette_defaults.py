@@ -24,6 +24,7 @@ def test_visual_palette_defaults_use_cyan_magenta():
         ("audio_reactive_studio_cpu", "palette"),
         ("human_reactor", "palette"),
         ("performer_fx_gpu", "style"),
+        ("shader_scene_lab", "palette"),
     }
     for feature_id, key in expected:
         assert _default(registry, feature_id, key) == "cyan_magenta"
