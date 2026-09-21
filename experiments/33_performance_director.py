@@ -24,6 +24,14 @@ from projection_mapping.gpu_particles import GPUParticleField
 from projection_mapping.music_reactivity import MusicalEventMapper
 from projection_mapping.music_structure import MusicStructureTracker
 from projection_mapping.particle_choreography import blend_choreographies, choreography
+from projection_mapping.performance_control import (
+    MIDIControlInput,
+    OSCControlServer,
+    PerformanceControlBus,
+    PerformanceSnapshot,
+    PerformanceStateStore,
+    keyboard_events,
+)
 from projection_mapping.performance_director import (
     PERFORMANCE_CUES,
     PERFORMANCE_JOURNEYS,
@@ -60,6 +68,16 @@ def main() -> None:
     ap.add_argument("--source", choices=["system", "mic"], default="system")
     ap.add_argument("--device", default=None)
     ap.add_argument("--list-devices", action="store_true")
+    ap.add_argument("--list-midi", action="store_true")
+    ap.add_argument("--osc-host", default="127.0.0.1")
+    ap.add_argument("--osc-port", type=int, default=9000)
+    ap.add_argument("--midi", action="store_true")
+    ap.add_argument("--midi-device", default=None)
+    ap.add_argument("--midi-madness-cc", type=int, default=1)
+    ap.add_argument("--midi-note-base", type=int, default=36)
+    ap.add_argument("--state-file", default=None)
+    ap.add_argument("--user-journey", default=None)
+    ap.add_argument("--load-snapshot", default=None)
     ap.add_argument("--journey", choices=sorted(PERFORMANCE_JOURNEYS), default="liquid_arc")
     ap.add_argument("--director-mode", choices=["hybrid", "musical", "timed"], default="hybrid")
     ap.add_argument("--cue-seconds", type=float, default=24.0)
@@ -84,6 +102,28 @@ def main() -> None:
     if args.list_devices:
         print(format_device_table(list_audio_devices()))
         return
+    if args.list_midi:
+        for index, name in enumerate(MIDIControlInput.list_devices()):
+            print(f"{index}: {name}")
+        return
+
+    store = PerformanceStateStore(args.state_file)
+    saved_journeys = store.journeys()
+    invalid_journeys = {
+        name: cues
+        for name, cues in saved_journeys.items()
+        if any(cue not in PERFORMANCE_CUES for cue in cues)
+    }
+    for name in invalid_journeys:
+        saved_journeys.pop(name, None)
+        print(f"[director-control] ignoring invalid saved journey={name!r}", flush=True)
+
+    active_journey = args.user_journey or args.journey
+    if active_journey not in PERFORMANCE_JOURNEYS and active_journey not in saved_journeys:
+        raise SystemExit(
+            f"unknown journey {active_journey!r}; builtins={sorted(PERFORMANCE_JOURNEYS)} "
+            f"saved={sorted(saved_journeys)}"
+        )
 
     shader = ShaderSceneRenderer(args.render_width, args.render_height)
     particles = GPUParticleField(
@@ -106,13 +146,98 @@ def main() -> None:
     )
     structure_tracker = MusicStructureTracker()
     director = PerformanceDirector(
-        journey=args.journey,
+        journey=active_journey,
         mode=args.director_mode,
         base_madness=args.madness,
         cue_seconds=args.cue_seconds,
         transition_seconds=args.transition_seconds,
         minimum_dwell=args.minimum_dwell,
+        journeys=saved_journeys,
     )
+    controls = PerformanceControlBus()
+
+    def snapshot(name: str) -> PerformanceSnapshot:
+        return PerformanceSnapshot(
+            name=name,
+            cue=director.current_cue,
+            journey=director.journey,
+            mode=director.mode,
+            madness=director.base_madness,
+        )
+
+    def ensure_saved_journey(name: str) -> bool:
+        if name in director.journey_names:
+            return True
+        sequence = store.journeys().get(name)
+        if not sequence:
+            return False
+        try:
+            director.register_journey(name, sequence)
+        except ValueError as exc:
+            print(f"[director-control] invalid saved journey {name!r}: {exc}", flush=True)
+            return False
+        return True
+
+    def apply_snapshot(name: str, now: float) -> None:
+        saved = store.get_snapshot(name)
+        if saved is None:
+            print(f"[director-control] snapshot {name!r} does not exist", flush=True)
+            return
+        if ensure_saved_journey(saved.journey):
+            director.set_journey(saved.journey, now, trigger_first=False)
+        director.set_mode(saved.mode)
+        director.set_base_madness(saved.madness)
+        director.trigger_cue(saved.cue, now)
+        print(
+            f"[director-control] loaded snapshot={name} cue={saved.cue} "
+            f"journey={saved.journey} madness={saved.madness:.2f}",
+            flush=True,
+        )
+
+    def apply_control(event, now: float) -> None:
+        action = event.action
+        args_ = event.args
+        try:
+            if action == "madness":
+                director.set_base_madness(float(args_[0]))
+            elif action == "madness_delta":
+                director.set_base_madness(director.base_madness + float(args_[0]))
+            elif action == "cue":
+                director.trigger_cue(str(args_[0]), now)
+            elif action == "next":
+                director.next_cue(now)
+            elif action == "mode":
+                director.set_mode(str(args_[0]))
+            elif action == "journey":
+                name = str(args_[0])
+                if not ensure_saved_journey(name):
+                    print(f"[director-control] unknown journey={name!r}", flush=True)
+                    return
+                director.set_journey(name, now)
+            elif action == "journey_save":
+                name = str(args_[0])
+                cues = tuple(str(cue) for cue in args_[1:])
+                store.save_journey(name, cues)
+                director.register_journey(name, cues)
+                print(f"[director-control] saved journey={name} cues={','.join(cues)}", flush=True)
+            elif action == "snapshot_save":
+                name = str(args_[0])
+                saved = snapshot(name)
+                store.save_snapshot(saved)
+                print(
+                    f"[director-control] saved snapshot={name} cue={saved.cue} "
+                    f"journey={saved.journey} madness={saved.madness:.2f}",
+                    flush=True,
+                )
+            elif action == "snapshot_load":
+                apply_snapshot(str(args_[0]), now)
+            else:
+                print(f"[director-control] ignored unknown action={action!r}", flush=True)
+        except (ValueError, IndexError, TypeError) as exc:
+            print(f"[director-control] rejected {action}: {exc}", flush=True)
+
+    if args.load_snapshot:
+        apply_snapshot(args.load_snapshot, time.perf_counter())
 
     audio = AudioFeatureStream(
         source=args.source,
@@ -155,9 +280,42 @@ def main() -> None:
             scene_mix=scene_mix,
         )
 
+    osc = None
+    midi = None
+    if args.osc_port > 0:
+        try:
+            osc = OSCControlServer(controls, host=args.osc_host, port=args.osc_port).start()
+            print(
+                f"[director-control] OSC listening udp://{args.osc_host}:{args.osc_port}",
+                flush=True,
+            )
+        except RuntimeError as exc:
+            print(f"[director-control] OSC disabled: {exc}", flush=True)
+    if args.midi:
+        try:
+            midi = MIDIControlInput(
+                controls,
+                device=args.midi_device,
+                madness_cc=args.midi_madness_cc,
+                note_base=args.midi_note_base,
+                journey_names=director.journey_names,
+            ).start()
+            print(
+                f"[director-control] MIDI input={midi.device} cc={args.midi_madness_cc} "
+                f"note_base={args.midi_note_base}",
+                flush=True,
+            )
+        except RuntimeError as exc:
+            print(f"[director-control] MIDI disabled: {exc}", flush=True)
+
     print(
-        f"[director] journey={args.journey} mode={args.director_mode} particles={particles.capacity} "
+        f"[director] journey={director.journey} mode={director.mode} particles={particles.capacity} "
         f"shader_gl={shader.context_info.gl_version} particle_gl={particles.context_info.gl_version}",
+        flush=True,
+    )
+    print(
+        "[director-control] keyboard 1-8=hot cues N=next [ ]=MADNESS "
+        "a/A=save/load A b/B=save/load B",
         flush=True,
     )
 
@@ -174,6 +332,9 @@ def main() -> None:
                 last = now
                 if audio.error is not None:
                     raise RuntimeError("audio capture failed") from audio.error
+
+                for event in controls.drain():
+                    apply_control(event, now)
 
                 features = audio.latest
                 signals = mapper.update(features, now)
@@ -257,6 +418,8 @@ def main() -> None:
                 )
                 if sink(cv2.cvtColor(out, cv2.COLOR_RGB2BGR)) is False:
                     break
+                for event in keyboard_events(sink.last_key):
+                    controls.emit(event.action, *event.args)
 
                 frames += 1
                 if now - report >= 2.0:
@@ -268,6 +431,7 @@ def main() -> None:
                     )
                     print(
                         f"[director] fps={frames / (now - report):.1f} cue={transition} "
+                        f"journey={director.journey} mode={director.mode} base={director.base_madness:.2f} "
                         f"section={structure.section} macro={macro.madness:.2f} energy={macro.energy:.2f} "
                         f"shader_mix={macro.composite_mix:.2f} bank={target_cue.particle_bank} "
                         f"beat={signals.beat:.2f} drop={signals.drop:.2f} tempo={tempo}",
@@ -276,6 +440,10 @@ def main() -> None:
                     report = now
                     frames = 0
     finally:
+        if midi is not None:
+            midi.close()
+        if osc is not None:
+            osc.close()
         particles.close()
         shader.close()
         sink.close()
