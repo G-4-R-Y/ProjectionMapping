@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import numpy as np
 
 from .graphics_runtime import create_context
@@ -9,6 +11,90 @@ VERTEX_SHADER = r"""
 #version 330
 in vec2 in_pos;
 out vec2 v_uv;
+
+vec3 liquidMembrane(vec2 p,float t){
+    float chaos=clamp(u_chaos,0.0,2.5);
+    vec2 q=p*2.25;
+    vec2 warp=vec2(
+        fbm(q*1.7+vec2(t*.055,1.7)),
+        fbm(q*1.9+vec2(-2.1,-t*.048))
+    )-.5;
+    q+=warp*(.34+.18*chaos);
+    float n1=fbm(q*2.2+vec2(t*.032,-t*.025));
+    float n2=fbm(q*5.1-vec2(t*.021,t*.018));
+    float membrane=pow(max(0.0,1.0-abs(n1-n2)*3.4),5.5);
+    float folds=pow(1.0-abs(2.0*fbm(q*7.4+warp*2.0)-1.0),8.0);
+    vec3 c=paletteBase(n1*.62+n2*.31+t*.018)*membrane*1.45;
+    c+=paletteBase(n2*.74-t*.011+.33)*folds*(.20+.28*chaos);
+    float rim=pow(max(0.0,1.0-length(warp)*1.15),8.0);
+    c+=vec3(.92,.98,1.0)*rim*.16;
+    return c;
+}
+
+vec3 ferrofluidBloom(vec2 p,float t){
+    float chaos=clamp(u_chaos,0.0,2.5);
+    float r=length(p)+1e-4;
+    vec2 d=p/r;
+    vec2 h9=harmonic(d,9);
+    vec2 h14=harmonic(d,14);
+    float n=fbm(p*3.5+vec2(t*.035,-t*.029));
+    float petals=.5+.5*(h9.x*cos(r*(26.0+6.0*chaos)-t*.76)-h9.y*sin(r*(26.0+6.0*chaos)-t*.76));
+    float spikes=pow(petals,16.0)*exp(-r*1.35);
+    float shellR=.34+.10*h14.x+.045*(n-.5)*chaos;
+    float shell=lineGlow(r-shellR,48.0);
+    float oil=pow(1.0-abs(2.0*fbm((p+vec2(h9.x,h9.y)*.05)*5.0)-1.0),6.0);
+    vec3 c=paletteBase(r*.36+n*.45+t*.015)*spikes*1.18;
+    c+=paletteBase(h14.y*.08+t*.02+.28)*shell*.92;
+    c+=vec3(1.0,.97,.92)*oil*shell*.36;
+    c+=paletteBase(n+t*.012)*exp(-r*7.5)*(.28+.16*chaos);
+    return c;
+}
+
+vec3 holographicOil(vec2 p,float t){
+    float chaos=clamp(u_chaos,0.0,2.5);
+    vec2 q=p*2.6;
+    float n=fbm(q+vec2(t*.045,-t*.033));
+    q+=vec2(sin(q.y*2.2+n*4.4+t*.21),cos(q.x*2.0-n*4.0-t*.18))*(.18+.09*chaos);
+    float n2=fbm(q*3.0-vec2(t*.019,t*.024));
+    float bands=.5+.5*cos((n-n2)*32.0+q.x*2.1-q.y*1.7+t*.34);
+    float thin=pow(bands,7.0);
+    float caustic=pow(max(0.0,1.0-abs(n-.5)*2.0),3.5);
+    vec3 c=paletteBase(n*.85+n2*.35+t*.014)*(.18+.92*thin);
+    c+=vec3(1.0,.98,.95)*thin*caustic*.58;
+    c*=.42+.88*pow(1.0-abs(2.0*n2-1.0),2.2);
+    return c;
+}
+
+vec3 dataTide(vec2 p,float t){
+    float chaos=clamp(u_chaos,0.0,2.5);
+    vec2 q=p*vec2(2.4,1.6);
+    float n=fbm(q*1.6+vec2(t*.048,-t*.026));
+    q+=vec2(sin(q.y*2.7+n*4.0+t*.24),cos(q.x*2.1-n*3.2-t*.19))*(.16+.08*chaos);
+    vec2 cell=abs(fract(q*vec2(7.0,5.0))-.5);
+    float grid=1.0-smoothstep(.43,.50,min(cell.x,cell.y));
+    float tide=.5+.5*sin(q.x*2.8+q.y*1.9+n*5.0-t*.62);
+    float packets=pow(max(0.0,1.0-abs(fract(q.x*2.4+t*.22+n)-.5)*2.0),18.0);
+    vec3 c=paletteBase(n+t*.017)*grid*(.16+.58*tide);
+    c+=paletteBase(tide*.55+n*.25+.47)*packets*(.28+.50*chaos);
+    c+=vec3(.88,.98,1.0)*pow(grid*tide,6.0)*.28;
+    return c;
+}
+
+vec3 sceneColor(int sceneId,vec2 p,float t){
+    if(sceneId==0) return eventHorizon(p,t);
+    if(sceneId==1) return auroraVoid(p,t);
+    if(sceneId==2) return liquidChrome(p,t);
+    if(sceneId==3) return neonCathedral(p,t);
+    if(sceneId==4) return wormholeChoir(p,t);
+    if(sceneId==5) return plasmaSingularity(p,t);
+    if(sceneId==6) return vortexCrown(p,t);
+    if(sceneId==7) return collapseFlower(p,t);
+    if(sceneId==8) return liquidMembrane(p,t);
+    if(sceneId==9) return ferrofluidBloom(p,t);
+    if(sceneId==10) return holographicOil(p,t);
+    return dataTide(p,t);
+}
+
 void main() {
     v_uv = in_pos * 0.5 + 0.5;
     gl_Position = vec4(in_pos, 0.0, 1.0);
@@ -22,6 +108,10 @@ uniform float u_intensity;
 uniform float u_chaos;
 uniform vec2 u_resolution;
 uniform int u_scene;
+uniform int u_scene_b;
+uniform float u_scene_mix;
+uniform int u_palette;
+uniform float u_palette_shift;
 in vec2 v_uv;
 out vec4 fragColor;
 
@@ -77,8 +167,37 @@ vec2 harmonic(vec2 unitDir, int n){
     return z;
 }
 
+vec3 paletteBase(float t) {
+    float x=fract(t+u_palette_shift);
+    if(u_palette==0) {
+        float m=.5+.5*cos(TAU*x);
+        return mix(vec3(.00,.96,1.00),vec3(1.00,.02,.78),m);
+    }
+    if(u_palette==1) {
+        return .50+.50*cos(TAU*(vec3(.96,.81,.68)*x+vec3(.03,.28,.58)));
+    }
+    if(u_palette==2) {
+        float m=.5+.5*cos(TAU*x);
+        return mix(mix(vec3(.05,.00,.16),vec3(.44,.03,1.00),m),vec3(1.00,.02,.72),pow(m,3.0)*.45);
+    }
+    if(u_palette==3) {
+        float m=.5+.5*cos(TAU*x);
+        return mix(vec3(.00,.08,.18),vec3(.00,.92,1.00),pow(m,1.35));
+    }
+    if(u_palette==4) {
+        float m=.5+.5*cos(TAU*x);
+        return mix(vec3(1.00,.03,.55),vec3(1.00,.68,.03),m);
+    }
+    float v=.30+.70*(.5+.5*cos(TAU*x));
+    return vec3(v);
+}
+
 vec3 pal(float t, vec3 phase) {
-    return 0.50 + 0.50*cos(TAU*(vec3(0.96,0.81,0.68)*t + phase));
+    if(u_palette==1) {
+        return .50+.50*cos(TAU*(vec3(.96,.81,.68)*(t+u_palette_shift)+phase));
+    }
+    float phaseShift=dot(phase,vec3(.31,.17,.11));
+    return paletteBase(t+phaseShift);
 }
 
 float lineGlow(float d,float gain){
@@ -325,15 +444,10 @@ vec3 collapseFlower(vec2 p,float t){
 void main() {
     vec2 p=(gl_FragCoord.xy*2.0-u_resolution)/u_resolution.y;
     float t=u_time;
-    vec3 c;
-    if(u_scene==0) c=eventHorizon(p,t);
-    else if(u_scene==1) c=auroraVoid(p,t);
-    else if(u_scene==2) c=liquidChrome(p,t);
-    else if(u_scene==3) c=neonCathedral(p,t);
-    else if(u_scene==4) c=wormholeChoir(p,t);
-    else if(u_scene==5) c=plasmaSingularity(p,t);
-    else if(u_scene==6) c=vortexCrown(p,t);
-    else c=collapseFlower(p,t);
+    vec3 a=sceneColor(u_scene,p,t);
+    vec3 b=sceneColor(u_scene_b,p,t);
+    float sceneMix=smoothstep(0.0,1.0,clamp(u_scene_mix,0.0,1.0));
+    vec3 c=mix(a,b,sceneMix);
 
     float vignette=1.0-smoothstep(.20,1.47,length(p));
     c*=mix(.70,1.0,vignette);
@@ -356,6 +470,41 @@ SCENE_IDS = {
     "plasma_singularity": 5,
     "vortex_crown": 6,
     "collapse_flower": 7,
+    "liquid_membrane": 8,
+    "ferrofluid_bloom": 9,
+    "holographic_oil": 10,
+    "data_tide": 11,
+}
+
+PALETTE_IDS = {
+    "cyan_magenta": 0,
+    "spectral": 1,
+    "ultraviolet": 2,
+    "deep_ocean": 3,
+    "sunset_neon": 4,
+    "mono": 5,
+}
+
+
+@dataclass(frozen=True)
+class ShaderScenePreset:
+    scene: str
+    scene_b: str
+    scene_mix: float
+    palette: str
+    chaos: float
+    speed: float
+    intensity: float
+    palette_cycle: float = 0.0
+
+
+SHADER_SCENE_PRESETS = {
+    "liquid_neon": ShaderScenePreset("liquid_chrome", "holographic_oil", .24, "cyan_magenta", 1.28, .82, 1.15, .035),
+    "mercury_bloom": ShaderScenePreset("ferrofluid_bloom", "liquid_chrome", .30, "ultraviolet", 1.36, .70, 1.12, .020),
+    "membrane_flux": ShaderScenePreset("liquid_membrane", "holographic_oil", .32, "cyan_magenta", 1.52, .76, 1.18, .050),
+    "data_tide": ShaderScenePreset("data_tide", "liquid_membrane", .18, "deep_ocean", 1.20, .95, 1.08, .028),
+    "cathedral_dream": ShaderScenePreset("neon_cathedral", "aurora_void", .22, "cyan_magenta", 1.05, .62, 1.10, .018),
+    "singularity_choir": ShaderScenePreset("event_horizon", "wormhole_choir", .36, "ultraviolet", 1.62, .88, 1.16, .026),
 }
 
 
@@ -377,6 +526,10 @@ class ShaderSceneRenderer:
         self.target = self.ctx.texture((self.width, self.height), 3, dtype="f1")
         self.fbo = self.ctx.framebuffer(color_attachments=[self.target])
         self.program["u_resolution"].value = (float(self.width), float(self.height))
+        self.program["u_scene_b"].value = 0
+        self.program["u_scene_mix"].value = 0.0
+        self.program["u_palette"].value = 0
+        self.program["u_palette_shift"].value = 0.0
 
     def render(
         self,
@@ -385,13 +538,26 @@ class ShaderSceneRenderer:
         t: float,
         intensity: float = 1.0,
         chaos: float = 1.0,
+        palette: str = "cyan_magenta",
+        palette_shift: float = 0.0,
+        scene_b: str | None = None,
+        scene_mix: float = 0.0,
     ) -> np.ndarray:
         if scene not in SCENE_IDS:
             raise ValueError(f"unknown shader scene: {scene}")
+        if palette not in PALETTE_IDS:
+            raise ValueError(f"unknown shader palette: {palette}")
+        scene_b = scene if scene_b is None else scene_b
+        if scene_b not in SCENE_IDS:
+            raise ValueError(f"unknown shader scene: {scene_b}")
         self.program["u_time"].value = float(t)
         self.program["u_intensity"].value = float(max(intensity, 0.0))
         self.program["u_chaos"].value = float(np.clip(chaos, 0.0, 2.5))
         self.program["u_scene"].value = int(SCENE_IDS[scene])
+        self.program["u_scene_b"].value = int(SCENE_IDS[scene_b])
+        self.program["u_scene_mix"].value = float(np.clip(scene_mix, 0.0, 1.0))
+        self.program["u_palette"].value = int(PALETTE_IDS[palette])
+        self.program["u_palette_shift"].value = float(palette_shift)
         self.fbo.use()
         self.ctx.viewport = (0, 0, self.width, self.height)
         self.fbo.clear(0.0, 0.0, 0.0, 1.0)
