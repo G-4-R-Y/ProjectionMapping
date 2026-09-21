@@ -57,7 +57,7 @@ PERFORMANCE_CUES: dict[str, PerformanceCue] = {
     "cathedral_release": PerformanceCue("cathedral_dream", "cathedral_rain", 0.38, 0.60),
     "reactor_release": PerformanceCue("liquid_neon", "reactor_bloom", 0.46, 0.50),
     "singularity_drop": PerformanceCue("singularity_choir", "supernova_nebula", 0.88, 0.44),
-    "afterglow": PerformanceCue("liquid_neon", "constellation_bloom", 0.28, 0.62),
+    "afterglow": PerformanceCue("oil_afterglow", "constellation_bloom", 0.28, 0.62),
 }
 
 PERFORMANCE_JOURNEYS: dict[str, tuple[str, ...]] = {
