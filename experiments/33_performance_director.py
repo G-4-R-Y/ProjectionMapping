@@ -217,8 +217,8 @@ def main() -> None:
             elif action == "journey_save":
                 name = str(args_[0])
                 cues = tuple(str(cue) for cue in args_[1:])
-                store.save_journey(name, cues)
                 director.register_journey(name, cues)
+                store.save_journey(name, cues)
                 print(f"[director-control] saved journey={name} cues={','.join(cues)}", flush=True)
             elif action == "snapshot_save":
                 name = str(args_[0])
