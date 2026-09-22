@@ -8,9 +8,6 @@ from typing import Any
 
 import numpy as np
 
-from .performance_control import HOT_CUES, PerformanceControlBus
-
-
 @dataclass(frozen=True)
 class PianoExpression:
     pitch: float = 0.5
@@ -81,14 +78,25 @@ class PianoMIDIInterpreter:
 
     def __init__(
         self,
-        bus: PerformanceControlBus | None = None,
+        bus: Any | None = None,
         *,
         hot_cues: bool = False,
         cue_note_base: int = 21,
+        cue_names: tuple[str, ...] = (
+            "liquid_intro",
+            "membrane_drift",
+            "data_build",
+            "mercury_rise",
+            "cathedral_release",
+            "reactor_release",
+            "singularity_drop",
+            "afterglow",
+        ),
     ) -> None:
         self.bus = bus
         self.hot_cues = bool(hot_cues)
         self.cue_note_base = int(np.clip(cue_note_base, 0, 120))
+        self.cue_names = tuple(cue_names)
         self._lock = threading.Lock()
         self._held: dict[int, int] = {}
         self._latched: dict[int, int] = {}
@@ -126,9 +134,9 @@ class PianoMIDIInterpreter:
                 if (
                     self.hot_cues
                     and self.bus is not None
-                    and self.cue_note_base <= note < self.cue_note_base + len(HOT_CUES)
+                    and self.cue_note_base <= note < self.cue_note_base + len(self.cue_names)
                 ):
-                    self.bus.emit("cue", HOT_CUES[note - self.cue_note_base])
+                    self.bus.emit("cue", self.cue_names[note - self.cue_note_base])
                 return True
 
             if msg_type == "note_off":
