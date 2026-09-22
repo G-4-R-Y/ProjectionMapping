@@ -2,7 +2,7 @@
 id = "performance_director"
 name = "Performance Director / Shader + Particles"
 category = "Visual Madness"
-description = "Unified audiovisual conductor with live keyboard, OSC and MIDI control. Music-aware section/phrase tracking chooses coordinated shader presets and GPU particle choreography while one smoothed MADNESS macro drives chaos, palette drift, scene morphing, particle density/turbulence/bloom, vector-field force, and layer composition. Supports persistent A/B snapshots and user journeys. F11 toggles fullscreen."
+description = "Unified audiovisual conductor with expressive piano mode, live browser dashboard, keyboard/OSC/MIDI control, beat/bar-quantized launches, cue-loop recording, optional Ableton Link clocking, OSC state feedback, persistent A/B snapshots and user journeys. Piano velocity, pitch, chord tension, note density/spread and sustain shape shaders and GPU particles continuously. F11 toggles fullscreen."
 command = ["python", "experiments/33_performance_director.py"]
 fullscreen = true
 requires_modules = ["soundcard", "moderngl"]
@@ -52,6 +52,35 @@ default = false
 group = "Live Control"
 
 [[feature.param]]
+key = "midi_mode"
+flag = "--midi-mode"
+label = "MIDI performance mode"
+type = "choice"
+default = "controls"
+choices = ["controls", "piano"]
+group = "Live Control"
+help = "Piano mode uses musical note velocity, pitch, density, register spread, chord tension and pedals as continuous visual expression instead of treating every note as a button."
+
+[[feature.param]]
+key = "piano_hot_cues"
+flag = "--piano-hot-cues"
+label = "Low-key piano hot-cue zone"
+type = "bool"
+default = false
+group = "Live Control"
+help = "Optional. Disabled by default so the full keyboard remains playable."
+
+[[feature.param]]
+key = "piano_cue_note_base"
+flag = "--piano-cue-note-base"
+label = "Piano cue zone base MIDI note"
+type = "int"
+default = 21
+min = 0
+max = 120
+group = "Live Control"
+
+[[feature.param]]
 key = "midi_device"
 flag = "--midi-device"
 label = "MIDI device substring"
@@ -80,6 +109,33 @@ max = 115
 group = "Live Control"
 
 [[feature.param]]
+key = "midi_output"
+flag = "--midi-output"
+label = "Enable MIDI state feedback"
+type = "bool"
+default = false
+group = "Live Control"
+help = "CC-only feedback; no note messages are sent. Disabled by default to avoid changing a piano's internal controls unexpectedly."
+
+[[feature.param]]
+key = "midi_output_device"
+flag = "--midi-output-device"
+label = "MIDI output device substring"
+type = "text"
+default = ""
+group = "Live Control"
+
+[[feature.param]]
+key = "midi_feedback_cc_base"
+flag = "--midi-feedback-cc-base"
+label = "MIDI feedback CC base"
+type = "int"
+default = 20
+min = 0
+max = 123
+group = "Live Control"
+
+[[feature.param]]
 key = "user_journey"
 flag = "--user-journey"
 label = "Saved user journey name"
@@ -93,6 +149,70 @@ flag = "--load-snapshot"
 label = "Load snapshot on launch"
 type = "text"
 default = ""
+group = "Live Control"
+
+[[feature.param]]
+key = "quantize"
+flag = "--quantize"
+label = "Live cue quantization"
+type = "choice"
+default = "beat"
+choices = ["off", "beat", "bar"]
+group = "Live Control"
+
+[[feature.param]]
+key = "dashboard_host"
+flag = "--dashboard-host"
+label = "Dashboard bind host"
+type = "text"
+default = "127.0.0.1"
+group = "Live Control"
+
+[[feature.param]]
+key = "dashboard_port"
+flag = "--dashboard-port"
+label = "Browser dashboard port (0 = off)"
+type = "int"
+default = 8765
+min = 0
+max = 65535
+group = "Live Control"
+
+[[feature.param]]
+key = "osc_state_host"
+flag = "--osc-state-host"
+label = "OSC state target host"
+type = "text"
+default = "127.0.0.1"
+group = "Live Control"
+
+[[feature.param]]
+key = "osc_state_port"
+flag = "--osc-state-port"
+label = "OSC state target port (0 = off)"
+type = "int"
+default = 9001
+min = 0
+max = 65535
+group = "Live Control"
+
+[[feature.param]]
+key = "ableton_link"
+flag = "--ableton-link"
+label = "Use Ableton Link clock"
+type = "bool"
+default = false
+group = "Live Control"
+help = "Optional GPLv3+ aalink integration. Install the link extra separately; not bundled into default desktop builds."
+
+[[feature.param]]
+key = "link_tempo"
+flag = "--link-tempo"
+label = "Initial Link tempo"
+type = "float"
+default = 120.0
+min = 30.0
+max = 300.0
 group = "Live Control"
 
 [[feature.param]]

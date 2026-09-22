@@ -22,6 +22,9 @@ def test_registry_loads_project_features():
     assert registry.by_id("spout_diagnostics").platforms == ("windows",)
     assert registry.by_id("shader_preset_deck").params[0].default == "liquid_neon"
     assert registry.by_id("performance_director").defaults()["journey"] == "liquid_arc"
+    piano = registry.by_id("piano_performance")
+    assert piano.defaults()["quantize"] == "beat"
+    assert "--midi" in piano.command and "piano" in piano.command
 
 
 def test_build_argv_coerces_python_and_bool_flags():

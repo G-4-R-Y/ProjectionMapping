@@ -163,6 +163,8 @@ See [`ROADMAP.md`](ROADMAP.md) for detailed deliverables, exit criteria, extensi
 - unified Performance Director combining musical section/phrase tracking, Shader Performance Deck cues, persistent GPU particle choreography, and one shared MADNESS macro
 - timed / musical / hybrid audiovisual journeys with drop overrides and smooth shader/particle cue morphing
 - live Performance Director control via keyboard, MIDI and localhost OSC, with persistent A/B snapshots and user journeys
+- expressive piano MIDI mode: velocity/pitch/chords/polyphony/sustain directly shape shader + particle behavior
+- beat/bar-quantized live cue launches, musical cue-loop recording, local browser performance dashboard, OSC/MIDI state feedback, and opt-in Ableton Link clocking
 - modular realtime runtime loop
 - OpenCV fullscreen sink
 - Spout adapter interface + diagnostics on Windows

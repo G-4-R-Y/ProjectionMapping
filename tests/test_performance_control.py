@@ -3,6 +3,7 @@ from types import SimpleNamespace
 from projection_mapping.performance_control import (
     HOT_CUES,
     MIDIControlInput,
+    MIDIStateOutput,
     PerformanceControlBus,
     PerformanceSnapshot,
     PerformanceStateStore,
@@ -89,3 +90,47 @@ def test_midi_mapping_emits_madness_hot_cues_next_and_snapshots():
     ]
     assert events[7].action == "journey"
     assert events[7].args == ("cosmic_rave",)
+
+
+
+def test_piano_midi_mode_interprets_notes_instead_of_treating_them_as_hot_cues():
+    bus = PerformanceControlBus()
+    midi = MIDIControlInput(bus, mode="piano", piano_hot_cues=False)
+    midi._callback(SimpleNamespace(type="note_on", note=60, velocity=110))
+    assert bus.drain() == []
+    state = midi.piano_expression(now=10.0)
+    assert state is not None
+    assert state.active_notes == (60,)
+    assert state.velocity > 0.8
+
+
+def test_midi_state_output_sends_cc_only_feedback(monkeypatch):
+    sent = []
+
+    class FakePort:
+        def send(self, message):
+            sent.append(message)
+
+    class FakeMessage:
+        def __init__(self, kind, **kwargs):
+            self.type = kind
+            self.kwargs = kwargs
+
+    import sys
+    monkeypatch.setitem(sys.modules, "mido", SimpleNamespace(Message=FakeMessage))
+
+    out = MIDIStateOutput(cc_base=20)
+    out._port = FakePort()
+    out.send(
+        madness=0.5,
+        cue="data_build",
+        section="drop",
+        energy=0.75,
+        quantize="bar",
+    )
+
+    assert len(sent) == 5
+    assert all(message.type == "control_change" for message in sent)
+    assert [message.kwargs["control"] for message in sent] == [20, 21, 22, 23, 24]
+    assert sent[0].kwargs["value"] in {63, 64}
+    assert sent[2].kwargs["value"] == 127

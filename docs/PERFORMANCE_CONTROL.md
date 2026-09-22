@@ -23,6 +23,9 @@ With the projector window focused:
 | `[` / `]` | Decrease / increase base MADNESS by 0.05 |
 | `a` / `A` | Save / load snapshot A |
 | `b` / `B` | Save / load snapshot B |
+| `R` | Start/finish cue-loop recording |
+| `L` | Stop loop playback |
+| `C` | Clear the recorded loop |
 | `F11` | Toggle fullscreen |
 | `Esc` | Exit the visual |
 
@@ -41,6 +44,28 @@ Hot-cue order:
 
 Enable MIDI in `projection-ui` or launch with `--midi`.
 
+### Piano performance mode
+
+For a piano/keyboard that the computer can see as a MIDI input device, select
+`MIDI performance mode = piano` (or `--midi-mode piano`). In this mode the keyboard remains an
+instrument instead of becoming 88 scene buttons:
+
+- note pitch shifts color phase and the center of visual motion;
+- velocity raises shader intensity, particle emission and bloom;
+- each note attack produces a short visual strike transient;
+- polyphonic note count increases density/turbulence;
+- register spread opens the particle field and shader blend;
+- chord family is coarsely classified (major/minor/sus/sevenths/diminished/augmented/cluster) and
+  harmonic tension drives visual chaos;
+- sustain pedal (CC64) increases persistence/feedback and keeps released notes latched visually;
+- soft pedal (CC67), expression (CC11), aftertouch and pitch bend are used when the instrument sends
+  them.
+
+The optional low-key hot-cue zone is **off by default**, so the whole keyboard is playable. Enable
+`--piano-hot-cues` only when you intentionally want eight consecutive low notes to fire the
+performance cues; `--piano-cue-note-base` chooses the first note.
+
+
 Defaults:
 
 - CC 1 -> continuous MADNESS 0..1
@@ -58,6 +83,87 @@ Use `--midi-device "substring"` to select a controller, or:
 ```bash
 python experiments/33_performance_director.py --list-midi
 ```
+
+## Beat/bar quantization
+
+Live cue, next-journey, journey-selection and snapshot-load actions can be quantized with
+`--quantize off|beat|bar`. The default is `beat`. Continuous controls such as MADNESS remain
+immediate.
+
+When no external clock is enabled, the stable audio tempo/phase tracker provides the clock. Low
+beat confidence falls back to immediate triggering instead of making controls feel stuck.
+
+## Cue recording and looping
+
+The Performance Director records sparse scene-changing actions in **musical beats**, then rounds
+the loop length up to a complete 4-beat bar. Recording does not capture thousands of fader samples;
+it captures the intentional cue/journey events, so loops remain editable and musically stable.
+
+Use the browser dashboard or the keyboard shortcuts `R` (record/finish), `L` (stop) and `C`
+(clear).
+
+## Live browser dashboard
+
+A local browser controller is served at `http://127.0.0.1:8765/` by default. It shows the current
+cue, journey, detected section, BPM/clock source, MADNESS, piano chord/note count, sustain,
+quantization state and loop state. It also provides cue buttons, MADNESS fader, next-cue, loop
+controls and quantization switching.
+
+Use `--dashboard-port 0` to disable it. Like OSC input, it binds to localhost by default.
+
+## OSC state feedback
+
+In addition to OSC commands on port 9000, the Director can broadcast changed live state values to
+`127.0.0.1:9001`:
+
+```text
+/pm/state/cue
+/pm/state/journey
+/pm/state/mode
+/pm/state/section
+/pm/state/macro
+/pm/state/energy
+/pm/state/bpm
+/pm/state/clock
+/pm/state/chord
+/pm/state/notes
+/pm/state/sustain
+...
+```
+
+This is useful for TouchDesigner, controller displays, or a second process that needs to follow the
+show without owning the sequencer. Set `--osc-state-port 0` to disable it.
+
+## MIDI state feedback
+
+Outbound MIDI feedback is disabled by default. With `--midi-output`, the Director sends **CC only**
+(no note-on messages) starting at CC20 by default:
+
+- CC20 MADNESS
+- CC21 cue index
+- CC22 musical section
+- CC23 energy
+- CC24 quantization mode
+
+Select an output with `--midi-output-device` and move the base with
+`--midi-feedback-cc-base`. Because some digital pianos assign CCs to internal parameters, leave
+feedback off unless you know the receiving device/controller mapping.
+
+## Ableton Link (optional)
+
+Direct Link synchronization is available through the optional `aalink` adapter:
+
+```bash
+python -m pip install -e '.[link]'
+python experiments/33_performance_director.py --ableton-link
+```
+
+The Link clock replaces only tempo/beat/bar phase used for quantization and loop timing; audio
+energy/onset/drop analysis still comes from the existing audio pipeline.
+
+`aalink` is GPLv3+, so it is intentionally **not bundled in the default desktop artifacts**. This
+keeps the normal project distribution independent of that optional license; install the `link`
+extra explicitly when you want to join a Link session.
 
 ## OSC
 
