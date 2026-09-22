@@ -1,0 +1,169 @@
+[[feature]]
+id = "piano_performance"
+name = "Piano Performance / MIDI Keyboard"
+category = "Visual Madness"
+description = "Play the projection system from a MIDI piano. Pitch, velocity, chord tension, polyphony, register spread and pedals continuously shape Shader Performance Deck + GPU particles. Cue changes are beat-quantized by default; browser dashboard, OSC and cue-loop recording remain active. The low-key cue zone is optional so the full keyboard stays musical."
+command = ["python", "experiments/33_performance_director.py", "--midi", "--midi-mode", "piano"]
+fullscreen = true
+requires_modules = ["soundcard", "moderngl", "mido", "rtmidi"]
+
+[[feature.param]]
+key = "midi_device"
+flag = "--midi-device"
+label = "Piano / MIDI input substring"
+type = "text"
+default = ""
+group = "System & Input"
+help = "Leave blank to use the first MIDI input. Use --list-midi from the CLI if the piano is not selected automatically."
+
+[[feature.param]]
+key = "source"
+flag = "--source"
+label = "Music audio source"
+type = "choice"
+default = "system"
+choices = ["system", "mic"]
+group = "System & Input"
+
+[[feature.param]]
+key = "device"
+flag = "--device"
+label = "Audio device name/id (optional)"
+type = "text"
+default = ""
+group = "System & Input"
+
+[[feature.param]]
+key = "journey"
+flag = "--journey"
+label = "Performance journey"
+type = "choice"
+default = "liquid_arc"
+choices = ["liquid_arc", "neon_ritual", "cosmic_rave"]
+group = "Design Customization"
+
+[[feature.param]]
+key = "madness"
+flag = "--madness"
+label = "Base MADNESS"
+type = "float"
+default = 0.42
+min = 0.0
+max = 1.0
+group = "Behavior & Reactivity"
+
+[[feature.param]]
+key = "quantize"
+flag = "--quantize"
+label = "Cue quantization"
+type = "choice"
+default = "beat"
+choices = ["off", "beat", "bar"]
+group = "Live Control"
+
+[[feature.param]]
+key = "piano_hot_cues"
+flag = "--piano-hot-cues"
+label = "Enable low-key cue zone"
+type = "bool"
+default = false
+group = "Live Control"
+
+[[feature.param]]
+key = "piano_cue_note_base"
+flag = "--piano-cue-note-base"
+label = "Cue-zone base MIDI note"
+type = "int"
+default = 21
+min = 0
+max = 120
+group = "Live Control"
+
+[[feature.param]]
+key = "dashboard_port"
+flag = "--dashboard-port"
+label = "Browser dashboard port"
+type = "int"
+default = 8765
+min = 0
+max = 65535
+group = "Live Control"
+
+[[feature.param]]
+key = "osc_port"
+flag = "--osc-port"
+label = "OSC control port"
+type = "int"
+default = 9000
+min = 0
+max = 65535
+group = "Live Control"
+
+[[feature.param]]
+key = "osc_state_port"
+flag = "--osc-state-port"
+label = "OSC state output port"
+type = "int"
+default = 9001
+min = 0
+max = 65535
+group = "Live Control"
+
+[[feature.param]]
+key = "capacity"
+flag = "--capacity"
+label = "GPU particle capacity"
+type = "choice"
+default = "32768"
+choices = ["8192", "16384", "32768", "65536"]
+group = "Performance & Advanced"
+
+[[feature.param]]
+key = "display"
+flag = "--display"
+label = "Projector display"
+type = "int"
+default = 1
+min = 0
+max = 8
+group = "Output & Resolution"
+
+[[feature.param]]
+key = "render_width"
+flag = "--render-width"
+label = "Render width"
+type = "int"
+default = 768
+min = 320
+max = 1920
+group = "Output & Resolution"
+
+[[feature.param]]
+key = "render_height"
+flag = "--render-height"
+label = "Render height"
+type = "int"
+default = 432
+min = 180
+max = 1080
+group = "Output & Resolution"
+
+[[feature.param]]
+key = "projector_width"
+flag = "--projector-width"
+label = "Projector width"
+type = "int"
+default = 1920
+min = 320
+max = 7680
+group = "Output & Resolution"
+
+[[feature.param]]
+key = "projector_height"
+flag = "--projector-height"
+label = "Projector height"
+type = "int"
+default = 1080
+min = 240
+max = 4320
+group = "Output & Resolution"
