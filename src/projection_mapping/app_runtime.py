@@ -81,6 +81,9 @@ def desktop_self_test() -> int:
             raise RuntimeError("Performance Director registry default is not liquid_arc")
         if director.defaults().get("osc_port") != 9000:
             raise RuntimeError("Performance Director OSC default is not 9000")
+        piano_feature = registry.by_id("piano_performance")
+        if piano_feature.defaults().get("quantize") != "beat":
+            raise RuntimeError("Piano Performance quantize default is not beat")
         control_bus = PerformanceControlBus()
         control_bus.emit("cue", HOT_CUES[0])
         if control_bus.drain()[0].args != (HOT_CUES[0],):
