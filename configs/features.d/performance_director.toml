@@ -109,6 +109,33 @@ max = 115
 group = "Live Control"
 
 [[feature.param]]
+key = "midi_output"
+flag = "--midi-output"
+label = "Enable MIDI state feedback"
+type = "bool"
+default = false
+group = "Live Control"
+help = "CC-only feedback; no note messages are sent. Disabled by default to avoid changing a piano's internal controls unexpectedly."
+
+[[feature.param]]
+key = "midi_output_device"
+flag = "--midi-output-device"
+label = "MIDI output device substring"
+type = "text"
+default = ""
+group = "Live Control"
+
+[[feature.param]]
+key = "midi_feedback_cc_base"
+flag = "--midi-feedback-cc-base"
+label = "MIDI feedback CC base"
+type = "int"
+default = 20
+min = 0
+max = 123
+group = "Live Control"
+
+[[feature.param]]
 key = "user_journey"
 flag = "--user-journey"
 label = "Saved user journey name"
