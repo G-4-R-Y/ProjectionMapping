@@ -245,13 +245,29 @@ class MIDIControlInput:
         madness_cc: int = 1,
         note_base: int = MIDI_NOTE_BASE,
         journey_names: Iterable[str] = (),
+        mode: str = "controls",
+        piano_hot_cues: bool = False,
+        piano_cue_note_base: int = 21,
     ) -> None:
+        if mode not in {"controls", "piano"}:
+            raise ValueError(f"unknown MIDI mode: {mode}")
         self.bus = bus
         self.device = device or None
         self.madness_cc = int(np.clip(madness_cc, 0, 127))
         self.note_base = int(np.clip(note_base, 0, 120))
         self.journey_names = tuple(journey_names)
+        self.mode = mode
         self._port = None
+        self.piano = None
+        if self.mode == "piano":
+            from .piano_performance import PianoMIDIInterpreter
+
+            self.piano = PianoMIDIInterpreter(
+                bus,
+                hot_cues=piano_hot_cues,
+                cue_note_base=piano_cue_note_base,
+                cue_names=HOT_CUES,
+            )
 
     @staticmethod
     def list_devices() -> tuple[str, ...]:
@@ -268,11 +284,18 @@ class MIDIControlInput:
         msg_type = getattr(message, "type", "")
         if msg_type == "control_change" and int(message.control) == self.madness_cc:
             self.bus.emit("madness", float(message.value) / 127.0)
-            return
+            if self.mode != "piano":
+                return
         if msg_type == "program_change" and self.journey_names:
             index = int(message.program) % len(self.journey_names)
             self.bus.emit("journey", self.journey_names[index])
             return
+
+        if self.mode == "piano":
+            if self.piano is not None:
+                self.piano.feed(message)
+            return
+
         if msg_type != "note_on" or int(getattr(message, "velocity", 0)) <= 0:
             return
 
@@ -290,6 +313,11 @@ class MIDIControlInput:
             self.bus.emit("snapshot_save", "B")
         elif note == self.note_base + 12:
             self.bus.emit("snapshot_load", "B")
+
+    def piano_expression(self, *, now: float | None = None):
+        if self.piano is None:
+            return None
+        return self.piano.expression(now=now)
 
     def start(self) -> "MIDIControlInput":
         try:
