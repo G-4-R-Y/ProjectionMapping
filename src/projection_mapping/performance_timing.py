@@ -75,8 +75,11 @@ class PerformanceQuantizer:
         due: list[ControlEvent] = []
         future: list[PendingControlEvent] = []
         for item in self._pending:
-            (due if item.due <= now else future).append(item.event if item.due <= now else item)
-        self._pending = [item for item in future if isinstance(item, PendingControlEvent)]
+            if item.due <= now:
+                due.append(item.event)
+            else:
+                future.append(item)
+        self._pending = future
         return due
 
     def clear(self) -> None:
