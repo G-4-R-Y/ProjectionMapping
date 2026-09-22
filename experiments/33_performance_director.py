@@ -9,11 +9,13 @@ F11 toggles fullscreen; ESC exits.
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 import time
 
 import cv2
 import numpy as np
 
+from projection_mapping.ableton_link import AbletonLinkClock
 from projection_mapping.audio_music_features import RollingMusicFeatureExtractor
 from projection_mapping.audio_reactive import (
     AudioFeatureStream,
@@ -91,6 +93,8 @@ def main() -> None:
     ap.add_argument("--dashboard-port", type=int, default=8765)
     ap.add_argument("--osc-state-host", default="127.0.0.1")
     ap.add_argument("--osc-state-port", type=int, default=9001)
+    ap.add_argument("--ableton-link", action="store_true")
+    ap.add_argument("--link-tempo", type=float, default=120.0)
     ap.add_argument("--state-file", default=None)
     ap.add_argument("--user-journey", default=None)
     ap.add_argument("--load-snapshot", default=None)
@@ -344,6 +348,17 @@ def main() -> None:
     midi = None
     dashboard = None
     osc_state = None
+    link_clock = None
+    if args.ableton_link:
+        try:
+            link_clock = AbletonLinkClock(args.link_tempo).start()
+            print(
+                f"[director-control] Ableton Link enabled initial_tempo={args.link_tempo:.1f}",
+                flush=True,
+            )
+        except RuntimeError as exc:
+            print(f"[director-control] Ableton Link disabled: {exc}", flush=True)
+
     if args.osc_port > 0:
         try:
             osc = OSCControlServer(controls, host=args.osc_host, port=args.osc_port).start()
@@ -422,11 +437,29 @@ def main() -> None:
 
                 features = audio.latest
                 signals = mapper.update(features, now)
-                structure = structure_tracker.update(signals, now)
-                beat_position = looper.beat_position(structure, signals)
+                clock_signals = signals
+                clock_source = "audio"
+                link_state = link_clock.state(now=now) if link_clock is not None else None
+                if link_state is not None and link_state.enabled and link_state.pulses > 0:
+                    link_bar_phase = (link_state.beat % 4.0) / 4.0
+                    clock_signals = replace(
+                        signals,
+                        tempo_bpm=link_state.bpm,
+                        beat_phase=link_state.phase,
+                        bar_phase=link_bar_phase,
+                        beat_confidence=1.0,
+                    )
+                    clock_source = "link"
+
+                structure = structure_tracker.update(clock_signals, now)
+                beat_position = (
+                    link_state.beat
+                    if link_state is not None and link_state.enabled and link_state.pulses > 0
+                    else looper.beat_position(structure, clock_signals)
+                )
 
                 for event in controls.drain():
-                    route_control(event, now, signals, beat_position)
+                    route_control(event, now, clock_signals, beat_position)
                 for event in quantizer.pop_due(now):
                     execute_control(event, now, beat_position)
                 for event in looper.tick(beat_position):
@@ -551,8 +584,9 @@ def main() -> None:
                     section=structure.section,
                     macro=macro.madness,
                     energy=macro.energy,
-                    bpm=signals.tempo_bpm if signals.beat_confidence >= 0.18 else 0.0,
-                    beat_confidence=signals.beat_confidence,
+                    bpm=clock_signals.tempo_bpm if clock_signals.beat_confidence >= 0.18 else 0.0,
+                    beat_confidence=clock_signals.beat_confidence,
+                    clock=clock_source,
                     quantize=quantizer.mode,
                     pending=quantizer.pending_count,
                     loop=loop_label,
@@ -570,7 +604,7 @@ def main() -> None:
 
                 frames += 1
                 if now - report >= 2.0:
-                    tempo = f"{signals.tempo_bpm:.1f}" if signals.beat_confidence >= 0.18 else "--"
+                    tempo = f"{clock_signals.tempo_bpm:.1f}" if clock_signals.beat_confidence >= 0.18 else "--"
                     transition = (
                         f"{state.source_cue}->{state.target_cue}:{state.mix:.2f}"
                         if state.active_transition
@@ -583,12 +617,14 @@ def main() -> None:
                         f"shader_mix={macro.composite_mix:.2f} bank={target_cue.particle_bank} "
                         f"beat={signals.beat:.2f} drop={signals.drop:.2f} tempo={tempo} "
                         f"piano={piano.chord}/{len(piano.active_notes)} sustain={piano.sustain:.2f} "
-                        f"quantize={quantizer.mode} loop={loop_label}",
+                        f"quantize={quantizer.mode} loop={loop_label} clock={clock_source}",
                         flush=True,
                     )
                     report = now
                     frames = 0
     finally:
+        if link_clock is not None:
+            link_clock.close()
         if midi is not None:
             midi.close()
         if dashboard is not None:
