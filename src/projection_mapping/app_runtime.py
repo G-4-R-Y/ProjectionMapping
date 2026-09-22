@@ -66,7 +66,10 @@ def desktop_self_test() -> int:
 
         from .feature_registry import load_registry
         from .performance_control import HOT_CUES, PerformanceControlBus
+        from .performance_dashboard import LivePerformanceState, LiveStateHub
         from .performance_director import validate_performance_catalog
+        from .performance_timing import PerformanceQuantizer
+        from .piano_performance import PianoMIDIInterpreter
 
         registry = load_registry()
         validate_performance_catalog()
@@ -82,6 +85,15 @@ def desktop_self_test() -> int:
         control_bus.emit("cue", HOT_CUES[0])
         if control_bus.drain()[0].args != (HOT_CUES[0],):
             raise RuntimeError("Performance Director control bus failed frozen self-test")
+        piano = PianoMIDIInterpreter()
+        if piano.expression().chord != "silence":
+            raise RuntimeError("Piano performance interpreter failed frozen self-test")
+        quantizer = PerformanceQuantizer("beat")
+        if quantizer.mode != "beat":
+            raise RuntimeError("Performance quantizer failed frozen self-test")
+        state_hub = LiveStateHub(LivePerformanceState(cue=HOT_CUES[0]))
+        if state_hub.get().cue != HOT_CUES[0]:
+            raise RuntimeError("Performance live-state hub failed frozen self-test")
 
         print(
             "[self-test] ok "
