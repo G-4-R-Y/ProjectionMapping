@@ -28,6 +28,7 @@ from projection_mapping.music_structure import MusicStructureTracker
 from projection_mapping.particle_choreography import blend_choreographies, choreography
 from projection_mapping.performance_control import (
     MIDIControlInput,
+    MIDIStateOutput,
     OSCControlServer,
     PerformanceControlBus,
     PerformanceSnapshot,
@@ -85,6 +86,9 @@ def main() -> None:
     ap.add_argument("--midi-device", default=None)
     ap.add_argument("--midi-madness-cc", type=int, default=1)
     ap.add_argument("--midi-note-base", type=int, default=36)
+    ap.add_argument("--midi-output", action="store_true")
+    ap.add_argument("--midi-output-device", default=None)
+    ap.add_argument("--midi-feedback-cc-base", type=int, default=20)
     ap.add_argument("--midi-mode", choices=["controls", "piano"], default="controls")
     ap.add_argument("--piano-hot-cues", action="store_true")
     ap.add_argument("--piano-cue-note-base", type=int, default=21)
@@ -123,8 +127,12 @@ def main() -> None:
         print(format_device_table(list_audio_devices()))
         return
     if args.list_midi:
+        print("MIDI inputs:")
         for index, name in enumerate(MIDIControlInput.list_devices()):
-            print(f"{index}: {name}")
+            print(f"  {index}: {name}")
+        print("MIDI outputs:")
+        for index, name in enumerate(MIDIStateOutput.list_devices()):
+            print(f"  {index}: {name}")
         return
 
     store = PerformanceStateStore(args.state_file)
@@ -346,6 +354,7 @@ def main() -> None:
 
     osc = None
     midi = None
+    midi_out = None
     dashboard = None
     osc_state = None
     link_clock = None
@@ -387,6 +396,20 @@ def main() -> None:
             )
         except RuntimeError as exc:
             print(f"[director-control] MIDI disabled: {exc}", flush=True)
+
+    if args.midi_output:
+        try:
+            midi_out = MIDIStateOutput(
+                device=args.midi_output_device,
+                cc_base=args.midi_feedback_cc_base,
+            ).start()
+            print(
+                f"[director-control] MIDI feedback output={midi_out.device} "
+                f"cc={args.midi_feedback_cc_base}-{args.midi_feedback_cc_base + 4}",
+                flush=True,
+            )
+        except RuntimeError as exc:
+            print(f"[director-control] MIDI feedback disabled: {exc}", flush=True)
 
     if args.dashboard_port > 0:
         try:
@@ -598,8 +621,17 @@ def main() -> None:
                     piano_strike=piano.strike,
                 )
                 live_state.set(telemetry)
-                if osc_state is not None and now - last_feedback >= 0.10:
-                    osc_state.send(telemetry)
+                if now - last_feedback >= 0.10:
+                    if osc_state is not None:
+                        osc_state.send(telemetry)
+                    if midi_out is not None:
+                        midi_out.send(
+                            madness=telemetry.macro,
+                            cue=telemetry.cue,
+                            section=telemetry.section,
+                            energy=telemetry.energy,
+                            quantize=telemetry.quantize,
+                        )
                     last_feedback = now
 
                 frames += 1
@@ -627,6 +659,8 @@ def main() -> None:
             link_clock.close()
         if midi is not None:
             midi.close()
+        if midi_out is not None:
+            midi_out.close()
         if dashboard is not None:
             dashboard.close()
         if osc_state is not None:
