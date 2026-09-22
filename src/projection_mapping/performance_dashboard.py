@@ -20,6 +20,7 @@ class LivePerformanceState:
     energy: float = 0.0
     bpm: float = 0.0
     beat_confidence: float = 0.0
+    clock: str = "audio"
     quantize: str = "off"
     pending: int = 0
     loop: str = "idle"
@@ -112,7 +113,7 @@ async function refresh(){
     document.getElementById('cue').textContent=s.cue;
     document.getElementById('journey').textContent=s.journey+' · '+s.mode;
     document.getElementById('section').textContent=s.section;
-    document.getElementById('bpm').textContent=(s.bpm? s.bpm.toFixed(1)+' BPM':'tempo —')+' · conf '+s.beat_confidence.toFixed(2);
+    document.getElementById('bpm').textContent=(s.bpm? s.bpm.toFixed(1)+' BPM':'tempo —')+' · '+s.clock+' · conf '+s.beat_confidence.toFixed(2);
     document.getElementById('macro').textContent=s.macro.toFixed(2);
     if(!sliderBusy) madness.value=s.macro;
     document.getElementById('chord').textContent=s.chord;
