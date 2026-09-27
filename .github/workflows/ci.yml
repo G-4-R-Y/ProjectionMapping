@@ -1,25 +1,21 @@
-name: CI
+name: CI (manual only)
 
+# Cost guardrail: this workflow is intentionally manual-only.
+# Do not add push, pull_request, schedule, or other automatic triggers
+# without explicitly reviewing GitHub Actions billing impact.
 on:
-  push:
-    branches: [main]
-  pull_request:
+  workflow_dispatch:
 
 jobs:
   tests:
-    name: ${{ matrix.os }} / Python ${{ matrix.python-version }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.10", "3.12"]
-
+    name: Linux / Python 3.12
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.12"
           cache: pip
       - name: Install
         run: python -m pip install -U pip && python -m pip install -e ".[dev,vision,ui]"
@@ -29,25 +25,3 @@ jobs:
         run: python -m ruff check src tests --select E9,F63,F7,F82
       - name: Pytest
         run: python -m pytest -q
-
-  visual-smoke:
-    name: Linux Mesa / promoted visual shader stack
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: pip
-      - name: Install Mesa/EGL
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libegl1 libegl-mesa0 libgl1-mesa-dri mesa-utils
-      - name: Install graphics runtime
-        run: python -m pip install -U pip && python -m pip install -e ".[graphics]"
-      - name: Compile and render promoted visual stack
-        env:
-          LIBGL_ALWAYS_SOFTWARE: "1"
-          EGL_PLATFORM: surfaceless
-          PM_GL_BACKEND: egl
-        run: python experiments/21_visual_probe.py
