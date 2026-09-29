@@ -74,6 +74,38 @@ to the current ModernGL pipeline. Revisit when the project has a dedicated
 volumetric layer or when a browser/WebGPU renderer becomes an intentional
 transport target.
 
+
+## Watch: Spektral 0.17.1
+
+Source: https://github.com/kaltwrk/spektral
+
+Spektral 0.17.1 landed on 2026-09-27. It is an MIT-licensed, focused WebGPU
+runtime for fullscreen WGSL, feedback and compute rather than a full 3D engine.
+The current-week release is mainly stability work around canvas pointer setup,
+shader-error overlays and the browser playground, while the underlying 0.17
+series provides render/feedback/compute passes, source-mapped WGSL diagnostics
+and inspectable render-graph snapshots.
+
+This is a strong future browser/WebGPU shader-runtime reference, but not a good
+small integration today: it requires a modern Node/WebGPU path and would fork
+the existing Python/ModernGL renderer. Keep it in view for a deliberate WebGPU
+preview/output target rather than introducing a second shader runtime casually.
+
+## Watch: vgpu WebGPU performance work
+
+Source: https://github.com/vercel-labs/vgpu
+
+vgpu is MIT-licensed and exposes typed WGSL, explicit render passes, browser and
+headless Node backends, plus a deterministic mock adapter for tests. On
+2026-09-23 it changed persistent-uniform handling so unused frame uniforms defer
+uploads while one-shot draws/dispatches flush pending values, with regression
+and native-GPU coverage.
+
+The performance/testing ideas are useful for a future WebGPU transport or shader
+test harness, but the TypeScript/Node/Dawn stack is intentionally deferred for
+the same reason as Spektral: it should arrive only if WebGPU becomes a deliberate
+runtime target, not as a parallel dependency tree beside ModernGL.
+
 ## Repository notes from this sweep
 
 The architecture remains coherent: deterministic tracking/geometry/shaders own
