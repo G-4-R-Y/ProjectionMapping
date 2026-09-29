@@ -6,7 +6,7 @@ Change the apparent material/semantics of walls, furniture, plants, doors and ce
 ## Current state
 - Optical-flow advection, temporal blending and physical-edge locking primitives.
 - Standalone Room Skin experiment with camera path and procedural fallback.
-- Structured-light and calibration infrastructure exist separately but are not yet fully fused into Room Skin.
+- Structured-light and calibration infrastructure exist separately but are not yet fully fused into Room Skin.\n- Projector-output-space polygon/edge-feather alpha baseline exists in surface_mask.py; calibrated runtime wiring and projector validation are pending.
 
 ## Quality ladder
 - **Prototype:** camera-driven texture feedback.
@@ -17,7 +17,7 @@ Change the apparent material/semantics of walls, furniture, plants, doors and ce
 
 ## Open problems
 - Room Skin still needs real fixed-room calibration data.
-- Camera/projector mapping and surface masks are not yet first-class inputs to the runtime.
+- Camera/projector mapping and mask specs are not yet first-class Room Skin inputs; the output-space mask primitive exists as a baseline.
 - No canonical/object-space material coordinate system.
 - No direct diffusion keyframe injection yet.
 

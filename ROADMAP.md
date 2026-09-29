@@ -183,7 +183,7 @@ Visual/shader direction:
 - ⬜ shared GPU particle/feedback engine as a spatial surface layer
 - ⬜ multi-pass HDR bloom / reaction diffusion / fluid-like fields
 - ⬜ SDF/raymarched architectural primitives
-- ⬜ calibrated surface masks and projector-coordinate scene routing
+- 🟡 projector-output-space polygon + edge-feather mask baseline; calibrated compositor routing and hardware validation pending
 
 Spatial/neural direction:
 - ⬜ clean room reference + calibrated projector coordinates
@@ -441,9 +441,9 @@ Performance/reliability:
 - ✅ process isolation
 - ✅ latest-frame-wins async inference
 - ✅ VRAM guard / cleanup
-- ✅ cross-platform CI
+- ✅ cross-platform test coverage retained; hosted GitHub Actions intentionally removed to avoid recurring CI cost
 - ✅ graphics dependency/context diagnostics improved; desktop graphics extra now packaged
-- ✅ Linux Mesa/EGL visual-smoke CI compiles/renders promoted Shader Scene/Polar/particle materials and runs seam regression
+- ✅ local/on-demand Linux Mesa/EGL visual probe compiles/renders promoted Shader Scene/Polar/particle materials and runs seam regression
 - ⬜ p50/p95/p99 capture/perception/particle/render/inference/transport/scanout timings
 - ⬜ continuous GPU/CPU memory and frame-time telemetry
 - ⬜ live parameter hot-reload
