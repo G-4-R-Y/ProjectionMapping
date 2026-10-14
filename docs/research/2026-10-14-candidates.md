@@ -21,3 +21,9 @@ cuda-link: Windows NVIDIA CUDA/TouchDesigner only; not Linux or macOS. MIT licen
 - Causal Forcing, https://github.com/thu-ml/Causal-Forcing: Apache-2.0, research readme updated 2026-10-03. CUDA video generation for M3; no RTX 4050 6 GiB operating point established. Benchmark in isolation before integration.
 - InfiniSplat v2, https://github.com/zju3dv/InfiniSplat: updated 2026-10-13. Custom/registration-oriented licensing requires review; no dependency addition. M4/M6 room reconstruction candidate.
 - Mobile-4DGS, https://github.com/xiaobiaodu/Mobile-4DGS: first code 2026-09-29, pushed 2026-10-14, no detected license. M6/M8 dynamic geometry research only.
+
+## Repository reality check
+
+The current tree has experiments 22-33 (famous math, reaction diffusion, attractors, cellular worlds, wave optics, hyperbolic geometry, wave equation, topology, optimal transport and Performance Director), whereas the ROADMAP experiment index stops at E21. These should be reconciled without rewriting their implementation status.
+
+GitHub Actions was removed intentionally on **2026-09-27** after unexpected billing. Old multi-OS CI results are historical, not an active protection mechanism: do not recreate automated workflows. M1 camera/projector calibration, M2 GPU transport, and M3 CUDA 6 GiB benchmarks require real-hardware evidence.
