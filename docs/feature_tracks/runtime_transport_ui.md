@@ -31,3 +31,7 @@ A reliable visual-performance appliance: one persistent control deck, clean chil
 
 ## Metrics
 Launch time, crash recovery, stale process/GPU-context count, display FPS, copy count, capture->scanout latency, log completeness, setup clicks/time, installer success rate.
+
+## Research checkpoint — 2026-10-14
+
+[Ghost Arcade 2.0.13](https://github.com/riskcapital/ghost-arcade) is a promising independent VJ/mapping benchmark for output routing, performance-deck UX, shader metadata and MIDI/OSC integration. It is AGPL-3.0, with 2.x native source on a development branch rather than default `main`; do not copy/vendor. Upstream documents Windows/macOS desktop and legacy Linux browser-only; transport success is unverified on our rigs. Our next M2 target stays native GL display without CPU readback plus measured Windows Spout and later separate macOS Syphon/Linux backends. No cross-platform zero-copy claim yet.

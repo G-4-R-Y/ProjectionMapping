@@ -28,3 +28,7 @@ A persistent scene graph where walls, ceiling, floor, furniture, plants, doors, 
 
 ## Metrics
 ID persistence, mask leakage, occlusion correctness, region registration, effect latency, scene load/save reproducibility, frame rate with N active nodes.
+
+## Research checkpoint — 2026-10-14
+
+[Mobile-4DGS](https://github.com/xiaobiaodu/Mobile-4DGS) (2026-09-30) and [InfiniSplat v2](https://github.com/zju3dv/InfiniSplat/tree/main/InfiniSplat_v2) (October changes) motivate portable GLB/PLY/SPZ asset provenance and clean offline reconstruction boundaries. Mobile-4DGS has unclear source licensing and NVIDIA/CUDA training; InfiniSplat requires organizational registration under PRL v1.0 and CUDA. Neither should be vendored. [Blender 5.3 splat import](https://developer.blender.org/docs/release_notes/5.3/rendering/) is pre-release through 2026-11-10, with no splat export. Windows/Linux/macOS viewer support must be verified separately from Linux/NVIDIA offline training.

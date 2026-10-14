@@ -49,3 +49,7 @@ Video generation does not provide a hard guarantee; consistency comes from accum
 
 ## Metrics
 Inference FPS, p50/p95 inference time, neural frame age, submissions dropped, VRAM peak/free reserve, temporal flicker, warped-frame residual, neural-keyframe residual, identity/structure drift, display FPS, crash/recovery behavior.
+
+## Research checkpoint — 2026-10-14
+
+[NVIDIA StreamRender-H3](https://nvlabs.github.io/Sana/Sol-Engine/StreamRender-H3/) uses deterministic geometry/semantic maps plus streaming generative appearance. This is a *conceptual* M3/M4 reference, not a new backend: reported rendering uses 8× GB200, with no validated 6 GiB/4080 operating point. Next: benchmark the existing flow-warp keyframe baseline on identical recorded inputs and require measured latency/VRAM/temporal quality before introducing an inference sidecar. See [October sweep](../research/2026-10-14.md).

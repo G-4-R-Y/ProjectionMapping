@@ -36,3 +36,7 @@ A projector/camera system that can be set up repeatably, knows where every valid
 
 ## Metrics
 Reprojection error, dense-map confidence/coverage, moving-target registration error vs speed, motion-to-photon latency p50/p95, calibration time and repeatability.
+
+## Research checkpoint — 2026-10-14
+
+The [MIT fringe-projection case study](https://github.com/hectorcs23/fringe-projection-3d-reconstruction) (2026-09-19) provides a useful M1 QA reference: per-pixel sinusoid modulation/confidence masking, multi-frequency temporal unwrap, and landmark reprojection/height error. It reports 1.75 cm RMSE in a small educational setup; **do not replace our current Gray-code/phase primitives**. Implement controlled real-room reference/target captures, confidence masks, inverse-map validity and quantitative error metrics before adding learned correction. Portable math on Windows/Linux/macOS; physical camera/projector setup remains OS/driver dependent.

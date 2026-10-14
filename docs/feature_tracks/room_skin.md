@@ -33,3 +33,7 @@ Change the apparent material/semantics of walls, furniture, plants, doors and ce
 
 ## Metrics
 Registration error, edge drift over time, temporal flicker, reset frequency, surface-mask leakage, display/inference FPS, setup/calibration time.
+
+## Research checkpoint — 2026-10-14
+
+M4 should formalize a serializable `SemanticFrame`: projector/camera transforms, instance IDs, surfaces/masks, depth, boundary confidence, timestamps and appearance references. Maintain deterministic spatial and temporal ownership; evaluate asynchronous neural appearance as a removable layer. [StreamRender-H3](https://nvlabs.github.io/Sana/Sol-Engine/StreamRender-H3/) is a research precedent but only demonstrated on datacenter hardware. Hardware calibration and comparable recorded-room A/B tests remain open. See [October sweep](../research/2026-10-14.md).
