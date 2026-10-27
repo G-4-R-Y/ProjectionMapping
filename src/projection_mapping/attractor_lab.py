@@ -24,11 +24,15 @@ _VERTEX = r"""
 #version 330
 in vec4 in_point;
 uniform float u_time;
+uniform float u_flow_phase;
+uniform float u_flow_window;
+uniform int u_flow_enabled;
 uniform float u_zoom;
 uniform float u_point_size;
 uniform int u_palette;
 out vec3 v_color;
 out float v_age;
+out float v_flow;
 #define TAU 6.28318530718
 
 vec3 pal(float t){
@@ -42,6 +46,27 @@ vec3 pal(float t){
 }
 
 void main(){
+    // Ordered RK4 samples become three flowing luminous trajectory segments.
+    // Camera and trajectory buffers remain stable: only illumination advects.
+    float trail=fract(u_flow_phase-in_point.w);
+    trail=min(trail,fract(u_flow_phase+0.3333333-in_point.w));
+    trail=min(trail,fract(u_flow_phase+0.6666667-in_point.w));
+    float width=max(u_flow_window,0.001);
+    v_flow=1.0;
+    if(u_flow_enabled != 0){
+        if(trail>width){
+            gl_Position=vec4(3.0,3.0,0.0,1.0);
+            gl_PointSize=1.0;
+            v_age=0.0;
+            v_color=vec3(0.0);
+            v_flow=0.0;
+            return;
+        }
+        v_flow=pow(max(1.0-trail/width,0.0),1.35);
+        // Finite chaotic trajectories are not closed loops: fade each endpoint.
+        v_flow*=smoothstep(0.0,0.012,in_point.w);
+        v_flow*=smoothstep(0.0,0.012,1.0-in_point.w);
+    }
     vec3 p=in_point.xyz;
     float a=u_time*.11;
     float b=.31*sin(u_time*.071);
@@ -62,18 +87,21 @@ _POINT_FRAGMENT = r"""
 #version 330
 in vec3 v_color;
 in float v_age;
+in float v_flow;
 uniform float u_energy;
 out vec4 fragColor;
 void main(){
     vec2 q=gl_PointCoord*2.0-1.0;
     float r=length(q);
     if(r>1.0) discard;
-    float core=exp(-r*r*18.0);
-    float halo=exp(-r*3.2)*.42;
-    float twinkle=.72+.28*sin(v_age*83.0);
-    vec3 col=v_color*(halo+.55*core)*twinkle;
-    col+=vec3(1.0,.985,.95)*core*.72;
-    fragColor=vec4(col*u_energy,core+halo*.48);
+    // Compact white cores and saturated shells avoid an all-over grey haze.
+    float core=exp(-r*r*65.0);
+    float shell=exp(-r*r*4.8);
+    float halo=exp(-r*r*2.2)*.12;
+    float twinkle=.88+.12*sin(v_age*83.0);
+    vec3 col=v_color*(shell*.70+halo)*twinkle*v_flow;
+    col+=vec3(1.0,.98,1.0)*core*.30*v_flow*v_flow;
+    fragColor=vec4(col*u_energy,1.0);
 }
 """
 
@@ -95,7 +123,7 @@ out vec4 fragColor;
 
 vec3 bright(vec3 c){
     float m=max(c.r,max(c.g,c.b));
-    float k=max((m-.18)/max(m,1e-5),0.0);
+    float k=max((m-.72)/max(m,1e-5),0.0);
     return c*k;
 }
 
@@ -110,13 +138,22 @@ void main(){
     for(int i=0;i<12;i++) b+=bright(texture(u_hdr,v_uv+taps[i]*u_texel).rgb);
     c+=b*(u_bloom/12.0)*.72;
     c*=.75+.48*u_intensity;
-    c=vec3(1.0)-exp(-max(c,vec3(0.0))*1.22);
-    c=pow(c,vec3(.78));
+    // Tone-map peak luminance, not each RGB channel, to preserve hue.
     float peak=max(c.r,max(c.g,c.b));
-    c*=smoothstep(.006,.045,peak);
+    float mapped=1.0-exp(-max(peak,0.0)*1.2);
+    c*=mapped/max(peak,1e-5);
+    c=pow(max(c,vec3(0.0)),vec3(.92));
+    c*=smoothstep(.012,.055,mapped);
     fragColor=vec4(clamp(c,0.0,1.0),1.0);
 }
 """
+
+
+def attractor_flow_phase(t: float, speed: float = 1.0) -> float:
+    """Display-rate phase; scans the sampled ODE path every 24 s at speed 1."""
+    if not math.isfinite(t) or not math.isfinite(speed):
+        raise ValueError("flow time and speed must be finite")
+    return (max(t, 0.0) * min(max(speed, 0.0), 8.0) / 24.0) % 1.0
 
 
 def _rk4_step(state: np.ndarray, dt: float, fn) -> np.ndarray:
@@ -282,6 +319,8 @@ class AttractorRenderer:
         point_size: float = 2.2,
         bloom: float = 1.0,
         energy: float = 1.0,
+        flow_speed: float = 1.0,
+        flow_width: float = 0.08,
     ) -> np.ndarray:
         palette = palette or self.palette
         if palette not in ATTRACTOR_PALETTES:
@@ -293,6 +332,10 @@ class AttractorRenderer:
         energy_boost = 1.45 if self.mode == "ikeda" else (1.22 if planar else 1.0)
         p = self.point_program
         p["u_time"].value = float(t)
+        # Sample adjacency is continuous only for ODE trajectories, not discrete maps.
+        p["u_flow_enabled"].value = int(not planar)
+        p["u_flow_phase"].value = attractor_flow_phase(t, flow_speed)
+        p["u_flow_window"].value = float(np.clip(flow_width, 0.01, 0.25))
         p["u_zoom"].value = float(max(zoom, 0.1))
         p["u_point_size"].value = float(np.clip(point_size * point_boost, 0.5, 12.0))
         p["u_palette"].value = ATTRACTOR_PALETTES.index(palette)
@@ -342,5 +385,6 @@ __all__ = [
     "ATTRACTOR_MODES",
     "ATTRACTOR_PALETTES",
     "generate_attractor",
+    "attractor_flow_phase",
     "AttractorRenderer",
 ]
