@@ -43,7 +43,7 @@ Dense additive point-cloud sculptures for:
 - De Jong
 - Ikeda
 
-ODE/map trajectories are generated once, robustly normalized, uploaded to GPU memory and then animated at display rate with 3D camera orbit, emissive point material and bloom. This is intentionally different from full-screen shader textures: it adds sparse luminous geometric sculpture to the visual vocabulary. A fixed-point-collapse test now guards registered attractors after the first Ikeda parameter choice was found to converge to one point instead of producing the desired chaotic set.
+ODE/map trajectories are generated once, robustly normalized and uploaded to GPU. The 2026-10-27 ODE art pass now sweeps three staggered luminous heads with fading tails along ordered RK4 samples; discrete 2D maps keep their full-field output because adjacent iterations are not spatially adjacent. Saturated shells, narrower white cores and peak-based tone mapping reduce gray/washed-out additive light. This is moving illumination on a precomputed path (no per-frame trajectory integration or GPU buffer churn). The camera orbit is retained. Hardware visual quality, trajectory wrap continuity, FPS and projector brightness are **not validated**. This is intentionally different from full-screen shader textures: it adds sparse luminous geometric sculpture to the visual vocabulary. A fixed-point-collapse test now guards registered attractors after the first Ikeda parameter choice was found to converge to one point instead of producing the desired chaotic set.
 
 ### Song Studio convergence — implemented
 Song Studio can use `math:<mode>` Famous Math worlds as music-reactive backdrop/conductor layers in addition to Polar Math and Shader Scene Lab scenes. Current automatic research pairings include quasicrystal/Lissajous, Mandelbrot-Julia/Singularity Crown, complex-domain/Prism Shards and zeta/Constellation Bloom. These are experiments, not all promoted presets.
@@ -137,7 +137,7 @@ Next research:
 - Reaction diffusion currently uses periodic boundaries and fixed rectangular simulation coordinates; calibrated wall/surface masks and boundary conditions are future work.
 - Gray-Scott parameter transitions can destabilize or collapse patterns; morph parameters slowly and preserve state.
 - Cellular worlds currently use periodic boundaries and discrete nearest-neighbour output; continuous CA / Lenia and room-boundary rules remain open.
-- Attractor point clouds are static trajectories with animated camera, not continuously re-integrated parameter morphs yet.
+- ODE attractors now show travelling luminous trajectory windows, **not** true stateful per-particle ODE integration or live parameter morphs. Compare against the previous static baseline on an actual RTX GPU/projector before calling the appearance polished.
 - No common field algebra yet: shader, PDE, CA, particle and SDF modules cannot currently compose arbitrary vector/scalar fields without bespoke code.
 - No live hot-reload of mathematical parameters from TUI/OSC yet.
 
