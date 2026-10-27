@@ -438,12 +438,13 @@ Track: [`docs/feature_tracks/performer_fx.md`](docs/feature_tracks/performer_fx.
 # Cross-cutting engineering goals
 
 Performance/reliability:
+- 🟡 Attractor ODE moving trajectory-window shader and hue-preserving art pass landed 2026-10-27; visual continuity/FPS and projector quality remain unverified on actual hardware.
 - ✅ process isolation
 - ✅ latest-frame-wins async inference
 - ✅ VRAM guard / cleanup
-- ✅ cross-platform CI
+- 🟡 Cross-platform test suite present for **local/manual** runs; GitHub Actions CI and desktop-build workflows removed to control costs.
 - ✅ graphics dependency/context diagnostics improved; desktop graphics extra now packaged
-- ✅ Linux Mesa/EGL visual-smoke CI compiles/renders promoted Shader Scene/Polar/particle materials and runs seam regression
+- 🟡 Linux Mesa/EGL visual smoke probe can render promoted shaders locally/manual; not currently run automatically in GitHub Actions (intentionally removed).
 - ⬜ p50/p95/p99 capture/perception/particle/render/inference/transport/scanout timings
 - ⬜ continuous GPU/CPU memory and frame-time telemetry
 - ⬜ live parameter hot-reload
