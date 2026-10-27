@@ -1,7 +1,7 @@
 """Classic strange-attractor projector lab.
 
 Lorenz, Rossler, Aizawa, Thomas, Halvorsen, Clifford, De Jong and Ikeda systems are
-precomputed once, then rendered as dense additive GPU point clouds. F11 toggles fullscreen;
+precomputed once, then rendered with flowing luminous RK4 segments for ODE modes. F11 toggles fullscreen;
 ESC exits.
 """
 from __future__ import annotations
@@ -27,6 +27,8 @@ def main() -> None:
     ap.add_argument("--projector-height", type=int, default=1080)
     ap.add_argument("--speed", type=float, default=1.0)
     ap.add_argument("--intensity", type=float, default=1.0)
+    ap.add_argument("--flow-speed", type=float, default=1.0)
+    ap.add_argument("--flow-width", type=float, default=0.08)
     ap.add_argument("--zoom", type=float, default=1.35)
     ap.add_argument("--point-size", type=float, default=2.2)
     ap.add_argument("--bloom", type=float, default=1.0)
@@ -62,6 +64,8 @@ def main() -> None:
                 zoom=args.zoom,
                 point_size=args.point_size,
                 bloom=args.bloom,
+                flow_speed=args.flow_speed,
+                flow_width=args.flow_width,
             )
             out = cv2.resize(
                 rgb,
