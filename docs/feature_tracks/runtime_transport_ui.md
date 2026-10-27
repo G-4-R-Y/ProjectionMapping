@@ -9,7 +9,7 @@ A reliable visual-performance appliance: one persistent control deck, clean chil
 - F11 fullscreen toggle in shared sink and ESC exit behavior.
 - Latest-frame-wins async worker.
 - Spout abstraction/diagnostics on Windows; fullscreen fallback elsewhere.
-- PyInstaller onedir builds and CI packaging; native installer polish incomplete.
+- PyInstaller onedir build tooling and manual/local packaging checks; GitHub Actions CI and desktop-build automation intentionally removed by 2026-10-27. Native installer polish incomplete.
 
 ## Quality ladder
 - **Prototype:** launch Python scripts manually.
