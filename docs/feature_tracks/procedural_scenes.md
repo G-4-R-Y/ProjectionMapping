@@ -79,7 +79,7 @@ Palettes: spectral, cyber, solar, bio, ultraviolet. The renderer uses saturated 
 - `chaos` should alter structure/topology/flow. A brightness knob relabeled “chaos” does not count.
 
 ## Validation
-- `experiments/21_visual_probe.py` creates a real OpenGL context and renders every promoted Shader Scene Lab scene, all five Polar Math modes and particle materials in CI.
+- `experiments/21_visual_probe.py` can create a real OpenGL context and render the promoted Shader Scene Lab, Polar Math and particle materials when invoked **manually on a machine with EGL/GL**. Paid GitHub Actions CI and desktop packaging workflows were removed by 2026-10-27.
 - It also reports `event_horizon seam_mean/seam_p95` across the old branch-cut location; this is a correctness regression metric, **not** an aesthetic score.
 - Mesa/llvmpipe passing does not replace RTX 4050/projector validation.
 
