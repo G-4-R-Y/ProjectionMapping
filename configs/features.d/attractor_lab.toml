@@ -2,7 +2,7 @@
 id = "attractor_lab"
 name = "Strange Attractor Lab / GPU"
 category = "Visual Madness"
-description = "Dense additive GPU renderings of classic chaotic systems: Lorenz, Rossler, Aizawa, Thomas, Halvorsen, Clifford, De Jong and Ikeda. Point clouds are precomputed once and animated as luminous mathematical sculptures. F11 toggles fullscreen."
+description = "Dense additive GPU renderings of classic chaotic systems: Lorenz, Rossler, Aizawa, Thomas, Halvorsen, Clifford, De Jong and Ikeda. ODEs flow as luminous RK4 trajectory segments; discrete maps retain full point fields. F11 toggles fullscreen."
 command = ["python", "experiments/24_attractor_lab.py"]
 fullscreen = true
 requires_modules = ["moderngl"]
@@ -66,6 +66,24 @@ type = "float"
 default = 1.0
 min = 0.05
 max = 4.0
+
+[[feature.param]]
+key = "flow_speed"
+flag = "--flow-speed"
+label = "ODE flow speed"
+type = "float"
+default = 1.0
+min = 0.0
+max = 8.0
+
+[[feature.param]]
+key = "flow_width"
+flag = "--flow-width"
+label = "ODE luminous tail length"
+type = "float"
+default = 0.08
+min = 0.01
+max = 0.25
 
 [[feature.param]]
 key = "intensity"
