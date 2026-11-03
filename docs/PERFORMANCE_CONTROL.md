@@ -84,6 +84,10 @@ Use `--midi-device "substring"` to select a controller, or:
 python experiments/33_performance_director.py --list-midi
 ```
 
+## Experimental bar-locked breathing (2026-11-03)
+
+`--tempo-breath 0..1` gently varies shader intensity, particle bloom and vector-field force once per musical bar; the same control is exposed in `projection-ui` under **Behavior & Reactivity**. Default **0** preserves the previous look. When the beat clock is not confident, the effect returns to neutral rather than free-running. With optional Ableton Link it follows the external Link bar phase; other audio envelopes stay tied to captured audio. This is deterministic periodic modulation, not a new beat detector or independent particle simulation. Use 0.3-0.6 as an initial experiment, compare against 0, and judge visually on the actual projector; there is no hardware validation yet.
+
 ## Beat/bar quantization
 
 Live cue, next-journey, journey-selection and snapshot-load actions can be quantized with
