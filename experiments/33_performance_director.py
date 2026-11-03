@@ -108,6 +108,7 @@ def main() -> None:
     ap.add_argument("--transition-seconds", type=float, default=3.0)
     ap.add_argument("--minimum-dwell", type=float, default=5.0)
     ap.add_argument("--madness", type=float, default=0.45)
+    ap.add_argument("--tempo-breath", type=float, default=0.0, help="Opt-in bar-locked shader/particle breathing (0..1)")
     ap.add_argument("--reactivity", choices=["smooth", "balanced", "punchy", "chaotic"], default="balanced")
     ap.add_argument("--event-threshold", type=float, default=0.62)
     ap.add_argument("--beat-threshold", type=float, default=0.48)
@@ -177,6 +178,7 @@ def main() -> None:
         journey=active_journey,
         mode=args.director_mode,
         base_madness=args.madness,
+        tempo_breath=args.tempo_breath,
         cue_seconds=args.cue_seconds,
         transition_seconds=args.transition_seconds,
         minimum_dwell=args.minimum_dwell,
@@ -488,7 +490,8 @@ def main() -> None:
                 for event in looper.tick(beat_position):
                     execute_control(event, now, beat_position, record=False)
 
-                state = director.update(structure, signals, now)
+                # Link may replace the clock fields, but not audio energy/event evidence.
+                state = director.update(structure, clock_signals, now)
                 macro = state.macro
                 piano = (
                     midi.piano_expression(now=now)
