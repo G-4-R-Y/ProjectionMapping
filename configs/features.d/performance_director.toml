@@ -263,6 +263,17 @@ group = "Behavior & Reactivity"
 help = "Shared base macro. Music and cue identity modulate this into shader chaos/intensity/palette drift and particle density/turbulence/bloom/field force."
 
 [[feature.param]]
+key = "tempo_breath"
+flag = "--tempo-breath"
+label = "Tempo-locked breathing"
+type = "float"
+default = 0.0
+min = 0.0
+max = 1.0
+group = "Behavior & Reactivity"
+help = "Experimental once-per-bar light/field breathing. 0 keeps the previous look; requires stable beat/Link clock. Does not alter master MADNESS."
+
+[[feature.param]]
 key = "reactivity"
 flag = "--reactivity"
 label = "Musical reactivity"
