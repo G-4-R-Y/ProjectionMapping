@@ -100,6 +100,23 @@ def _smoothstep(x: float) -> float:
     return x * x * (3.0 - 2.0 * x)
 
 
+def _bar_breath(signals: MusicalSignals, amount: float) -> float:
+    """Signed once-per-bar LFO, silent without a credible clock.
+
+    A pure function of the published bar phase: no wall-clock drift or per-frame
+    oscillator state. This is a small native experiment inspired by Fosfora's
+    2026-11-03 tempo-synced bindings, not a port of its Rust implementation.
+    """
+    if amount <= 0.0 or signals.beat_confidence < 0.18 or signals.tempo_bpm <= 0.0:
+        return 0.0
+    if not all(math.isfinite(value) for value in (
+        signals.bar_phase, signals.beat_confidence, signals.tempo_bpm
+    )):
+        return 0.0
+    confidence = min(1.0, max(0.0, (signals.beat_confidence - 0.18) / 0.32))
+    return amount * confidence * math.cos(2.0 * math.pi * (signals.bar_phase % 1.0))
+
+
 class PerformanceDirector:
     """Coordinate shader presets and particle banks from one musical/timed state machine.
 
@@ -117,6 +134,7 @@ class PerformanceDirector:
         journey: str = "liquid_arc",
         mode: str = "hybrid",
         base_madness: float = 0.45,
+        tempo_breath: float = 0.0,
         cue_seconds: float = 24.0,
         transition_seconds: float = 3.0,
         minimum_dwell: float = 5.0,
@@ -139,6 +157,9 @@ class PerformanceDirector:
         self.journey = journey
         self.mode = mode
         self.base_madness = float(np.clip(base_madness, 0.0, 1.0))
+        if not math.isfinite(float(tempo_breath)):
+            raise ValueError("tempo_breath must be finite")
+        self.tempo_breath = float(np.clip(tempo_breath, 0.0, 1.0))
         self.cue_seconds = float(max(cue_seconds, 2.0))
         self.transition_seconds = float(max(transition_seconds, 0.05))
         self.minimum_dwell = float(max(minimum_dwell, 1.0))
@@ -304,17 +325,20 @@ class PerformanceDirector:
         self._macro += alpha * (target_macro - self._macro)
         m = float(np.clip(self._macro, 0.0, 1.0))
 
+        # Opt-in, bar-locked breathing on material/particle energy, without
+        # modulating MADNESS itself or changing the default performance.
+        breath = _bar_breath(signals, self.tempo_breath)
         shader_mix = source.shader_mix + (target.shader_mix - source.shader_mix) * mix
         return PerformanceMacro(
             energy=audio_energy,
             madness=m,
             shader_chaos=0.78 + 1.42 * m + 0.32 * signals.drop,
-            shader_intensity=0.78 + 0.68 * m + 0.28 * signals.loudness,
+            shader_intensity=(0.78 + 0.68 * m + 0.28 * signals.loudness) * (1.0 + 0.12 * breath),
             palette_rate=0.008 + 0.060 * m + 0.028 * signals.highs,
             particle_emission=0.72 + 1.18 * m + 0.28 * signals.drop,
             particle_turbulence=0.76 + 0.82 * m + 0.22 * signals.highs,
-            particle_bloom=0.82 + 0.62 * m + 0.20 * signals.strike,
-            field_force=0.78 + 0.72 * m + 0.32 * signals.bass,
+            particle_bloom=(0.82 + 0.62 * m + 0.20 * signals.strike) * (1.0 + 0.16 * breath),
+            field_force=(0.78 + 0.72 * m + 0.32 * signals.bass) * (1.0 + 0.10 * breath),
             composite_mix=float(np.clip(shader_mix * (0.78 + 0.32 * m), 0.0, 1.0)),
         )
 
