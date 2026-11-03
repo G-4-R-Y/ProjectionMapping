@@ -254,6 +254,7 @@ Implemented:
 - ✅ RMS/bass/mid/treble/centroid/flux/onset controls
 - ✅ adaptive median/MAD event gating + refractory periods + one-trigger-per-audio-block semantics
 - ✅ tempo / beat phase / bar phase / confidence estimator
+- 🟡 opt-in bar-synchronized shader/particle breathing (`--tempo-breath`, default off) using the shared clock, including Link phase; numerical smoke only, needs local full suite and projector art/performance validation
 - ✅ macro energy + drop accents
 - ✅ smooth/balanced/punchy/chaotic modes + Calm<->Madness
 - ✅ GPU shader instrument with seamless Journey transitions
