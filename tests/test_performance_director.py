@@ -4,6 +4,7 @@ from projection_mapping.performance_director import (
     PERFORMANCE_CUES,
     PERFORMANCE_JOURNEYS,
     PerformanceDirector,
+    _bar_breath,
     validate_performance_catalog,
 )
 
@@ -157,3 +158,37 @@ def test_user_journey_can_be_registered_selected_and_advanced():
     director.next_cue(11.0)
     state = director.update(_structure(), _signals(), 11.0)
     assert state.target_cue == "data_build"
+
+
+def test_bar_breath_is_phase_locked_wraps_and_respects_confidence():
+    assert abs(_bar_breath(_signals(bar_phase=0.0), 1.0) - 1.0) < 1e-9
+    assert abs(_bar_breath(_signals(bar_phase=1.0), 1.0) - 1.0) < 1e-9
+    assert abs(_bar_breath(_signals(bar_phase=0.5), 1.0) + 1.0) < 1e-9
+    assert abs(_bar_breath(_signals(bar_phase=0.25), 1.0)) < 1e-9
+    assert _bar_breath(_signals(bar_phase=0.0), 0.0) == 0.0
+    assert _bar_breath(_signals(bar_phase=0.0, beat_confidence=0.15), 1.0) == 0.0
+    assert _bar_breath(_signals(bar_phase=0.0, tempo_bpm=0.0), 1.0) == 0.0
+    assert _bar_breath(_signals(bar_phase=float("nan")), 1.0) == 0.0
+    assert 0.0 < _bar_breath(_signals(bar_phase=0.0, beat_confidence=0.30), 1.0) < 1.0
+
+
+def test_tempo_breath_is_opt_in_and_only_modulates_visual_energy():
+    args = dict(journey="liquid_arc", mode="timed", base_madness=0.35)
+    off_first = PerformanceDirector(**args).update(_structure(), _signals(bar_phase=0.0), 10.0).macro
+    off_half = PerformanceDirector(**args).update(_structure(), _signals(bar_phase=0.5), 10.0).macro
+    on_first = PerformanceDirector(**args, tempo_breath=1.0).update(
+        _structure(), _signals(bar_phase=0.0), 10.0
+    ).macro
+    on_half = PerformanceDirector(**args, tempo_breath=1.0).update(
+        _structure(), _signals(bar_phase=0.5), 10.0
+    ).macro
+    unlocked = PerformanceDirector(**args, tempo_breath=1.0).update(
+        _structure(), _signals(bar_phase=0.0, beat_confidence=0.0), 10.0
+    ).macro
+
+    assert off_first == off_half  # Previous default remains phase-neutral.
+    assert on_first.shader_intensity > off_first.shader_intensity > on_half.shader_intensity
+    assert on_first.particle_bloom > off_first.particle_bloom > on_half.particle_bloom
+    assert on_first.field_force > off_first.field_force > on_half.field_force
+    assert on_first.madness == on_half.madness == off_first.madness == unlocked.madness
+    assert unlocked.shader_intensity == off_first.shader_intensity
