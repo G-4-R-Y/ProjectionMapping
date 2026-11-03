@@ -27,7 +27,7 @@ A finding is more likely to be promoted when it is:
 
 ## Automatic integration policy
 
-The monthly sweep may implement an integration automatically when all of these are true:
+Either sweep may implement an integration automatically when all of these are true:
 
 1. the project is open-source with a clear license;
 2. the code/release is sufficiently mature to reproduce;
@@ -51,7 +51,7 @@ Hardware claims that require the actual projector/camera/GPU rig stay **pending 
 
 The automation can prepare code and experiments for these, but the roadmap should distinguish implementation from hardware validation.
 
-## Expected monthly output
+## Expected sweep output
 
 A useful sweep should leave the repo with some combination of:
 
