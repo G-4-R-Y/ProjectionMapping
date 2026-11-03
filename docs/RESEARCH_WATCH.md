@@ -1,6 +1,6 @@
-# Monthly research watch
+# Research watch (weekly discovery + monthly deep dive)
 
-The project has a monthly research sweep intended to keep the roadmap fresh without turning every new paper or flashy demo into a dependency.
+The project has a weekly discovery sweep and a monthly deep research pass intended to keep the roadmap fresh without turning every new paper or flashy demo into a dependency.
 
 ## What the sweep looks for
 
