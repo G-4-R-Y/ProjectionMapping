@@ -5,6 +5,17 @@ Build a deep library of projector-native mathematical worlds where each visual h
 
 The artistic bar remains `docs/ART_DIRECTION.md`: famous equations are not exempt from looking good. A mathematically interesting scene that reads like a textbook plot is still unfinished.
 
+## 2026-11-05 attractor black-floor diagnostic
+
+The older gray/washed-out user screenshot is still an unresolved hardware
+regression. The ModernGL attractor already clears both FBOs to black and
+uses peak-preserving tone mapping; additive accumulation can nevertheless
+produce low-energy haze. Added a GLSL post gate, with a 0.10 default black
+floor and tunable renderer argument to suppress subthreshold signal before
+tone mapping. This is untested on the target GPU; compare bloom=0 and
+black_floor=0 against defaults and record captured black level, point
+saturation, motion continuity and p95 timings before claiming a fix.
+
 ## Current state
 
 ### Famous Math Lab — implemented
