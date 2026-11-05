@@ -141,7 +141,8 @@ void main(){
     c*=.75+.48*u_intensity;
     // Suppress low-energy additive haze before tonemapping. Dark space stays dark.
     float pre_peak=max(c.r,max(c.g,c.b));
-    c*=smoothstep(u_black_floor,u_black_floor+.16,pre_peak);
+    // Exactly zero restores the previous material for A/B diagnosis.
+    if(u_black_floor>0.0) c*=smoothstep(u_black_floor,u_black_floor+.16,pre_peak);
     // Tone-map peak luminance, not each RGB channel, to preserve hue.
     float peak=max(c.r,max(c.g,c.b));
     float mapped=1.0-exp(-max(peak,0.0)*1.2);
