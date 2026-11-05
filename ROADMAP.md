@@ -11,6 +11,27 @@ Before substantial work, read:
 
 Every meaningful feature change must update its track so successful presets, failed approaches, measurements, open problems and the path toward the advanced version do not disappear.
 
+## Experience product focus — 2026-11-05
+
+Three experiences form the intended front door of Projection Studio:
+1. **Spatial Memories** — point-cloud forest/tunnel world, local scan/image import,
+   immersive camera and deformation. Browser WebGL2 **prototype committed on feature branch**;
+   physical projection and actual scan reconstruction remain unvalidated.
+2. **Spectral Reactor** — spatial spectrogram/AV instrument. Browser FFT-grid proof
+   exists; mature rhythm/phrase-aware functionality remains in Python Song Studio.
+3. **Human Cloud** — people as persistent point-cloud effects. Browser camera
+   edge/motion experiment exists, **not semantic or 3D pose tracking**. Connect
+   RTMPose/TrackingState to spatial GPU emitters next.
+
+Other existing scenes/engines remain research and experimental lanes, not deleted.
+The Textual operator deck and calibrated projector data plane stay functional.
+A localhost static web studio and manual one-dir Windows packaging path exist;
+no public hosting, downloadable exe, or real hardware validation is claimed.
+**Do not re-enable GitHub Actions.** Use local Python/Node and rig smoke tests.
+
+Track: [Spatial Memories](docs/feature_tracks/spatial_memories.md) and
+[Studio guide](docs/SPATIAL_STUDIO.md).
+
 ## North star
 
 Build a home-scale spatial hallucination / mixed-reality performance instrument where projector, camera, audio, performers, generated 2D/3D assets and realtime graphics form one low-latency system. Deterministic tracking/geometry/particles/shaders own continuity and spatial registration; neural models provide lower-rate semantic/material/style transformations where they actually add value.
