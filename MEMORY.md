@@ -229,6 +229,22 @@ Before changing a subsystem:
 9. Update the roadmap/track with what is **implemented**, **CI-tested**, and **still speculative**.
 10. Experiment broadly beneath the surface, but prefer finishing one visually convincing vertical slice at a time for the promoted/default experience.
 
+## 2026-11-05 Studio handoff
+
+The product-facing design is now three primary lanes: Spatial Memories (navigable
+point-cloud environments), Spectral Reactor (audio visualization), Human Cloud
+(person point effects). Existing experimental scenes remain available under
+research lanes. New static browser WebGL2 stage, loopback-only serving, file
+and clipboard image relief, and camera/audio preview are on a feature branch,
+**not hardware validated**. Images are 2.5D, camera edges are not RTMPose
+landmarks. This intentionally does not replace the Python calibration/render
+plane. A standalone Windows PyInstaller onedir build is scripted, not tested.
+A separate native attractor black-floor gate was added as a tunable hedge
+against washed-out additive haze; its visual effect requires a hardware A/B.
+Next priority: polish actual footage before public promotion; connect existing
+tracking and musical state via secured local IPC. Do not re-enable Actions.
+See docs/SPATIAL_STUDIO.md and docs/feature_tracks/spatial_memories.md.
+
 ## 13. Immediate quality priorities
 
 1. Validate the vivid particle material overhaul on the RTX 4050/projector; tune bloom/black floor from actual footage.

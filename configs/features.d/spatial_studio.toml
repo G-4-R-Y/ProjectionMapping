@@ -1,0 +1,10 @@
+# Spatial Memories public-facing WebGL preview (local-only by default).
+# Deliberately not the calibrated projector renderer. No extra dependencies or paid CI.
+
+[[feature]]
+id = "spatial_studio"
+name = "Spatial Memories Studio"
+category = "Core Experiences"
+description = "Local-first browser 3D studio: forest-tunnel point clouds, music spectrum, camera-reactive points, and file/clipboard import. Uses WebGL2; browser permissions stay local. No projector calibration or semantic pose tracking."
+command = ["python", "-m", "projection_mapping.studio_server"]
+fullscreen = false

@@ -45,9 +45,14 @@ dev = ["pytest>=8", "ruff>=0.6"]
 [project.scripts]
 projection-map = "projection_mapping.cli:main"
 projection-ui = "projection_mapping.tui:main"
+projection-studio = "projection_mapping.studio_server:main"
+projection-studio-desktop = "projection_mapping.studio_desktop:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"projection_mapping" = ["studio_static/*.html", "studio_static/*.css", "studio_static/*.js"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

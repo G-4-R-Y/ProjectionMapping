@@ -18,6 +18,13 @@ A reliable visual-performance appliance: one persistent control deck, clean chil
 - **Advanced:** zero/low-copy CUDA<->texture transport, stage timestamps, OSC/MIDI/phone control, compositor integration.
 - **Ridiculous:** distributed multi-projector/session system with automatic recovery, recording/replay of performance state and deterministic benchmark captures.
 
+## 2026-11-05 — Spatial Studio browser/desktop slice
+
+- **Implemented on feature branch:** portable local-loopback read-only Python HTTP entrypoint + browser WebGL2 studio; static assets package with setuptools; manual Windows PyInstaller wrapper; import/clipboard, three primary preview lanes and tests. Not merged or hardware-validated until acceptance.
+- Do not confuse this local studio with the existing Textual projector control plane. A public deployment may use only static assets, not arbitrary remote process launch.
+- **Next:** real browser/shader screenshot test, Windows one-dir .exe build, polished projector/multi-monitor routing, live IPC with authentication and same-origin guards, backpressure and GPU point streaming, native shell evaluation.
+- **Rust/C++ decision:** avoid wholesale rewrite. Profile Rust/wgpu point parsing/LOD or shared-texture transport before introducing another runtime; keep Python research/calibration/ML.
+
 ## Next queue
 1. Replace `display * 1920` assumptions with real monitor enumeration/geometry.
 2. Add live IPC for parameter changes without renderer restart.

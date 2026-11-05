@@ -99,6 +99,18 @@ The UI is **registry-driven** by [`configs/features.toml`](configs/features.toml
 
 See [`docs/CONSOLE_UI.md`](docs/CONSOLE_UI.md) for the full operator and extension guide.
 
+## Spatial Studio (new local-first WebGL2 preview)
+
+The first **Spatial Memories** vertical slice adds a beautiful, browser-based stage alongside the existing Textual operator console. It has a procedural point-cloud forest passage, a spectrogram landscape, and camera-reactive points. Import ASCII/binary little-endian PLY, XYZ/PTS, or an image from file / clipboard; image uploads are rendered as **2.5D reliefs**, not measured 3D scans. The default is crisp monochrome on true black; cyan/magenta is optional.
+
+```bash
+python -m pip install -e .
+projection-studio
+# Or: python -m projection_mapping.studio_server
+```
+
+This starts a **local read-only server** and opens the browser. Files, clipboard images, audio and camera frames are processed only in the browser. Camera/microphone access requires permission. This WebGL gallery is **not yet calibrated projector output or semantic human tracking**, and there is no publicly deployed URL or validated Windows executable. To build a Windows launcher locally (no GitHub Actions), use `scripts/build_studio_windows.ps1`. See [Spatial Studio guide](docs/SPATIAL_STUDIO.md) for formats, controls, privacy, validation and language/packaging roadmap.
+
 ## Architecture
 
 ```text

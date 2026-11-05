@@ -7,6 +7,7 @@ ProjectionMapping is designed so the **core control UI, fullscreen projector out
 | Capability | Windows | Linux | macOS |
 | --- | --- | --- | --- |
 | Console UI / registry | ✅ | ✅ | ✅ |
+| WebGL2 Spatial Studio (modern browser) | experimental | experimental | experimental |
 | OpenCV fullscreen projector output | ✅ | ✅ | ✅ |
 | Camera capture / structured light | ✅ | ✅ | ✅ |
 | Gray-code / phase calibration | ✅ | ✅ | ✅ |
