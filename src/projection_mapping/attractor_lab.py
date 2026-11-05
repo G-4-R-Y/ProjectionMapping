@@ -118,6 +118,7 @@ uniform sampler2D u_hdr;
 uniform vec2 u_texel;
 uniform float u_bloom;
 uniform float u_intensity;
+uniform float u_black_floor;
 in vec2 v_uv;
 out vec4 fragColor;
 
@@ -138,6 +139,9 @@ void main(){
     for(int i=0;i<12;i++) b+=bright(texture(u_hdr,v_uv+taps[i]*u_texel).rgb);
     c+=b*(u_bloom/12.0)*.72;
     c*=.75+.48*u_intensity;
+    // Suppress low-energy additive haze before tonemapping. Dark space stays dark.
+    float pre_peak=max(c.r,max(c.g,c.b));
+    c*=smoothstep(u_black_floor,u_black_floor+.16,pre_peak);
     // Tone-map peak luminance, not each RGB channel, to preserve hue.
     float peak=max(c.r,max(c.g,c.b));
     float mapped=1.0-exp(-max(peak,0.0)*1.2);
@@ -321,6 +325,7 @@ class AttractorRenderer:
         energy: float = 1.0,
         flow_speed: float = 1.0,
         flow_width: float = 0.08,
+        black_floor: float = 0.10,
     ) -> np.ndarray:
         palette = palette or self.palette
         if palette not in ATTRACTOR_PALETTES:
@@ -352,6 +357,7 @@ class AttractorRenderer:
         q = self.post_program
         q["u_bloom"].value = float(np.clip(bloom, 0.0, 3.0))
         q["u_intensity"].value = float(max(intensity, 0.0))
+        q["u_black_floor"].value = float(np.clip(black_floor, 0.0, 0.4))
         self.target_fbo.use()
         self.target_fbo.clear(0.0, 0.0, 0.0, 1.0)
         self.post_vao.render(mode=self.moderngl.TRIANGLES)
