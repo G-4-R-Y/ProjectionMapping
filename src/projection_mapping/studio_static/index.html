@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07090d">
+  <meta name="description" content="Projection Studio — an interactive, local-first spatial performance instrument.">
+  <title>Projection Studio — Spatial Memories</title>
+  <link rel="stylesheet" href="./studio.css">
+  <script src="./studio.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <aside class="rail" aria-label="Experience navigation">
+      <div class="wordmark"><span class="mark">◈</span><div>PROJECTION<span>STUDIO</span><small>SPATIAL PERFORMANCE LAB</small></div></div>
+      <span class="rail-label">EXPERIENCES</span>
+      <nav class="modes" aria-label="Main experiences">
+        <button class="mode active" data-mode="memory" aria-pressed="true"><span class="mode-icon">◌</span><span>Spatial Memories<small>01 / Immersive environments</small></span></button>
+        <button class="mode" data-mode="spectrum" aria-pressed="false"><span class="mode-icon">⌁</span><span>Spectral Reactor<small>02 / Music in space</small></span></button>
+        <button class="mode" data-mode="human" aria-pressed="false"><span class="mode-icon">✧</span><span>Human Cloud<small>03 / Camera-reactive points</small></span></button>
+      </nav>
+      <div class="rail-bottom"><span class="tiny-orb"></span><span>PRIVATE BY DESIGN<small>Files remain in this browser</small></span></div>
+    </aside>
+    <main class="workspace">
+      <header class="topbar"><span>RENDER STUDIO <i>/</i> <b id="breadcrumb">SPATIAL MEMORIES</b></span><span class="status"><span class="live-dot"></span><span id="status">LIVE GPU PREVIEW</span></span></header>
+      <div class="viewport" id="viewport">
+        <canvas id="stage" aria-label="Interactive 3D point cloud preview"></canvas>
+        <div class="no-webgl" id="no-webgl" hidden>Your browser needs WebGL 2 for this interactive preview. Try a current desktop browser with hardware acceleration enabled.</div>
+        <div class="scene-caption"><span class="eyebrow" id="eyebrow">SPATIAL MEMORY / 001</span><h1 id="scene-title">Between<br>the trees<span>.</span></h1><p id="scene-subtitle">A place suspended between geometry and memory.</p></div>
+        <div class="viewport-hud"><span class="hud-mark">◈</span><span id="point-count">— POINTS</span><span id="frame-rate">— FPS</span><span id="source-label">PROCEDURAL</span></div>
+        <div class="drop-target" id="drop-target" hidden>DROP TO MATERIALIZE A MEMORY</div>
+      </div>
+      <div class="toolbar">
+        <label class="action primary" for="file-picker">＋ IMPORT FILE / IMAGE</label><input id="file-picker" type="file" accept=".ply,.xyz,.pts,image/png,image/jpeg,image/webp" hidden>
+        <button class="action" id="paste">▧ PASTE IMAGE</button>
+        <button class="action" id="mic">⌁ ENABLE MICROPHONE</button>
+        <button class="action" id="camera">◉ ENABLE CAMERA</button>
+        <div class="toolbar-fill"></div>
+        <button class="icon-button" id="reset" title="Reset scene / camera" aria-label="Reset scene">↺</button>
+        <button class="icon-button" id="fullscreen" title="Fullscreen preview" aria-label="Fullscreen preview">⛶</button>
+      </div>
+      <div class="bottom-strip"><span>01 — REALTIME / CLIENT-SIDE</span><span>DRAG TO ORBIT · DROP FILES · CTRL+V TO PASTE · 1/2/3 TO SWITCH</span><span>ESC TO EXIT FULLSCREEN</span></div>
+    </main>
+    <aside class="inspector" aria-label="Scene controls">
+      <div class="inspector-heading"><span class="eyebrow">THE INSTRUMENT</span><h2>Scene controls</h2><p>Shape the space. Keep the darkness.</p></div>
+      <div class="section-title">ENVIRONMENT <span>01</span></div>
+      <label class="control">World
+        <select id="scene" aria-label="Scene preset"><option value="forest">Forest passage</option><option value="vortex">Memory vortex</option><option value="dissolve">Dissolve & return</option></select>
+      </label>
+      <label class="control">Palette
+        <select id="palette"><option value="mono">Ghost white</option><option value="cyber">Cyan / magenta</option><option value="ember">Amber / ember</option></select>
+      </label>
+      <div class="section-title">SPATIAL DYNAMICS <span>02</span></div>
+      <label class="range-control"><span>Travel speed <output id="speed-value">0.75</output></span><input type="range" id="speed" min="0" max="4" step="0.05" value="0.75"></label>
+      <label class="range-control"><span>Space deformation <output id="twist-value">0.35</output></span><input type="range" id="twist" min="0" max="2" step="0.05" value="0.35"></label>
+      <label class="range-control"><span>Point scale <output id="size-value">1.30</output></span><input type="range" id="size" min="0.5" max="3.5" step="0.05" value="1.30"></label>
+      <label class="range-control"><span>Light intensity <output id="light-value">0.85</output></span><input type="range" id="light" min="0.1" max="1.6" step="0.05" value="0.85"></label>
+      <div class="inspector-note"><span class="live-dot"></span> BLACK IS A DESIGN ELEMENT.<p>Point geometry is rendered on the GPU. Images become 2.5D reliefs, not inferred LiDAR scans. Camera mode is experimental, not body-pose tracking.</p></div>
+      <div class="inspector-footer">PROJECTION STUDIO <span>ALPHA / LOCAL-FIRST</span></div>
+    </aside>
+  </div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <video id="camera-video" autoplay playsinline muted hidden></video>
+</body>
+</html>
