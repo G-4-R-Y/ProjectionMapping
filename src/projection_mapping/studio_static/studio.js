@@ -343,6 +343,15 @@ void main() {
   }
   function setMode(mode) {
     if(mode!=='memory' && mode!=='spectrum' && mode!=='human')return;
+    // Privacy: leaving a media mode releases its device immediately.
+    if(mode!=='human' && state.camStream){
+      state.camStream.getTracks().forEach(t=>t.stop());state.camStream=null;
+      state.video.srcObject=null;state.humanPrev=null;$('camera').textContent='◉ ENABLE CAMERA';
+    }
+    if(mode!=='spectrum' && state.micStream){
+      state.micStream.getTracks().forEach(t=>t.stop());state.micStream=null;
+      state.audio?.ctx.close();state.audio=null;$('mic').textContent='⌁ ENABLE MICROPHONE';
+    }
     state.mode=mode;
     document.querySelectorAll('.mode').forEach(btn=>{const active=btn.dataset.mode===mode;btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active));});
     const copy=labels[mode];$('breadcrumb').textContent=copy[0];$('eyebrow').textContent=copy[1];$('scene-title').innerHTML=copy[2];$('scene-subtitle').textContent=copy[3];
