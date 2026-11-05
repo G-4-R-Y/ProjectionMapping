@@ -41,6 +41,16 @@ Before promoting a shader/particle preset into the normal TUI/default path, ask:
 
 If not, do **not** confuse “not ready to promote” with “worthless experiment”. Keep promising work in research/incubation and improve it; demote or retire it only when the concept itself has no useful path forward.
 
+## Spatial Memories: monochrome exception
+
+For LiDAR-like remembered environments, start with **fine bone-white points on
+true black** rather than forcing the lab's cyan/magenta brand into the world.
+Perspective, recognizable tree/ground silhouettes and coherent forward travel
+carry the emotional composition. Color is a controlled optional variation.
+Avoid full-frame gray veil even when glow and atmospheric depth are enabled.
+A convincing 60-second camera movement on the actual projector is required for
+promotion; the first procedural forest is only an art prototype.
+
 ## Preferred visual language
 
 ### Color
