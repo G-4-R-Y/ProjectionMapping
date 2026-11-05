@@ -46,3 +46,12 @@ def test_attractor_shader_exposes_live_trajectory_window():
     assert "u_flow_enabled" in _VERTEX
     assert "u_flow_phase" in _VERTEX
     assert "v_flow" in _POINT_FRAGMENT
+
+
+def test_attractor_black_floor_contract():
+    from inspect import signature
+    from projection_mapping.attractor_lab import _POST_FRAGMENT, AttractorRenderer
+
+    assert "uniform float u_black_floor;" in _POST_FRAGMENT
+    assert "smoothstep(u_black_floor,u_black_floor+.16,pre_peak)" in _POST_FRAGMENT
+    assert signature(AttractorRenderer.render).parameters["black_floor"].default == 0.10
