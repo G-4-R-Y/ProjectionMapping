@@ -16,6 +16,7 @@ import numpy as np
 from projection_mapping.capture import Camera
 from projection_mapping.perception import optical_flow
 from projection_mapping.room_skin import preserve_edges, advect_with_flow, temporal_mix
+from projection_mapping.surface_masks import load_surface_mask, apply_surface_mask
 from projection_mapping.runtime import FullscreenSink
 
 
@@ -39,8 +40,18 @@ def main():
     ap.add_argument("--temporal-alpha", type=float, default=0.24)
     ap.add_argument("--projector-width", type=int, default=1920)
     ap.add_argument("--projector-height", type=int, default=1080)
+    ap.add_argument("--surface-mask", default="", help="Optional normalized projector outline JSON")
+    ap.add_argument("--surface-feather-px", type=float, default=8.0)
     args = ap.parse_args()
 
+    # One-time projector-space rasterization; leave current output unchanged by default.
+    surface_mask = (
+        load_surface_mask(
+            args.surface_mask, args.projector_width, args.projector_height,
+            feather_px=args.surface_feather_px,
+        )
+        if args.surface_mask else None
+    )
     sink = FullscreenSink(window="ProjectionMapping-RoomSkin", display=args.display)
 
     with Camera(args.camera) as cam:
@@ -67,6 +78,8 @@ def main():
                 (args.projector_width, args.projector_height),
                 interpolation=cv2.INTER_LINEAR,
             )
+            if surface_mask is not None:
+                output_rgb = apply_surface_mask(output_rgb, surface_mask)
             if sink(cv2.cvtColor(output_rgb, cv2.COLOR_RGB2BGR)) is False:
                 break
             prev_camera_rgb = camera_rgb
