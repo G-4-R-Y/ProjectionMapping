@@ -33,3 +33,10 @@ Change the apparent material/semantics of walls, furniture, plants, doors and ce
 
 ## Metrics
 Registration error, edge drift over time, temporal flicker, reset frequency, surface-mask leakage, display/inference FPS, setup/calibration time.
+
+## 2026-11-10: opt-in manually traced projector-output matte (research branch)
+
+- Added `surface_masks.py`: normalized polygon outlines, even–odd holes, bounded validated JSON, 0–256px **inward** feather; no lighting outside outlines. Independent small implementation inspired by [Projection Mapper's 2026-11-07 traced-zone feature](https://github.com/atul016/projection-mapper/commit/879de56ef840) (MIT).
+- `experiments/09_room_skin.py` now accepts `--surface-mask` and `--surface-feather-px`; the operator registry exposes both. Mask is rasterized once, applied **after** projector-size resize, and opt-in; default pixels unchanged. [Demo arched outline](../../configs/surface_shapes/demo_arch.json) and [operator instructions](../SURFACE_MASKS.md).
+- **Limited validation:** ten isolated NumPy/OpenCV geometry smoke cases passed in an unpinned test host; no complete repo suite, UI boot, camera/projector, output leakage or frame-time measurements. This is **not** M1 camera-to-projector calibration and does not solve automatic semantic segmentation, stage warp, multi-projector composition or UI tracing.
+- **Next gate:** verify pinned dependencies + F11/ESC, then 60-second actual-wall A/B at 1920×1080 with feather 0/4/12. Measure coverage/leakage, look, p50/p95 CPU frame time. Only then evaluate GPU-native clipping and camera-calibrated surfaces.
