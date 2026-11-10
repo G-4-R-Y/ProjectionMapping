@@ -111,6 +111,17 @@ projection-studio
 
 This starts a **local read-only server** and opens the browser. Files, clipboard images, audio and camera frames are processed only in the browser. Camera/microphone access requires permission. This WebGL gallery is **not yet calibrated projector output or semantic human tracking**, and there is no publicly deployed URL or validated Windows executable. To build a Windows launcher locally (no GitHub Actions), use `scripts/build_studio_windows.ps1`. See [Spatial Studio guide](docs/SPATIAL_STUDIO.md) for formats, controls, privacy, validation and language/packaging roadmap.
 
+## Experimental Room Skin surface outlines
+
+The native Room Skin experiment now accepts an **optional** manually defined polygon matte in projector-output coordinates. It can clip visuals to an arch, window, installation object or custom surface with even-odd holes and inside-only edge feathering. Without a mask, existing output stays unchanged. This is **not** camera/projector calibration or browser Studio mapping; it requires a real projector alignment test before use in an installation.
+
+```bash
+python -m pip install -e '.[vision,ui]'
+python experiments/09_room_skin.py --surface-mask configs/surface_shapes/demo_arch.json --surface-feather-px 8
+```
+
+See [Surface masks](docs/SURFACE_MASKS.md) for the JSON contract, supported platforms and validation caveats, and the [2026-11-10 research hunt](docs/research_sweeps/2026-11-10.md) for new visual-tech findings.
+
 ## Architecture
 
 ```text

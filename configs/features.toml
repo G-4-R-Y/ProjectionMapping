@@ -153,6 +153,25 @@ default = 1080
 min = 240
 max = 4320
 
+[[feature.param]]
+key = "surface_mask"
+flag = "--surface-mask"
+label = "Surface outline JSON (optional)"
+type = "text"
+default = ""
+help = "Normalized projector-space outlines; blank keeps the full image"
+group = "Design Customization"
+
+[[feature.param]]
+key = "surface_feather_px"
+flag = "--surface-feather-px"
+label = "Inner feather (pixels)"
+type = "float"
+default = 8.0
+min = 0.0
+max = 256.0
+group = "Design Customization"
+
 [[feature]]
 id = "streamdiffusion_live"
 name = "Neural Mirror / StreamDiffusion"

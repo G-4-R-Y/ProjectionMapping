@@ -204,7 +204,8 @@ Visual/shader direction:
 - ⬜ shared GPU particle/feedback engine as a spatial surface layer
 - ⬜ multi-pass HDR bloom / reaction diffusion / fluid-like fields
 - ⬜ SDF/raymarched architectural primitives
-- ⬜ calibrated surface masks and projector-coordinate scene routing
+- 🟡 **manual projector-output polygon matte** (Nov 10 research branch): opt-in Room Skin JSON outlines, holes, inward feather; isolated tests only, projector alignment/validation pending. See [operator note](docs/SURFACE_MASKS.md) and [Nov 10 sweep](docs/research_sweeps/2026-11-10.md).
+- ⬜ calibrated surface masks and projector-coordinate scene routing (camera->projector registration **not** solved by manual matte)
 
 Spatial/neural direction:
 - ⬜ clean room reference + calibrated projector coordinates

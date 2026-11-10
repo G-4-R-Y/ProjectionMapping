@@ -178,3 +178,18 @@ def test_feature_grouped_params_have_stable_intent_order():
         "Behavior & Reactivity",
         "Performance & Advanced",
     ]
+
+
+def test_room_skin_surface_mask_is_optional_with_operator_flags():
+    room_skin = load_registry(Path("configs/features.toml")).by_id("room_skin")
+    defaults = room_skin.defaults()
+    assert defaults["surface_mask"] == ""
+    assert defaults["surface_feather_px"] == 8.0
+    argv = room_skin.build_argv({
+        "surface_mask": "configs/surface_shapes/demo_arch.json",
+        "surface_feather_px": 12,
+    })
+    assert "--surface-mask" in argv
+    assert "configs/surface_shapes/demo_arch.json" in argv
+    assert argv[argv.index("--surface-feather-px") + 1] == "12.0"
+    assert "--surface-mask" not in room_skin.build_argv()
