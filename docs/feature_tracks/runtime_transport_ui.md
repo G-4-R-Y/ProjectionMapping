@@ -38,3 +38,10 @@ A reliable visual-performance appliance: one persistent control deck, clean chil
 
 ## Metrics
 Launch time, crash recovery, stale process/GPU-context count, display FPS, copy count, capture->scanout latency, log completeness, setup clicks/time, installer success rate.
+
+## 2026-11-14 — optional Varda launcher and transport comparison
+
+- The MIT-licensed [Varda VJ](https://github.com/im-knots/varda) [v0.10.0 release (2026-11-08)](https://github.com/im-knots/varda/releases/tag/v0.10.0) ships separate Windows x64 ZIP, macOS universal DMG and Linux x86_64 AppImage/Flatpak builds. Optional manifest `configs/features.d/varda_external.toml` launches Varda only if `varda` is already available on PATH. No bundled dependency, SDK, source copy or native texture bridge was introduced. Flag contract tests were added but the full repo suite/hardware tests remain pending.
+- The feature's `fullscreen = false` is intentional: Varda owns its output/projector displays, while the ProjectionMapping control deck owns only the child-process launch and cleanup. Source-path flags are opt-in; no sample media or network service is fetched or launched automatically.
+- On **Windows** use upstream's Spout capability only after real same-GPU sender/receiver validation; on **macOS** Syphon is upstream functionality rather than our native backend; on **Linux** use the released Vulkan Varda build/direct display, not Spout or Syphon. Optional NDI requires its own SDK/runtime and network/performance review on each OS.
+- Reproduction gate: install a trusted v0.10.0 release and put its executable on PATH; verify launch/exit, existing scene routing, OSC off/on behavior, focus/ESC return to deck, GPU allocation cleanup, copied frame count, p50/p95 scanout and native output on projector. Do **not** mark M2 complete from the manifest test. Details and deferred competitors: [2026-11-14 report](../research/2026-11-14.md).

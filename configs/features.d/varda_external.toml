@@ -1,0 +1,52 @@
+# Optional external application: Varda VJ v0.10.0, MIT licensed.
+# https://github.com/im-knots/varda/releases/tag/v0.10.0
+# No bundled binary, GPU bridge, implied network trust, or core dependency.
+[[feature]]
+id = "varda_external"
+name = "Varda VJ (External)"
+category = "External Interoperability"
+description = "Launch an independently installed Varda VJ/mapper. Its renderer, scenes and projector outputs remain outside ProjectionMapping; this is not a texture-sharing or hardware-validated bridge."
+command = ["varda"]
+fullscreen = false
+platforms = ["windows", "linux", "macos"]
+requires_commands = ["varda"]
+
+[[feature.param]]
+key = "scene"
+flag = "--scene"
+label = "Existing Varda scene file (optional)"
+type = "text"
+default = ""
+group = "System & Input"
+
+[[feature.param]]
+key = "stage"
+flag = "--stage"
+label = "Existing Varda stage file (optional)"
+type = "text"
+default = ""
+group = "System & Input"
+
+[[feature.param]]
+key = "shader_dir"
+flag = "--shader-dir"
+label = "Additional Varda shader directory (optional)"
+type = "text"
+default = ""
+group = "Design Customization"
+
+[[feature.param]]
+key = "no_osc"
+flag = "--no-osc"
+label = "Disable Varda OSC"
+type = "bool"
+default = false
+group = "Live Control"
+
+[[feature.param]]
+key = "no_ndi"
+flag = "--no-ndi"
+label = "Disable Varda NDI"
+type = "bool"
+default = false
+group = "Performance & Advanced"

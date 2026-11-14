@@ -4,6 +4,17 @@ This is the canonical milestone roadmap. Milestone numbering **M0–M6 is stable
 
 Legend: **✅ done / implemented** · **🟡 implemented but needs integration or hardware validation** · **⬜ planned** · **🧪 research / stretch**
 
+## Research checkpoint — 2026-11-14
+
+**New, dated sources:** [Varda v0.10.0 (2026-11-08)](https://github.com/im-knots/varda/releases/tag/v0.10.0), [EdenLive streaming renderer (2026-10-18)](https://github.com/VAST-AI-Research/EdenLive), [VAComp viewer-aware projection compensation (2026-11-07)](https://arxiv.org/abs/2611.10637), and [MatrixSplat Tensor-Core 3DGS research (2026-11-11)](https://arxiv.org/abs/2611.15153). License/hardware gates and comparisons are documented in [the November research report](docs/research/2026-11-14.md).
+
+- 🟡 **M2/M7 optional Varda interoperability prototype:** a lightweight external-launch feature registry fragment and deterministic tests have been committed on a research branch. MIT-licensed Varda publishes Win x64, Linux x86_64 and macOS universal builds; the optional executable must be installed separately and on PATH. This **does not** connect GPU textures, validate its CLI on a live machine or constitute completed OS/projector testing. Full repo pytest/Ruff was not runnable in the current environment.
+- 🧪 **M3/M4/M10 EdenLive:** learn from deterministic reference-video state plus neural appearance, but 5B ~24.7 FPS at 1280×704 refers to an RTX 5090 optimized deployment, **not** our RTX 4080 or RTX 4050. The full deployment and third-party model licenses do not pass automatic integration constraints.
+- 🧪 **M5/M8/M10 VAComp:** compelling moving-viewer, full geometric/photometric compensation; code/license/hardware reproduction are still unverified. Revisit after real calibration and depth/viewpoint acquisition.
+- 🧪 **M10 MatrixSplat:** Tensor Core accelerated high-dimensional Gaussian feature rendering. Paper-stage candidate without verified code and no measured 4080 benchmark; do not promote it to the current WebGL2 point renderer.
+- 🧪 **Spatial Memories/M10:** [Visionary](https://github.com/Visionary-Laboratory/visionary) and [WebSplatter](https://github.com/websplatter/WebSplatter) remain promising Apache-2.0/MIT WebGPU neural/3DGS renderers, but adopting a separate WebGPU/ONNX/LOD stack is not yet a small integration. Neither should replace the current WebGL2 prototype until scan and real browser GPU benchmarks exist.
+- **Next gate:** run local registry tests, install/test Varda separately if desired, record projector/Spout/real camera latency and actual room registration. GitHub Actions stay disabled.
+
 Before substantial work, read:
 - [`MEMORY.md`](MEMORY.md) — durable project/agent handoff memory, hardware findings, rejected approaches, and non-negotiable engineering rules.
 - [`docs/ART_DIRECTION.md`](docs/ART_DIRECTION.md) — visual-quality contract and promotion bar.

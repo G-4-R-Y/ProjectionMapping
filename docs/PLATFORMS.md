@@ -123,3 +123,11 @@ Whenever a new command is documented:
 3. show shell-specific activation only when activation is actually necessary;
 4. label CUDA, Spout, Syphon, NDI, camera-driver, and projector-driver assumptions explicitly;
 5. never present a Windows-only backend as a project-wide requirement.
+
+## Optional external VJ/mapper — November 2026
+
+The operator registry now has an optional `varda_external` entry. [Varda v0.10.0](https://github.com/im-knots/varda/releases/tag/v0.10.0) is **not** a dependency of ProjectionMapping and is not bundled. It has published Windows x64, macOS universal and Linux x86_64 desktop releases; its MIT license covers its own code, not any third-party media/shaders. It uses a separate native graphics/runtime stack, so upstream OS support is **not** our hardware validation.
+
+To enable: install the appropriate trusted upstream release, ensure the command `varda` resolves on PATH (an AppImage or app bundle may need a wrapper), then choose **External Interoperability → Varda VJ (External)** from `projection-ui`. Optional scene, stage and shader-directory parameters are passed as documented CLI flags. If missing, the registry reports the external command requirement instead of launching. A Varda window/projector output is controlled in Varda, not by our F11 fullscreen/ESC canvas protocol.
+
+**Windows:** Varda can separately support Spout; our own Spout adapter still needs GPU hardware validation. **Linux:** use the upstream Linux package and a compatible Vulkan driver; Spout/Syphon do not apply. **macOS:** Varda's universal build may use native Syphon; our project has **no** Syphon integration yet. NDI is a separately licensed runtime and may expose network transport; never assume it is installed or a zero-copy path. Projector, OS-specific binary and graphics driver behavior remain untested by this research run. [Sweep notes](research/2026-11-14.md).

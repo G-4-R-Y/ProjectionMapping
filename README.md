@@ -211,7 +211,7 @@ On Windows, Spout is the preferred same-machine GPU-sharing path into TouchDesig
 
 A monthly research sweep tracks new projection-mapping, spatial-AR, realtime-generative, projector-camera, neural-rendering, and interactive-media projects. Mature, compatible open-source work may be prototyped automatically; risky/unclear/large integrations are added to the roadmap as research candidates instead.
 
-See [`docs/RESEARCH_WATCH.md`](docs/RESEARCH_WATCH.md) for the curation and auto-integration policy.
+See [`docs/RESEARCH_WATCH.md`](docs/RESEARCH_WATCH.md) for the curation and auto-integration policy. The [2026-11-14 sweep](docs/research/2026-11-14.md) adds a registry-only optional Varda launcher (installed separately, no native transport) and tracks newer neural rendering and projector-compensation candidates; GPU/projector hardware validation and full local tests remain pending.
 
 ## Docs
 
