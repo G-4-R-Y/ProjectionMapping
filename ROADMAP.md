@@ -641,3 +641,12 @@ Research discipline:
 - E21 -> cross-cutting real-GL visual smoke / shader compile / Event Horizon seam regression
 
 When adding an experiment, link it to a milestone **and update the corresponding feature track** so research prototypes, failures, good presets, measurements and product progress stay synchronized.
+
+
+## Weekly creative research — 2026-11-17 (experimental / review pending)
+
+- [x] Source-check Nov 10–17 Codevember 2026, PhysMap 0.3.0-alpha.1 and HyperFrames 0.9.61, verifying actual release/commit dates and licenses; record the comparisons, deferrals, and duplicate checks in `docs/research_sweeps/2026-11-17.md`.
+- [x] Add independent **Spore Grove** bioluminescent point-sculpture scene to the browser-only Spatial Studio on a research branch. Bounded deterministic 67k point buffer, existing controls, no extra runtime dependencies and original shader movement; isolated V8/mock-WebGL startup checks performed, Node test file extended.
+- [ ] Verify `node tests/test_studio_web.cjs`, pinned project pytest/Ruff, actual WebGL2 shader compilation and 60-second RTX 4050/4080 + projector A/B before any default promotion.
+- [ ] Study PhysMap's **Nov 16** hardware-show safety patterns (instant blackout, freeze-last-frame, monitor disconnect) for native M2/M9 as a separate testable feature; do not embed its 2D-canvas/Electron engine.
+- [ ] Evaluate HyperFrames only as an **offline** video/loop source and keep filesystem, media and network sandbox boundaries explicit. Existing Varda/Brush/polygon-mask PRs remain separate until reviewed; no Actions workflows enabled.
