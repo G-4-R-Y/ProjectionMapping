@@ -44,6 +44,17 @@ const binary=parsePly(bytes.buffer);
 assert.equal(binary.length,7);
 assert.equal(binary[2],-12);
 assert.throws(()=>parsePly(new TextEncoder().encode('garbage').buffer),/header/i);
+const groveA=sandbox.ProjectionSporeGrove.generate();
+const groveB=sandbox.ProjectionSporeGrove.generate();
+assert(groveA instanceof Float32Array);
+assert.equal(groveA.length,groveB.length,'Stable point count');
+assert(groveA.length/7>40000 && groveA.length/7<90000,'Bounded point count');
+for(let i=0;i<groveA.length;i++){
+  assert(Number.isFinite(groveA[i]),'All point values must be finite');
+  assert.equal(groveA[i],groveB[i],'Deterministic geometry');
+}
+const spores=groveA.filter((x,i)=>i%7===6 && x>=.75);
+assert(spores.length>7000,'Marker encodes animated spores');
 state.scene=3;
 setMode('memory');
 assert.equal(state.kind,0);
