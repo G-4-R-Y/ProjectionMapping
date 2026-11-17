@@ -36,6 +36,11 @@ def test_assets_and_local_only_binding():
             assert b'gl.clearColor(0,0,0,1)' in code
         with urlopen(url + 'studio.css') as res:
             assert b'.viewport' in res.read()
+        with urlopen(url + 'spore_grove.js') as res:
+            assert res.status == 200
+            assert 'text/javascript' in res.headers['Content-Type']
+            assert b'ProjectionSporeGrove' in res.read()
+            assert "'self'" in res.headers['Content-Security-Policy']
 
 
 def test_no_upload_or_path_traversal():

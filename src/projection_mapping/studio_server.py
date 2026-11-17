@@ -11,6 +11,7 @@ _FILES = {
     "/index.html": ("index.html", "text/html; charset=utf-8"),
     "/studio.css": ("studio.css", "text/css; charset=utf-8"),
     "/studio.js": ("studio.js", "text/javascript; charset=utf-8"),
+    "/spore_grove.js": ("spore_grove.js", "text/javascript; charset=utf-8"),
 }
 
 

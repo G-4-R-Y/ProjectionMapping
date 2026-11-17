@@ -52,3 +52,10 @@ python -m projection_mapping.studio_server --no-open
 ```
 
 Web smoke uses a mocked WebGL2 interface to verify loading and ASCII/binary PLY, *not* real shader compilation. Run the visual/GPU test locally. GitHub Actions CI must remain disabled.
+
+
+## Experimental world: Spore Grove (Nov 17 weekly research)
+
+The **Spatial Memories → World → Spore Grove (experimental)** selection is a seeded point-cloud sculpture with silhouetted fungi, gills, dim ground cues and drifting light particles. Choose the existing ghost-white or cyan/magenta palette and shape it with travel, deformation, size and light. This is independently authored WebGL2 code inspired by the *subject* of [Codevember's day 16 Spore](https://github.com/mrdoob/codevember-2026/commit/896247a5bb1802c505bc6c0739170656c1749170); it does not import Three.js, shader source, models or assets. The generator is deterministic (~67k points, 1.9 MB GPU data) and uploads only when selected, not each animation frame.
+
+Run `node --check src/projection_mapping/studio_static/spore_grove.js` and `node tests/test_studio_web.cjs` for syntax, determinism and the mock WebGL2 scene-switch contract. A real browser+GPU/projector A/B test is **still required** for the shader, black floor, frame times and physical show readiness. This remains an optional, non-calibrated preview; imported scans stay active until the page is reloaded. All four static files must be distributed together and in script order.

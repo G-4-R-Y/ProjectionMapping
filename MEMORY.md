@@ -257,3 +257,10 @@ See docs/SPATIAL_STUDIO.md and docs/feature_tracks/spatial_memories.md.
 8. Then integrate performer/audio/room state and neural skinning into one coherent stage system.
 
 The standard for promoted work is not merely “works”. The standard is **worth filming and projecting**. The standard for an early experiment is different: **does it teach us something or open a path worth refining?**
+
+
+## 2026-11-17 weekly research handoff (research branch, not merged)
+
+Nov 10–17 source review confirmed new MIT [Codevember 2026](https://github.com/mrdoob/codevember-2026) days 11–16 (day 16 *Spore* source committed **Nov 17**, not Nov 16), MIT [PhysMap 0.3.0-alpha.1](https://github.com/mirauta-alexandru/PhysMap/releases/tag/v0.3.0-alpha.1) (published Nov 16), and Apache-2.0 [HyperFrames 0.9.61](https://github.com/heygen-com/hyperframes/releases/tag/v0.9.61) (Nov 17). Already covered Nov 10 Room Skin surface-mask PR #12 and Nov 14 Varda launcher draft PR #13; neither merged, so do not reimplement them. No validated new low-VRAM realtime neural pathway.
+
+Implemented **independent original Spore Grove prototype** inside local-first WebGL2 Spatial Studio: `spore_grove.js`, opt-in world menu, shader-drifting spores; 67,495 points with ~8,840 marked spores. New dataset is deterministic and uploaded on world change only. Existing imported scans are not replaced by selecting a world. No assets, web dependencies, GPU compute backend, CUDA or network changes. Isolated V8 source syntax and fake-WebGL scene transitions were checked, along with exact-repeat geometry. The extended `tests/test_studio_web.cjs` still needs a Node run in the actual repo environment. Shader compilation, stage/projector display, Windows EXE packaging, GPU performance and real hardware QA **remain unvalidated**. Do not promote preset. Read `docs/research_sweeps/2026-11-17.md` and `docs/feature_tracks/spatial_memories.md`; keep GitHub Actions disabled.

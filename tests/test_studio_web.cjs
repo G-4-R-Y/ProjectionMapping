@@ -3,8 +3,9 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
+const groveSource=fs.readFileSync(path.join(__dirname,'../src/projection_mapping/studio_static/spore_grove.js'),'utf8');
 const source = fs.readFileSync(path.join(__dirname,'../src/projection_mapping/studio_static/studio.js'),'utf8')
-  .replace("  setMode('memory');requestAnimationFrame(frame);", "  globalThis.__test={parsePly,parseTextCloud,generateForest,state};setMode('memory');requestAnimationFrame(frame);");
+  .replace("  setMode('memory');requestAnimationFrame(frame);", "  globalThis.__test={parsePly,parseTextCloud,generateForest,state,setMode};setMode('memory');requestAnimationFrame(frame);");
 const elements=new Map();
 const modes=['memory','spectrum','human'].map(mode=>({dataset:{mode},classList:{toggle(){}},setAttribute(){},addEventListener(){}}));
 const gl=new Proxy({}, {get(t,key){
@@ -25,8 +26,9 @@ const window={addEventListener(){},devicePixelRatio:1};
 const sandbox={document,window,console,navigator:{},Math,Uint8Array,Float32Array,TextDecoder,TextEncoder,DataView,
   ArrayBuffer,Number,setTimeout,clearTimeout,requestAnimationFrame(){},globalThis:null};
 sandbox.globalThis=sandbox;
+vm.runInNewContext(groveSource,sandbox,{filename:'spore_grove.js'});
 vm.runInNewContext(source,sandbox,{filename:'studio.js'});
-const {parsePly,parseTextCloud,generateForest,state}=sandbox.__test;
+const {parsePly,parseTextCloud,generateForest,state,setMode}=sandbox.__test;
 assert(state.count>20000,'Forest must have spatial density');
 const xyz=parseTextCloud('0 0 0\n1 1 1\n','xyz');
 assert.equal(xyz.length,14);
@@ -42,4 +44,21 @@ const binary=parsePly(bytes.buffer);
 assert.equal(binary.length,7);
 assert.equal(binary[2],-12);
 assert.throws(()=>parsePly(new TextEncoder().encode('garbage').buffer),/header/i);
-console.log('Studio JS mock-WebGL bootstrap, forest and PLY parsers: PASS');
+const groveA=sandbox.ProjectionSporeGrove.generate();
+const groveB=sandbox.ProjectionSporeGrove.generate();
+assert(groveA instanceof Float32Array);
+assert.equal(groveA.length,groveB.length,'Stable point count');
+assert(groveA.length/7>40000 && groveA.length/7<90000,'Bounded point count');
+for(let i=0;i<groveA.length;i++){
+  assert(Number.isFinite(groveA[i]),'All point values must be finite');
+  assert.equal(groveA[i],groveB[i],'Deterministic geometry');
+}
+const spores=groveA.filter((x,i)=>i%7===6 && x>=.75);
+assert(spores.length>7000,'Marker encodes animated spores');
+state.scene=3;
+setMode('memory');
+assert.equal(state.kind,0);
+assert(state.count>40000 && state.count<90000,'Spore grove point budget');
+assert.equal(elements.get('source-label').textContent,'SPORE GROVE / PROCEDURAL');
+assert(state.points.some((x,i)=>i%7===6 && x>=.75),'Drifting spore markers required');
+console.log('Studio JS mock-WebGL bootstrap, forest, spore scene and PLY parsers: PASS');

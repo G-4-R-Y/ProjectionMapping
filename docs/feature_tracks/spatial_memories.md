@@ -51,3 +51,8 @@ saturation, calibrated projector latency, track jitter, resource cleanup and pro
 ## Constraints
 No GitHub Actions; no third-party media without a clear license; assets reproducible;
 browser demo cannot silently gain remote execution; WebGL2 preview is not projector-tested.
+
+
+## 2026-11-17 research prototype — Spore Grove (PR pending)
+
+Added an independent seeded mushroom-and-spore point field to Spatial Studio's existing WebGL2 point pipeline and World dropdown. Uses palette controls, black floor, resident points and vertex-only motion, **not** Three.js/WebGPU or GPU inference. Source inspiration: Codevember day 16 Spore (published in git Nov 17). V8 generator and mock-WebGL startup/return-to-Forest checks passed in an isolated source-level sandbox; real browser shader compilation, 60-second footage, 4050/4080 FPS/VRAM and projector QA are not validated. Remains **experimental**, not promoted. See `docs/research_sweeps/2026-11-17.md`.
