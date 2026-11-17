@@ -101,7 +101,7 @@ See [`docs/CONSOLE_UI.md`](docs/CONSOLE_UI.md) for the full operator and extensi
 
 ## Spatial Studio (new local-first WebGL2 preview)
 
-The first **Spatial Memories** vertical slice adds a beautiful, browser-based stage alongside the existing Textual operator console. It has a procedural point-cloud forest passage, a spectrogram landscape, and camera-reactive points. Import ASCII/binary little-endian PLY, XYZ/PTS, or an image from file / clipboard; image uploads are rendered as **2.5D reliefs**, not measured 3D scans. The default is crisp monochrome on true black; cyan/magenta is optional.
+The first **Spatial Memories** vertical slice adds a beautiful, browser-based stage alongside the existing Textual operator console. It has a procedural point-cloud forest passage, a spectrogram landscape, and camera-reactive points. Import ASCII/binary little-endian PLY, XYZ/PTS, or an image from file / clipboard; image uploads are rendered as **2.5D reliefs**, not measured 3D scans. The default is crisp monochrome on true black; cyan/magenta is optional. A new **Spore Grove (experimental)** world adds reproducible bioluminescent point sculptures inspired by Nov 2026 shader art, without adding a Three.js/WebGPU dependency. It remains a browser preview, not an accepted projector visual.
 
 ```bash
 python -m pip install -e .
