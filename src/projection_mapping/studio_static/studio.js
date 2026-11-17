@@ -33,6 +33,13 @@ void main() {
       p.xy += vec2(sin(seed * 120.0), cos(seed * 97.0)) * dissolve * u_twist * 2.8;
     }
   }
+  if (u_scene == 3 && u_kind == 0) {
+    // Independently authored Spore Grove: only marked particles drift and rise.
+    float spore = step(.75, seed);
+    float rise = fract(u_time * (.10 + seed * .05) + seed * 23.0);
+    p.y += spore * rise * 1.45;
+    p.x += spore * .22 * sin(u_time * .8 + seed * 117.0);
+  }
   if (u_kind == 2) { p.x += sin(u_time * 0.25 + p.z * .15) * .15; }
   if (u_kind == 3) { p.xy += vec2(sin(seed * 90.0 + u_time),cos(seed * 70.0 + u_time)) * u_twist * 0.14; }
   p.xz = spin(u_yaw) * p.xz;
@@ -42,7 +49,8 @@ void main() {
   vec2 clip = p.xy * perspective;
   clip.x *= u_resolution.y / max(u_resolution.x, 1.0);
   gl_Position = vec4(clip, clamp(1.0 - .12 / distance, 0.0, .999), 1.0);
-  gl_PointSize = clamp(u_size * (u_kind == 0 ? 14.0 : 19.0) / max(distance, 1.0), .75, 4.5);
+  gl_PointSize = clamp(u_size * (u_kind == 0 ? 14.0 : 19.0) / max(distance, 1.0)
+    * (u_scene == 3 && u_kind == 0 && seed >= .75 ? 1.3 : 1.0), .75, 4.5);
   float fog = 1.0 / (1.0 + distance * (u_kind == 0 ? .022 : .012));
   float luminance = dot(a_color, vec3(.2126,.7152,.0722));
   vec3 c = a_color;
@@ -357,6 +365,7 @@ void main() {
     const copy=labels[mode];$('breadcrumb').textContent=copy[0];$('eyebrow').textContent=copy[1];$('scene-title').innerHTML=copy[2];$('scene-subtitle').textContent=copy[3];
     if(mode==='memory'){
       if(state.imported)pushPoints(state.imported,1,'IMPORTED POINT CLOUD');
+      else if(state.scene===3)pushPoints(globalThis.ProjectionSporeGrove.generate(),0,'SPORE GROVE / PROCEDURAL');
       else pushPoints(generateForest(),0,'PROCEDURAL');
     }else if(mode==='spectrum'){seedSpectrum();spectrumFrame();}
     else if(state.camStream){humanFrame();}else{pushPoints(new Float32Array([0,0,-9,1,1,1,0]),3,'AWAITING CAMERA');toast('Enable camera to generate a local motion/edge point cloud.');}
@@ -385,7 +394,11 @@ void main() {
   for(const id of ['speed','twist','size','light'])$(id).addEventListener('input',e=>{
     state[id]=Number(e.target.value);$(`${id}-value`).textContent=state[id].toFixed(2);
   });
-  $('scene').addEventListener('change',e=>{state.scene={forest:0,vortex:1,dissolve:2}[e.target.value];});
+  $('scene').addEventListener('change',e=>{
+    state.scene={forest:0,vortex:1,dissolve:2,spore:3}[e.target.value];
+    if(state.mode==='memory' && !state.imported)setMode('memory');
+    else if(state.imported)toast('Imported cloud stays active. Reload for procedural worlds.');
+  });
   $('palette').addEventListener('change',e=>{state.palette={mono:0,cyber:1,ember:2}[e.target.value];});
   $('file-picker').addEventListener('change',async e=>{try{await loadFile(e.target.files[0]);}catch(error){toast(error.message);}e.target.value='';});
   $('paste').addEventListener('click',pasteImage);
