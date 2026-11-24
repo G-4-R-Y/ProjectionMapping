@@ -641,3 +641,11 @@ Research discipline:
 - E21 -> cross-cutting real-GL visual smoke / shader compile / Event Horizon seam regression
 
 When adding an experiment, link it to a milestone **and update the corresponding feature track** so research prototypes, failures, good presets, measurements and product progress stay synchronized.
+
+## 2026-11-24 weekly research candidates (research branch)
+
+- 🧪 Spatial Memories: original Kelp Passage synthetic XYZRGB PLY asset generator (70,128 points), isolated geometry/parser checks passed; native CLI, GPU/projector art QA pending. No change to the default scene.
+- 🧪 M1/M8: procam-calibration Nov 18–23 Intel buffering, depth and pixel transform; compare fresh-frame capture and coordinate conventions with existing Gray-code bundle, no new core dependencies.
+- 🧪 M7/M2/M9: Noctiluca 0.4.0 device reconnection/theme dwell, Phosphor 0.5.21 redraw watchdog/ISF and output isolation as external comparators; no engine/asset imports.
+- 🧪 M10: Brush Nov 22 ellipse tile-coverage optimization (benchmark existing adapter PR #10), SplatTransform 3.12.0 color-error/LOD; M3/M10 TwoPass draft reuse conceptual only, not a live generation backend.
+- No milestone promotion, physical calibration or hardware performance claim. No Actions enabled. Dated upstream links, licenses, exclusions and checks: [Nov 24 sweep](docs/research_sweeps/2026-11-24.md).
