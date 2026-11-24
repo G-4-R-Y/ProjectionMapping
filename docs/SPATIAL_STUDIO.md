@@ -52,3 +52,15 @@ python -m projection_mapping.studio_server --no-open
 ```
 
 Web smoke uses a mocked WebGL2 interface to verify loading and ASCII/binary PLY, *not* real shader compilation. Run the visual/GPU test locally. GitHub Actions CI must remain disabled.
+
+## Optional synthetic import fixture — Kelp Passage (research)
+
+With Node 18+ (offline generator only, no npm dependencies):
+
+```sh
+node scripts/generate_kelp_cloud.cjs kelp-ghost.ply
+node scripts/generate_kelp_cloud.cjs kelp-lagoon.ply --palette lagoon
+node tests/test_kelp_cloud.cjs
+```
+
+Drag a generated PLY into Spatial Memories. Both files contain 70,128 XYZRGB points, with identical seeded geometry and different baked colors; existing display palettes may override RGB. Use a new output filename (no overwrite). Viewing requires only the existing WebGL2 Studio, not Node. This is synthetic geometry, not a scan, Gaussian splat, or animated underwater renderer. Default ghost output was accepted by the isolated actual Studio ASCII parser (2,613,805 bytes). Browser/GPU/projector quality, native CLI filesystem path and full suites still need local tests. See [Nov 24 research](research_sweeps/2026-11-24.md).

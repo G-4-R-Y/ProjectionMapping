@@ -51,3 +51,7 @@ saturation, calibrated projector latency, track jitter, resource cleanup and pro
 ## Constraints
 No GitHub Actions; no third-party media without a clear license; assets reproducible;
 browser demo cannot silently gain remote execution; WebGL2 preview is not projector-tested.
+
+## 2026-11-24 — synthetic Kelp Passage import fixture (research branch)
+
+Original seeded ASCII XYZRGB point-asset generator (28 stalks, curved sampled blades, sparse floor/snow), independent of prior Spore Grove scene PR #14. 70,128 points, ghost/lagoon RGB options, default ~2.6 MB; no runtime dependency or UI change. Isolated generator contracts and actual extracted Studio parser passed; native Node CLI/full suites and hardware not tested. Use `node scripts/generate_kelp_cloud.cjs kelp-ghost.ply` then import locally. See [research report](../research_sweeps/2026-11-24.md). Next: compare imported scene and black-floor quality before adding live kelp advection, optics or WebGPU. SplatTransform 3.12.0 is an offline SOG/LOD color-error comparator, not an ordinary PLY import extension.
