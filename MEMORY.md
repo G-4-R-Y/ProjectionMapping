@@ -257,3 +257,7 @@ See docs/SPATIAL_STUDIO.md and docs/feature_tracks/spatial_memories.md.
 8. Then integrate performer/audio/room state and neural skinning into one coherent stage system.
 
 The standard for promoted work is not merely “works”. The standard is **worth filming and projecting**. The standard for an early experiment is different: **does it teach us something or open a path worth refining?**
+
+## 2026-11-24 weekly handoff (research branch)
+
+Kelp Passage is an **offline synthetic point asset**, not a new native scene or real scan. `scripts/generate_kelp_cloud.cjs` emits bounded ASCII XYZRGB PLY via Node 18+ without npm; default seed 20261124, ghost or lagoon, 70,128 points. Existing Studio imports it; no runtime/server/registry edits. Exact generator/test source passed isolated V8 contracts; current main extracted ASCII parser accepted every point. Actual Node CLI/full suite, browser, GPU and projector art/performance unvalidated. Do not duplicate open PRs #10 (Brush), #12 (Room Skin matte), #13 (Varda), #14 (Spore Grove). Next: measure imported-scene quality on hardware, use procam-calibration as independent M1 capture comparator, and preserve no-Actions policy. See docs/research_sweeps/2026-11-24.md.
